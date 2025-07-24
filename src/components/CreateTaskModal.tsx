@@ -4,6 +4,7 @@ import { WORK_TYPES, WorkType } from '../data/dashboardMockData';
 import DatePicker from './DatePicker';
 import Dropdown from './Dropdown';
 import WorkTypeDropdown from './WorkTypeDropdown';
+import { getCurrentUser } from '../data/usersMockData';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -12,6 +13,10 @@ interface CreateTaskModalProps {
 }
 
 const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSubmit }) => {
+  const currentUser = getCurrentUser();
+  const isDirector = currentUser.role === 'retail_director';
+  const defaultDepartment = currentUser.location === 'Hà Nội' ? 'HN' : 'HCM';
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -21,10 +26,11 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     startDate: new Date().toISOString().split('T')[0],
     dueDate: '',
     assignedTo: '',
-    department: 'HN' as 'HN' | 'HCM',
+    department: defaultDepartment as 'HN' | 'HCM',
     platform: [] as string[],
     campaignType: '',
-    shareScope: 'team' as 'team' | 'private' | 'public'
+    shareScope: 'team' as 'team' | 'private' | 'public',
+    assignToSelf: true // Default to assign to self
   });
 
 
@@ -56,11 +62,12 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const currentUser = getCurrentUser();
     onSubmit({
       ...formData,
       id: `task-${Date.now()}`,
-      createdBy: { id: 'current-user', name: 'Khổng Đức Mạnh', email: '' },
-      assignedTo: formData.assignedTo || null,
+      createdBy: { id: currentUser.id, name: currentUser.name, email: currentUser.email },
+      assignedTo: formData.assignToSelf ? { id: currentUser.id, name: currentUser.name, email: currentUser.email } : null,
       endDate: formData.dueDate
     });
     onClose();
@@ -73,10 +80,11 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       startDate: new Date().toISOString().split('T')[0],
       dueDate: '',
       assignedTo: '',
-      department: 'HN',
+      department: defaultDepartment,
       platform: [],
       campaignType: '',
-      shareScope: 'team'
+      shareScope: 'team',
+      assignToSelf: true
     });
   };
 
@@ -180,6 +188,37 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
               placeholder="Chọn hạn chót"
               minDate={formData.startDate}
             />
+          </div>
+
+          {isDirector && (
+            <div>
+              <Dropdown
+                label="Chi nhánh"
+                value={formData.department}
+                onChange={(value) => setFormData({ ...formData, department: value as 'HN' | 'HCM' })}
+                options={[
+                  { value: 'HN', label: 'Hà Nội', icon: Building },
+                  { value: 'HCM', label: 'Hồ Chí Minh', icon: Building }
+                ]}
+                placeholder="Chọn chi nhánh"
+                required
+              />
+            </div>
+          )}
+
+          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.assignToSelf}
+                onChange={(e) => setFormData({ ...formData, assignToSelf: e.target.checked })}
+                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-white font-medium">Tự phân công cho tôi</span>
+            </label>
+            <p className="text-gray-400 text-xs mt-1">
+              Nếu không chọn, công việc sẽ ở trạng thái "Chưa phân công"
+            </p>
           </div>
 
           <div>

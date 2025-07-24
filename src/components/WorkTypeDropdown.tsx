@@ -27,6 +27,7 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
   disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Work type options with categories
@@ -49,6 +50,17 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
       acc[category] = [];
     }
     acc[category].push(option);
+    return acc;
+  }, {} as Record<string, WorkTypeOption[]>);
+
+  // Filter options based on search term
+  const filteredOptions = Object.entries(groupedOptions).reduce((acc, [category, options]) => {
+    const filtered = options.filter(option => 
+      option.label.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    if (filtered.length > 0) {
+      acc[category] = filtered;
+    }
     return acc;
   }, {} as Record<string, WorkTypeOption[]>);
 
@@ -97,7 +109,14 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
 
       <button
         type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!disabled) {
+            setIsOpen(!isOpen);
+            if (!isOpen) {
+              setSearchTerm(''); // Reset search when opening
+            }
+          }
+        }}
         disabled={disabled}
         className={`w-full px-3 py-2.5 bg-gray-700 border border-gray-600 rounded-lg text-left focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors min-h-[44px] ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-500'
@@ -172,47 +191,72 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
 
       {isOpen && (
         <div className="absolute left-0 right-0 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-50 overflow-hidden top-full mt-2">
-          <div className="dropdown-options-list overflow-y-auto">
-            {Object.entries(groupedOptions).map(([category, options]) => (
-              <div key={category}>
-                <div className="px-3 py-1.5 bg-gray-750/30">
-                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    {category}
-                  </span>
-                </div>
-                <div className="dropdown-grid p-3">
-                  {options.map((option) => {
-                    const isSelected = value.includes(option.value);
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleToggleOption(option.value)}
-                        className={`dropdown-badge btn-touch px-3 py-2.5 rounded-full text-center min-h-[44px] flex items-center justify-center text-sm font-medium ${
-                          isSelected
-                            ? `${option.color} text-white selected`
-                            : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/70 hover:text-white'
-                        }`}
-                      >
-                        <span className="truncate">{option.label}</span>
-                        {isSelected && <Check className="w-3 h-3 ml-1 flex-shrink-0" />}
-                      </button>
-                    );
-                  })}
-                </div>
+          {/* Header with Done button and search */}
+          <div className="p-3 border-b border-gray-600 bg-gray-700/30">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm loại công việc..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
+                  autoFocus
+                />
               </div>
-            ))}
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm"
+              >
+                Xong
+              </button>
+            </div>
+            {selectedOptions.length > 0 && (
+              <div className="text-xs text-gray-400">
+                Đã chọn: {selectedOptions.length} loại công việc
+              </div>
+            )}
           </div>
 
-          {/* Footer */}
-          <div className="p-3 border-t border-gray-600 bg-gray-700/30">
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-            >
-              Xong
-            </button>
+          <div className="dropdown-options-list overflow-y-auto max-h-[400px]">
+            {Object.entries(filteredOptions).map(([category, options]) => {
+              if (options.length === 0) return null;
+              return (
+                <div key={category}>
+                  <div className="px-3 py-1.5 bg-gray-750/30">
+                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      {category}
+                    </span>
+                  </div>
+                  <div className="dropdown-grid p-3">
+                    {options.map((option) => {
+                      const isSelected = value.includes(option.value);
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleToggleOption(option.value)}
+                          className={`dropdown-badge btn-touch px-3 py-2.5 rounded-full text-center min-h-[44px] flex items-center justify-center text-sm font-medium ${
+                            isSelected
+                              ? `${option.color} text-white selected`
+                              : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/70 hover:text-white'
+                          }`}
+                        >
+                          <span className="truncate">{option.label}</span>
+                          {isSelected && <Check className="w-3 h-3 ml-1 flex-shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            {Object.values(filteredOptions).every(options => options.length === 0) && (
+              <div className="text-center py-8 text-gray-400">
+                Không tìm thấy loại công việc phù hợp
+              </div>
+            )}
           </div>
         </div>
       )}

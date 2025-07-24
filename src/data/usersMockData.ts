@@ -219,9 +219,38 @@ export const isTeamLeader = (userId: string): boolean => {
   return user?.role === 'team_leader';
 };
 
-// Get current logged in user (mock for testing)
+// Get current logged in user from auth context
 export const getCurrentUser = (): MockUser => {
-  // For testing, return Lê Khánh Duy by default
-  // In real app, this would get from auth context
-  return mockUsers.find(user => user.name === 'Lê Khánh Duy') || mockUsers[2];
+  // Get user from localStorage (set by AuthProvider when logging in)
+  const savedUser = localStorage.getItem('auth_user');
+  if (savedUser) {
+    try {
+      const authUser = JSON.parse(savedUser);
+      
+      // Create a MockUser from auth data
+      // The auth user already has all the necessary fields from the database
+      return {
+        id: authUser.id,
+        name: authUser.name,
+        email: authUser.email,
+        team_id: authUser.team_id || '0',
+        location: authUser.location as 'Hà Nội' | 'Hồ Chí Minh',
+        role: authUser.role as 'employee' | 'team_leader' | 'retail_director',
+        team: authUser.team ? {
+          id: authUser.team.id,
+          name: authUser.team.name,
+          location: authUser.location === 'Hà Nội' ? 'HN' : 'HCM'
+        } : {
+          id: '0',
+          name: 'Ban Giám Đốc',
+          location: authUser.location === 'Hà Nội' ? 'HN' : 'HCM'
+        }
+      };
+    } catch (error) {
+      console.error('Error parsing saved user:', error);
+    }
+  }
+  
+  // No logged in user - this should not happen in a protected route
+  throw new Error('No authenticated user found');
 };

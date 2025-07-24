@@ -102,7 +102,7 @@ const TaskList: React.FC<TaskListProps> = ({
         startDate: taskData.startDate,
         endDate: taskData.endDate,
         dueDate: taskData.dueDate,
-        assignedToId: taskData.assignedToId,
+        assignedToId: taskData.assignedTo?.id || null, // Get assignedTo ID from taskData
         department: taskData.department,
         shareScope: taskData.shareScope // Pass the shareScope
       }, currentUser.id);
@@ -243,7 +243,7 @@ const TaskList: React.FC<TaskListProps> = ({
     switch (activeTab) {
       case 'my-tasks':
         return tasks.filter(task =>
-          task.assignedTo?.name === currentUser || task.createdBy?.name === currentUser
+          task.createdBy?.email === getCurrentUser().email
         );
       case 'team-tasks':
         // For team tasks, get all tasks from the selected location to distribute among teams
@@ -252,9 +252,7 @@ const TaskList: React.FC<TaskListProps> = ({
         );
       case 'department-tasks':
         // For department tasks, show ALL tasks from the department (public tasks)
-        return tasks.filter(task =>
-          departmentTab === 'hanoi' ? task.department === 'HN' : task.department === 'HCM'
-        );
+        return tasks.filter(task => task.shareScope === 'public');
       default:
         return tasks;
     }
