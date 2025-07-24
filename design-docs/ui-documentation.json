@@ -1,0 +1,89 @@
+{
+  "project": "Qatalog Login",
+  "screens": [
+    {
+      "name": "Login Page",
+      "file": "login-page.png",
+      "description": "Main login screen where users enter their work email",
+      "components": [
+        "Email input field",
+        "Continue button",
+        "Header with title",
+        "Responsive layout"
+      ]
+    },
+    {
+      "name": "Password Page",
+      "file": "password-page.png",
+      "description": "Password input screen with user greeting",
+      "components": [
+        "Password input with toggle visibility",
+        "Back button",
+        "Continue button",
+        "Forgot password link",
+        "User greeting"
+      ]
+    },
+    {
+      "name": "Director Login Page",
+      "file": "director-login-page.png",
+      "description": "Special login page for director role",
+      "components": [
+        "Director information card",
+        "Password input with visibility toggle",
+        "Login button with loading state",
+        "Back navigation",
+        "Enhanced animations"
+      ]
+    }
+  ],
+  "designTokens": {
+    "colors": {
+      "primary": {
+        "50": "#f0f9ff",
+        "500": "#3b82f6",
+        "600": "#2563eb",
+        "700": "#1d4ed8",
+        "800": "#1e40af",
+        "900": "#1e3a8a"
+      },
+      "gray": {
+        "50": "#f9fafb",
+        "100": "#f3f4f6",
+        "200": "#e5e7eb",
+        "500": "#6b7280",
+        "600": "#4b5563",
+        "700": "#374151",
+        "800": "#1f2937",
+        "900": "#111827"
+      },
+      "white": "#ffffff",
+      "black": "#000000"
+    },
+    "spacing": {
+      "1": "0.25rem",
+      "2": "0.5rem",
+      "3": "0.75rem",
+      "4": "1rem",
+      "6": "1.5rem",
+      "8": "2rem",
+      "12": "3rem"
+    },
+    "borderRadius": {
+      "none": "0",
+      "sm": "0.125rem",
+      "md": "0.375rem",
+      "lg": "0.5rem",
+      "xl": "0.75rem",
+      "full": "9999px"
+    },
+    "typography": {
+      "sm": "0.875rem",
+      "base": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.25rem",
+      "2xl": "1.5rem"
+    }
+  },
+  "generatedAt": "2025-07-24T05:02:14.001Z"
+}
