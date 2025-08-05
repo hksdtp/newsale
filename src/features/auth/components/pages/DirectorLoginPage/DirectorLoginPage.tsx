@@ -7,36 +7,55 @@ export function DirectorLoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [director, setDirector] = useState<any>(null);
+  const [directors, setDirectors] = useState<any[]>([]);
+  const [selectedDirector, setSelectedDirector] = useState<any>(null);
+  const [showDirectorSelection, setShowDirectorSelection] = useState(true);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   useEffect(() => {
-    const loadDirector = async () => {
+    const loadDirectors = async () => {
       try {
-        const directorData = await authService.getDirector();
-        setDirector(directorData);
+        const directorsData = await authService.getDirectors();
+        setDirectors(directorsData);
+
+        // If only one director, auto-select
+        if (directorsData.length === 1) {
+          setSelectedDirector(directorsData[0]);
+          setShowDirectorSelection(false);
+        }
       } catch (error) {
-        console.error('Failed to load director:', error);
+        console.error('Failed to load directors:', error);
       }
     };
 
-    loadDirector();
+    loadDirectors();
   }, []);
+
+  const handleDirectorSelect = (director: any) => {
+    setSelectedDirector(director);
+    setShowDirectorSelection(false);
+  };
+
+  const handleBackToSelection = () => {
+    setSelectedDirector(null);
+    setShowDirectorSelection(true);
+    setPassword('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!director) return;
+    if (!selectedDirector) return;
 
     setIsLoading(true);
-    
+
     try {
-      await login(director.email, password);
-      
+      await login(selectedDirector.email, password);
+
       // Check if needs password change
-      const needsChange = await authService.needsPasswordChange(director.email);
+      const needsChange = await authService.needsPasswordChange(selectedDirector.email);
       if (needsChange) {
-        navigate(`/auth/change-password?email=${encodeURIComponent(director.email)}&name=${encodeURIComponent(director.name)}`);
+        navigate(`/auth/change-password?email=${encodeURIComponent(selectedDirector.email)}&name=${encodeURIComponent(selectedDirector.name)}`);
       } else {
         navigate('/dashboard');
       }
@@ -52,7 +71,7 @@ export function DirectorLoginPage() {
     navigate('/');
   };
 
-  if (!director) {
+  if (directors.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -63,18 +82,85 @@ export function DirectorLoginPage() {
     );
   }
 
+  // Show director selection if multiple directors or no director selected
+  if (showDirectorSelection && directors.length > 1) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Header */}
+        <header className="p-6">
+          <button
+            onClick={handleBack}
+            className="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Quay lại
+          </button>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 flex items-center justify-center px-6">
+          <div className="w-full max-w-2xl">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-medium text-gray-900 mb-4">
+                Chọn Trưởng Phòng Kinh Doanh
+              </h1>
+              <p className="text-gray-600">
+                Vui lòng chọn tài khoản để đăng nhập
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {directors.map((director) => (
+                <button
+                  key={director.id}
+                  onClick={() => handleDirectorSelect(director)}
+                  className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl hover:border-blue-300 transition-all duration-200 text-left group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-medium text-lg">
+                      {director.name.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {director.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">{director.email}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {director.department_type} • {director.location}
+                      </p>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="p-6">
+          {/* Empty footer for spacing */}
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header className="p-6">
         <button
-          onClick={handleBack}
+          onClick={directors.length > 1 ? handleBackToSelection : handleBack}
           className="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200"
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Quay lại
+          {directors.length > 1 ? 'Chọn lại' : 'Quay lại'}
         </button>
       </header>
 
@@ -85,15 +171,18 @@ export function DirectorLoginPage() {
           <div className="bg-white rounded-xl shadow-xl p-8 mb-8 border border-gray-200 animate-scale-in interactive-lift">
             <div className="text-center mb-8">
               <h1 className="text-2xl font-medium text-gray-900 mb-6 animate-fade-in">
-                Trưởng Phòng Kinh Doanh
+                Retail Director
               </h1>
 
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 animate-slide-up animate-stagger-1">
                 <h2 className="text-xl font-medium text-gray-900 mb-2 animate-fade-in animate-stagger-2">
-                  {director.name}
+                  {selectedDirector.name}
                 </h2>
                 <p className="text-gray-600 text-sm animate-fade-in animate-stagger-3">
-                  {director.email}
+                  {selectedDirector.email}
+                </p>
+                <p className="text-gray-500 text-xs mt-1">
+                  {selectedDirector.department_type} • {selectedDirector.location}
                 </p>
               </div>
             </div>

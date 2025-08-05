@@ -16,15 +16,17 @@ interface WorkTypeDropdownProps {
   label?: string;
   required?: boolean;
   disabled?: boolean;
+  helperText?: string;
 }
 
 const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
   value = [],
   onChange,
-  placeholder = 'Chọn loại công việc',
+  placeholder = 'Chọn danh mục công việc',
   label,
   required = false,
   disabled = false,
+  helperText,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -191,34 +193,23 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
 
       {isOpen && (
         <div className="absolute left-0 right-0 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-50 overflow-hidden top-full mt-2">
-          {/* Header with Done button and search */}
+          {/* Header with Done button - removed search */}
           <div className="p-3 border-b border-gray-600 bg-gray-700/30">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm loại công việc..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
-                  autoFocus
-                />
-              </div>
+            <div className="flex items-center justify-end">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm"
+                className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
               >
                 Xong
               </button>
             </div>
-            {selectedOptions.length > 0 && (
-              <div className="text-xs text-gray-400">
-                Đã chọn: {selectedOptions.length} loại công việc
-              </div>
-            )}
           </div>
-
+          {selectedOptions.length > 0 && (
+            <div className="text-xs text-gray-400">
+              Đã chọn: {selectedOptions.length} loại công việc
+            </div>
+          )}
           <div className="dropdown-options-list overflow-y-auto max-h-[400px]">
             {Object.entries(filteredOptions).map(([category, options]) => {
               if (options.length === 0) return null;
@@ -258,6 +249,13 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Helper Text */}
+      {helperText && (
+        <div className="text-gray-400 text-sm mt-2">
+          {helperText}
         </div>
       )}
     </div>

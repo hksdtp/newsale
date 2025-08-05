@@ -5,7 +5,10 @@ import { SettingsTab } from './SettingsTab';
 import { YouTubeSidebar } from './YouTubeSidebar';
 import { MobileDock } from './MobileDock';
 import TaskList from './TaskList';
+import { HRManagement } from './HRManagement';
+import { PlanningTab } from '../../planning/components/PlanningTab';
 import { dashboardMockData, formatCurrency, formatPercentage } from '../../../data/dashboardMockData';
+import { autoMoveService } from '../../../services/autoMoveService';
 
 export function Dashboard() {
   const { user, logout } = useAuth();
@@ -13,21 +16,37 @@ export function Dashboard() {
   const { tab } = useParams();
   const [activeTab, setActiveTab] = useState('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Sync URL with active tab
+  // Sync URL with active tab và maintain state khi refresh
   useEffect(() => {
-    if (tab && ['home', 'work', 'plan', 'customers', 'settings'].includes(tab)) {
+    if (tab && ['home', 'work', 'plan', 'customers', 'hr', 'settings'].includes(tab)) {
       setActiveTab(tab);
     } else if (!tab) {
-      // If no tab in URL, default to home
-      setActiveTab('home');
+      // Nếu không có tab trong URL, lấy từ localStorage hoặc default to home
+      const savedTab = localStorage.getItem('dashboard-active-tab');
+      if (savedTab && ['home', 'work', 'plan', 'customers', 'hr', 'settings'].includes(savedTab)) {
+        setActiveTab(savedTab);
+        navigate(`/dashboard/${savedTab}`, { replace: true });
+      } else {
+        setActiveTab('home');
+        navigate('/dashboard/home', { replace: true });
+      }
     }
-  }, [tab]);
+  }, [tab, navigate]);
 
-  // Handle tab change with URL navigation
+  // Start auto-move scheduler when dashboard loads
+  useEffect(() => {
+    console.log('🤖 Initializing auto-move scheduler...');
+    autoMoveService.startAutoMoveScheduler(60); // Check every 60 minutes
+  }, []);
+
+  // Handle tab change with URL navigation và save state
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
     navigate(`/dashboard/${newTab}`, { replace: true });
+    // Lưu active tab vào localStorage để maintain state khi refresh
+    localStorage.setItem('dashboard-active-tab', newTab);
     // Auto-close sidebar on mobile after selection
     setSidebarOpen(false);
   };
@@ -43,6 +62,7 @@ export function Dashboard() {
       'work': 'Công Việc',
       'plan': 'Kế Hoạch',
       'customers': 'Khách Hàng',
+      'hr': 'Quản Lý Nhân Viên',
       'settings': 'Cài đặt'
     };
     return tabTitles[tab] || 'Trang Chủ';
@@ -57,6 +77,7 @@ export function Dashboard() {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onLogout={handleLogout}
+        isModalOpen={isModalOpen}
       />
 
       {/* Main Content */}
@@ -76,102 +97,8 @@ export function Dashboard() {
         <main className="flex-1 overflow-y-auto bg-gray-900 p-6 pb-24 md:pb-6">
           {activeTab === 'home' && (
             <div className="space-y-8">
-              {/* Dream Machine Style Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                {/* TỔNG CÔNG VIỆC Card */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 p-6 h-64 group hover:scale-105 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-600/20"></div>
-                  <div className="relative z-10">
-                    <div className="text-xs text-gray-300 uppercase tracking-wider mb-2">TASK MANAGEMENT</div>
-                    <h3 className="text-xl font-bold text-white mb-2">TỔNG CÔNG VIỆC</h3>
-                    <div className="text-3xl font-bold text-white mb-2">{dashboardMockData.managerStats.totalTasks}</div>
-                    <div className="text-sm text-gray-300">Công việc</div>
-                  </div>
-                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">📋</span>
-                  </div>
-                  <div className="absolute top-4 right-4 w-2 h-2 bg-green-400 rounded-full"></div>
-                </div>
-
-                {/* HOÀN THÀNH Card */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-700 to-pink-600 p-6 h-64 group hover:scale-105 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30"></div>
-                  <div className="relative z-10">
-                    <div className="text-xs text-purple-200 uppercase tracking-wider mb-2">COMPLETED</div>
-                    <h3 className="text-xl font-bold text-white mb-2">HOÀN THÀNH</h3>
-                    <div className="text-3xl font-bold text-white mb-2">{dashboardMockData.managerStats.completedTasks}</div>
-                    <div className="text-sm text-purple-200">Công việc</div>
-                  </div>
-                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">✅</span>
-                  </div>
-                  <div className="absolute top-4 right-4 w-2 h-2 bg-pink-400 rounded-full"></div>
-                </div>
-
-                {/* TỶ LỆ HOÀN THÀNH Card */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-700 to-cyan-800 p-6 h-64 group hover:scale-105 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20"></div>
-                  <div className="relative z-10">
-                    <div className="text-xs text-emerald-200 uppercase tracking-wider mb-2">COMPLETION RATE</div>
-                    <h3 className="text-xl font-bold text-white mb-2">TỶ LỆ HOÀN THÀNH</h3>
-                    <div className="text-3xl font-bold text-white mb-2">{formatPercentage(dashboardMockData.managerStats.completionRate)}</div>
-                    <div className="text-sm text-emerald-200">Hiệu suất</div>
-                  </div>
-                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">📊</span>
-                  </div>
-                  <div className="absolute top-4 right-4 w-2 h-2 bg-emerald-400 rounded-full"></div>
-                </div>
-
-                {/* DOANH SỐ HÀ NỘI Card */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-600 via-orange-700 to-red-700 p-6 h-64 group hover:scale-105 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20"></div>
-                  <div className="relative z-10">
-                    <div className="text-xs text-amber-200 uppercase tracking-wider mb-2">HANOI REVENUE</div>
-                    <h3 className="text-xl font-bold text-white mb-2">DOANH SỐ HÀ NỘI</h3>
-                    <div className="text-2xl font-bold text-white mb-2">{formatCurrency(dashboardMockData.managerStats.hanoiRevenue)}</div>
-                    <div className="text-sm text-amber-200">Doanh thu</div>
-                  </div>
-                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🏢</span>
-                  </div>
-                  <div className="absolute top-4 right-4 w-2 h-2 bg-amber-400 rounded-full"></div>
-                </div>
-
-                {/* DOANH SỐ HCM Card */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-pink-700 to-purple-700 p-6 h-64 group hover:scale-105 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 to-purple-500/20"></div>
-                  <div className="relative z-10">
-                    <div className="text-xs text-rose-200 uppercase tracking-wider mb-2">HCM REVENUE</div>
-                    <h3 className="text-xl font-bold text-white mb-2">DOANH SỐ HCM</h3>
-                    <div className="text-2xl font-bold text-white mb-2">{formatCurrency(dashboardMockData.managerStats.hcmRevenue)}</div>
-                    <div className="text-sm text-rose-200">Doanh thu</div>
-                  </div>
-                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-rose-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🏙️</span>
-                  </div>
-                  <div className="absolute top-4 right-4 w-2 h-2 bg-rose-400 rounded-full"></div>
-                </div>
-
-                {/* TEAM PERFORMANCE CARD */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-700 to-indigo-700 p-6 h-64 group hover:scale-105 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-indigo-500/20"></div>
-                  <div className="relative z-10">
-                    <div className="text-xs text-violet-200 uppercase tracking-wider mb-2">TEAM</div>
-                    <h3 className="text-xl font-bold text-white mb-2">PERFORMANCE</h3>
-                    <div className="text-sm text-violet-200 mb-4">{dashboardMockData.teamStats.totalMembers} Members</div>
-                  </div>
-                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">👥</span>
-                  </div>
-                  <div className="absolute top-4 right-4 w-2 h-2 bg-violet-400 rounded-full"></div>
-                </div>
-
-              </div>
-
               {/* Detailed Statistics Section */}
-              <div className="mt-12">
+              <div>
                 <h2 className="text-xl font-semibold text-white mb-6">Thống kê chi tiết</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -346,38 +273,123 @@ export function Dashboard() {
 
                 </div>
               </div>
+
+              {/* Dream Machine Style Cards */}
+              <div>
+                <h2 className="text-xl font-semibold text-white mb-6">Tổng quan hệ thống</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                {/* TỔNG CÔNG VIỆC Card */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 p-6 h-64 group hover:scale-105 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-600/20"></div>
+                  <div className="relative z-10">
+                    <div className="text-xs text-gray-300 uppercase tracking-wider mb-2">TASK MANAGEMENT</div>
+                    <h3 className="text-xl font-bold text-white mb-2">TỔNG CÔNG VIỆC</h3>
+                    <div className="text-3xl font-bold text-white mb-2">{dashboardMockData.managerStats.totalTasks}</div>
+                    <div className="text-sm text-gray-300">Công việc</div>
+                  </div>
+                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">📋</span>
+                  </div>
+                  <div className="absolute top-4 right-4 w-2 h-2 bg-green-400 rounded-full"></div>
+                </div>
+
+                {/* HOÀN THÀNH Card */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-700 to-pink-600 p-6 h-64 group hover:scale-105 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30"></div>
+                  <div className="relative z-10">
+                    <div className="text-xs text-purple-200 uppercase tracking-wider mb-2">COMPLETED</div>
+                    <h3 className="text-xl font-bold text-white mb-2">HOÀN THÀNH</h3>
+                    <div className="text-3xl font-bold text-white mb-2">{dashboardMockData.managerStats.completedTasks}</div>
+                    <div className="text-sm text-purple-200">Công việc</div>
+                  </div>
+                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">✅</span>
+                  </div>
+                  <div className="absolute top-4 right-4 w-2 h-2 bg-pink-400 rounded-full"></div>
+                </div>
+
+                {/* TỶ LỆ HOÀN THÀNH Card */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-700 to-cyan-800 p-6 h-64 group hover:scale-105 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20"></div>
+                  <div className="relative z-10">
+                    <div className="text-xs text-emerald-200 uppercase tracking-wider mb-2">COMPLETION RATE</div>
+                    <h3 className="text-xl font-bold text-white mb-2">TỶ LỆ HOÀN THÀNH</h3>
+                    <div className="text-3xl font-bold text-white mb-2">{formatPercentage(dashboardMockData.managerStats.completionRate)}</div>
+                    <div className="text-sm text-emerald-200">Hiệu suất</div>
+                  </div>
+                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <div className="absolute top-4 right-4 w-2 h-2 bg-emerald-400 rounded-full"></div>
+                </div>
+
+                {/* DOANH SỐ HÀ NỘI Card */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-600 via-orange-700 to-red-700 p-6 h-64 group hover:scale-105 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20"></div>
+                  <div className="relative z-10">
+                    <div className="text-xs text-amber-200 uppercase tracking-wider mb-2">HANOI REVENUE</div>
+                    <h3 className="text-xl font-bold text-white mb-2">DOANH SỐ HÀ NỘI</h3>
+                    <div className="text-2xl font-bold text-white mb-2">{formatCurrency(dashboardMockData.managerStats.hanoiRevenue)}</div>
+                    <div className="text-sm text-amber-200">Doanh thu</div>
+                  </div>
+                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">🏢</span>
+                  </div>
+                  <div className="absolute top-4 right-4 w-2 h-2 bg-amber-400 rounded-full"></div>
+                </div>
+
+                {/* DOANH SỐ HCM Card */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-pink-700 to-purple-700 p-6 h-64 group hover:scale-105 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 to-purple-500/20"></div>
+                  <div className="relative z-10">
+                    <div className="text-xs text-rose-200 uppercase tracking-wider mb-2">HCM REVENUE</div>
+                    <h3 className="text-xl font-bold text-white mb-2">DOANH SỐ HCM</h3>
+                    <div className="text-2xl font-bold text-white mb-2">{formatCurrency(dashboardMockData.managerStats.hcmRevenue)}</div>
+                    <div className="text-sm text-rose-200">Doanh thu</div>
+                  </div>
+                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-rose-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">🏙️</span>
+                  </div>
+                  <div className="absolute top-4 right-4 w-2 h-2 bg-rose-400 rounded-full"></div>
+                </div>
+
+                {/* TEAM PERFORMANCE CARD */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-700 to-indigo-700 p-6 h-64 group hover:scale-105 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-indigo-500/20"></div>
+                  <div className="relative z-10">
+                    <div className="text-xs text-violet-200 uppercase tracking-wider mb-2">TEAM</div>
+                    <h3 className="text-xl font-bold text-white mb-2">PERFORMANCE</h3>
+                    <div className="text-sm text-violet-200 mb-4">{dashboardMockData.teamStats.totalMembers} Members</div>
+                  </div>
+                  <div className="absolute bottom-4 right-4 w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">👥</span>
+                  </div>
+                  <div className="absolute top-4 right-4 w-2 h-2 bg-violet-400 rounded-full"></div>
+                </div>
+              </div>
+
+              </div>
             </div>
           )}
 
           {/* Other tabs content */}
           {activeTab === 'work' && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-white mb-6">Công Việc</h2>
               <TaskList
                 userRole={user?.role === 'retail_director' ? 'manager' : 'employee'}
                 currentUser={user?.name || 'Unknown User'}
+                onModalStateChange={setIsModalOpen}
               />
             </div>
           )}
 
-          {activeTab === 'plan' && (
-            <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-white mb-6">Kế Hoạch</h2>
-              <div className="bg-gray-800 rounded-lg shadow-sm p-8 text-center border border-gray-700">
-                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">Lập Kế Hoạch</h3>
-                <p className="text-gray-400">Tính năng lập kế hoạch đang được phát triển.</p>
-              </div>
-            </div>
+{activeTab === 'plan' && (
+            <PlanningTab />
           )}
 
           {activeTab === 'customers' && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-white mb-6">Khách Hàng</h2>
               <div className="bg-gray-800 rounded-lg shadow-sm p-8 text-center border border-gray-700">
                 <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,9 +402,14 @@ export function Dashboard() {
             </div>
           )}
 
+          {activeTab === 'hr' && (
+            <div className="space-y-8">
+              <HRManagement />
+            </div>
+          )}
+
           {activeTab === 'settings' && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-white mb-6">Cài đặt</h2>
               <SettingsTab onLogout={handleLogout} />
             </div>
           )}
@@ -400,9 +417,11 @@ export function Dashboard() {
       </div>
 
       {/* Mobile Dock Navigation */}
-      <MobileDock 
+      <MobileDock
         activeTab={activeTab}
         onTabChange={handleTabChange}
+        isModalOpen={isModalOpen}
+        onLogout={handleLogout}
       />
     </div>
   );

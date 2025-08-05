@@ -1,0 +1,181 @@
+{
+  "name": "ui-design-search",
+  "description": "Search and discover UI/UX designs from popular resources",
+  "commands": {
+    "search": {
+      "description": "Search for UI designs",
+      "parameters": {
+        "keywords": "Array of keywords to search",
+        "category": "Category filter (buttons, cards, forms, etc.)"
+      }
+    },
+    "getComponent": {
+      "description": "Get specific component examples",
+      "parameters": {
+        "type": "Component type (button, card, form, navigation, dashboard)"
+      }
+    }
+  },
+  "sources": [
+    {
+      "id": "dribbble",
+      "name": "Dribbble",
+      "searchUrl": "https://dribbble.com/search/",
+      "tags": [
+        "web-design",
+        "ui",
+        "ux",
+        "dashboard",
+        "mobile-app"
+      ]
+    },
+    {
+      "id": "behance",
+      "name": "Behance",
+      "searchUrl": "https://www.behance.net/search/projects/",
+      "tags": [
+        "ui-ux",
+        "web-design",
+        "user-interface",
+        "dashboard-design"
+      ]
+    },
+    {
+      "id": "uiVerse",
+      "name": "UIVerse",
+      "baseUrl": "https://uiverse.io",
+      "description": "Open-source UI elements made with CSS and HTML",
+      "categories": [
+        "buttons",
+        "cards",
+        "loaders",
+        "inputs",
+        "checkboxes",
+        "toggles"
+      ]
+    },
+    {
+      "id": "tailwindComponents",
+      "name": "Tailwind Components",
+      "baseUrl": "https://tailwindcomponents.com",
+      "description": "Free Tailwind CSS components",
+      "categories": [
+        "cards",
+        "forms",
+        "navigation",
+        "marketing",
+        "ecommerce"
+      ]
+    },
+    {
+      "id": "shadcnUI",
+      "name": "shadcn/ui",
+      "baseUrl": "https://ui.shadcn.com",
+      "description": "Beautifully designed components built with Radix UI and Tailwind CSS",
+      "categories": [
+        "components",
+        "examples",
+        "themes"
+      ]
+    },
+    {
+      "id": "flowbite",
+      "name": "Flowbite",
+      "baseUrl": "https://flowbite.com",
+      "description": "Tailwind CSS components and templates",
+      "categories": [
+        "components",
+        "blocks",
+        "templates"
+      ]
+    },
+    {
+      "id": "daisyUI",
+      "name": "DaisyUI",
+      "baseUrl": "https://daisyui.com",
+      "description": "Tailwind CSS component library",
+      "categories": [
+        "components",
+        "themes"
+      ]
+    },
+    {
+      "id": "headlessUI",
+      "name": "Headless UI",
+      "baseUrl": "https://headlessui.com",
+      "description": "Completely unstyled, fully accessible UI components",
+      "categories": [
+        "react",
+        "vue"
+      ]
+    },
+    {
+      "id": "materialUI",
+      "name": "Material-UI",
+      "baseUrl": "https://mui.com",
+      "description": "React components for faster and easier web development",
+      "categories": [
+        "components",
+        "templates",
+        "design-kits"
+      ]
+    },
+    {
+      "id": "antDesign",
+      "name": "Ant Design",
+      "baseUrl": "https://ant.design",
+      "description": "A design language for enterprise applications",
+      "categories": [
+        "components",
+        "patterns",
+        "resources"
+      ]
+    },
+    {
+      "id": "chakraUI",
+      "name": "Chakra UI",
+      "baseUrl": "https://chakra-ui.com",
+      "description": "Simple, modular and accessible component library",
+      "categories": [
+        "components",
+        "templates"
+      ]
+    },
+    {
+      "id": "freeFrontend",
+      "name": "Free Frontend",
+      "baseUrl": "https://freefrontend.com",
+      "description": "Free HTML, CSS and JavaScript code examples",
+      "categories": [
+        "css",
+        "bootstrap",
+        "javascript",
+        "react",
+        "vue"
+      ]
+    },
+    {
+      "id": "codeMyUI",
+      "name": "CodeMyUI",
+      "baseUrl": "https://codemyui.com",
+      "description": "Handpicked collection of Web Design & UI Inspiration with Code Snippets",
+      "categories": [
+        "pure-css",
+        "bootstrap",
+        "javascript"
+      ]
+    },
+    {
+      "id": "cssAuthor",
+      "name": "CSS Author",
+      "baseUrl": "https://cssauthor.com",
+      "description": "Design and development resources",
+      "categories": [
+        "css",
+        "javascript",
+        "ui-kits",
+        "templates"
+      ]
+    }
+  ]
+}

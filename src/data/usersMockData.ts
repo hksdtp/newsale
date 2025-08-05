@@ -20,175 +20,14 @@ export interface MockTeam {
   leader_id: string;
 }
 
-// Mock teams data
+// Mock teams data - CLEARED (was incorrect data)
 export const mockTeams: MockTeam[] = [
-  {
-    id: '1',
-    name: 'NHÓM 1 - Lương Việt Anh',
-    location: 'HN',
-    leader_id: '2'
-  },
-  {
-    id: '2', 
-    name: 'NHÓM 2 - Marketing HN',
-    location: 'HN',
-    leader_id: '4'
-  },
-  {
-    id: '3',
-    name: 'NHÓM 3 - Kinh doanh HCM', 
-    location: 'HCM',
-    leader_id: '6'
-  },
-  {
-    id: '4',
-    name: 'NHÓM 4 - Vận hành HCM',
-    location: 'HCM', 
-    leader_id: '9'
-  }
+  // Data will be loaded from Supabase database
 ];
 
-// Mock users data
+// Mock users data - CLEARED (was incorrect data)
 export const mockUsers: MockUser[] = [
-  // Director (can see everything)
-  {
-    id: '1',
-    name: 'Khổng Đức Mạnh',
-    email: 'director@company.com',
-    team_id: '0', // Director doesn't belong to a specific team
-    location: 'Hà Nội',
-    role: 'retail_director',
-    team: {
-      id: '0',
-      name: 'Ban Giám Đốc',
-      location: 'HN'
-    }
-  },
-  
-  // Team 1 - HN (Lương Việt Anh's team)
-  {
-    id: '2',
-    name: 'Lương Việt Anh',
-    email: 'anh.luong@company.com',
-    team_id: '1',
-    location: 'Hà Nội',
-    role: 'team_leader',
-    team: {
-      id: '1',
-      name: 'NHÓM 1 - Lương Việt Anh',
-      location: 'HN'
-    }
-  },
-  {
-    id: '3',  
-    name: 'Lê Khánh Duy',
-    email: 'duy.le@company.com',
-    team_id: '1',
-    location: 'Hà Nội',
-    role: 'employee',
-    team: {
-      id: '1',
-      name: 'NHÓM 1 - Lương Việt Anh',
-      location: 'HN'
-    }
-  },
-  
-  // Team 2 - HN  
-  {
-    id: '4',
-    name: 'Phạm Thị Dung',
-    email: 'dung.pham@company.com',
-    team_id: '2',
-    location: 'Hà Nội',
-    role: 'team_leader',
-    team: {
-      id: '2',
-      name: 'NHÓM 2 - Marketing HN',
-      location: 'HN'
-    }
-  },
-  {
-    id: '5',
-    name: 'Hoàng Văn Em',
-    email: 'em.hoang@company.com', 
-    team_id: '2',
-    location: 'Hà Nội',
-    role: 'employee',
-    team: {
-      id: '2',
-      name: 'NHÓM 2 - Marketing HN',
-      location: 'HN'
-    }
-  },
-  
-  // Team 3 - HCM
-  {
-    id: '6',
-    name: 'Võ Thị Phương',
-    email: 'phuong.vo@company.com',
-    team_id: '3',
-    location: 'Hồ Chí Minh',
-    role: 'team_leader',
-    team: {
-      id: '3',
-      name: 'NHÓM 3 - Kinh doanh HCM',
-      location: 'HCM'
-    }
-  },
-  {
-    id: '7',
-    name: 'Đặng Văn Giang',
-    email: 'giang.dang@company.com',
-    team_id: '3',
-    location: 'Hồ Chí Minh',
-    role: 'employee',
-    team: {
-      id: '3',
-      name: 'NHÓM 3 - Kinh doanh HCM',
-      location: 'HCM'
-    }
-  },
-  {
-    id: '8',
-    name: 'Bùi Thị Hoa',
-    email: 'hoa.bui@company.com',
-    team_id: '3',
-    location: 'Hồ Chí Minh',
-    role: 'employee',
-    team: {
-      id: '3',
-      name: 'NHÓM 3 - Kinh doanh HCM', 
-      location: 'HCM'
-    }
-  },
-  
-  // Team 4 - HCM
-  {
-    id: '9',
-    name: 'Ngô Văn Ích',
-    email: 'ich.ngo@company.com',
-    team_id: '4',
-    location: 'Hồ Chí Minh',
-    role: 'team_leader',
-    team: {
-      id: '4',
-      name: 'NHÓM 4 - Vận hành HCM',
-      location: 'HCM'
-    }
-  },
-  {
-    id: '10',
-    name: 'Lý Thị Kim',
-    email: 'kim.ly@company.com',
-    team_id: '4',
-    location: 'Hồ Chí Minh',
-    role: 'employee',
-    team: {
-      id: '4',
-      name: 'NHÓM 4 - Vận hành HCM',
-      location: 'HCM'
-    }
-  }
+  // Data will be loaded from Supabase database
 ];
 
 // Helper functions
@@ -219,6 +58,16 @@ export const isTeamLeader = (userId: string): boolean => {
   return user?.role === 'team_leader';
 };
 
+// DEPRECATED: Use employeeService.getAllEmployees() instead
+// This function is kept for backward compatibility but should not be used
+export const getAllUsers = (): MockUser[] => {
+  console.warn('getAllUsers() is deprecated. Use employeeService.getAllEmployees() instead.');
+  return [];
+};
+
+// Export User type alias for compatibility
+export type User = MockUser;
+
 // Get current logged in user from auth context
 export const getCurrentUser = (): MockUser => {
   // Get user from localStorage (set by AuthProvider when logging in)
@@ -226,7 +75,25 @@ export const getCurrentUser = (): MockUser => {
   if (savedUser) {
     try {
       const authUser = JSON.parse(savedUser);
-      
+
+      // Debug logging
+      console.log('🔍 getCurrentUser - authUser:', authUser);
+      console.log('🔍 getCurrentUser - authUser.id:', authUser.id, 'Type:', typeof authUser.id);
+
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(authUser.id)) {
+        console.error('❌ Invalid UUID format for user ID:', authUser.id);
+        // Try to get from currentUserId as fallback
+        const fallbackId = localStorage.getItem('currentUserId');
+        if (fallbackId && uuidRegex.test(fallbackId)) {
+          console.log('✅ Using fallback UUID from currentUserId:', fallbackId);
+          authUser.id = fallbackId;
+        } else {
+          throw new Error('Invalid user ID format');
+        }
+      }
+
       // Create a MockUser from auth data
       // The auth user already has all the necessary fields from the database
       return {
@@ -250,7 +117,7 @@ export const getCurrentUser = (): MockUser => {
       console.error('Error parsing saved user:', error);
     }
   }
-  
+
   // No logged in user - this should not happen in a protected route
   throw new Error('No authenticated user found');
 };

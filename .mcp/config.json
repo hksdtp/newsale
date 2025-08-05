@@ -1,0 +1,70 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-supabase"
+      ],
+      "env": {
+        "SUPABASE_URL": "your-supabase-url",
+        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-playwright"
+      ]
+    },
+    "figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-figma"
+      ],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "your-figma-token"
+      }
+    },
+    "tailwind": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-tailwind"
+      ]
+    },
+    "design-system": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-design-system"
+      ]
+    },
+    "kimi": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-kimi"
+      ],
+      "env": {
+        "KIMI_API_KEY": "your-kimi-api-key",
+        "KIMI_MODEL": "kimi-chat",
+        "KIMI_MAX_TOKENS": "4096"
+      }
+    },
+    "kimi-advanced": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-kimi-advanced"
+      ],
+      "env": {
+        "KIMI_API_KEY": "your-kimi-api-key",
+        "KIMI_FEATURES": "code,ui,analysis,optimization",
+        "KIMI_LANGUAGE": "vi"
+      }
+    }
+  }
+}

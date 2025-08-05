@@ -124,6 +124,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Persist user session
       localStorage.setItem('auth_user', JSON.stringify(user));
+      
+      // Also ensure currentUserId is set with the correct ID
+      localStorage.setItem('currentUserId', user.id);
 
       dispatch({ type: 'LOGIN_SUCCESS', payload: user });
     } catch (error) {

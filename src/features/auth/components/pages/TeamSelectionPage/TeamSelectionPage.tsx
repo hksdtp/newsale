@@ -16,7 +16,28 @@ export function TeamSelectionPage() {
       try {
         setIsLoading(true);
         const teamsData = await authService.getTeamsByLocation(location);
-        setTeams(teamsData);
+        
+        // Sort teams by numeric order if they contain numbers
+        const sortedTeams = teamsData.sort((a, b) => {
+          // Extract numbers from team names (e.g., "Nhóm 1" => 1)
+          const getNumber = (name: string) => {
+            const match = name.match(/\d+/);
+            return match ? parseInt(match[0]) : 0;
+          };
+          
+          const numA = getNumber(a.name);
+          const numB = getNumber(b.name);
+          
+          // If both have numbers, sort numerically
+          if (numA && numB) {
+            return numA - numB;
+          }
+          
+          // Otherwise, sort alphabetically
+          return a.name.localeCompare(b.name);
+        });
+        
+        setTeams(sortedTeams);
       } catch (error) {
         console.error('Failed to load teams:', error);
       } finally {
@@ -128,7 +149,7 @@ export function TeamSelectionPage() {
                     {/* Content */}
                     <div className="flex-1 transition-transform-smooth">
                       <h3 className="text-lg font-medium text-gray-900 mb-1 transition-colors-smooth">
-                        {team.name}{team.leader_name ? ` - ${team.leader_name}` : ''}
+                        {team.name}
                       </h3>
                       <p className="text-sm text-gray-500 transition-colors-smooth">
                         {location}

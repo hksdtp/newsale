@@ -1,6 +1,13 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Drop existing tables if they exist (for clean setup)
+DROP TABLE IF EXISTS tasks CASCADE;
+DROP TABLE IF EXISTS members CASCADE;
+DROP TABLE IF EXISTS locations CASCADE;
+DROP TABLE IF EXISTS teams CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
 -- Create teams table
 CREATE TABLE teams (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -89,6 +96,25 @@ CREATE TRIGGER update_members_updated_at BEFORE UPDATE ON members
 CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+-- Create users table (compatible with current app code)
+CREATE TABLE users (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  name VARCHAR(255) NOT NULL,
+  team_id UUID REFERENCES teams(id),
+  location VARCHAR(255),
+  password VARCHAR(255) NOT NULL,
+  password_changed BOOLEAN DEFAULT FALSE,
+  role VARCHAR(50) DEFAULT 'employee',
+  department_type VARCHAR(100),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create trigger for users table
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Insert sample data
 INSERT INTO teams (name, description) VALUES 
 ('Development Team', 'Main development team'),
@@ -153,10 +179,32 @@ INSERT INTO members (email, name, team_id, location_id, password_hash, role) VAL
   '123456', -- default password
   'member');
 
+-- Insert sample users (compatible with app code)
+INSERT INTO users (email, name, team_id, location, password, password_changed, role, department_type) VALUES
+('admin@company.com', 'Admin User',
+  (SELECT id FROM teams WHERE name = 'Development Team'),
+  'Hà Nội Office', '123456', FALSE, 'team_leader', 'Development'),
+('nguyen@company.com', 'Nguyễn Văn A',
+  (SELECT id FROM teams WHERE name = 'Development Team'),
+  'Hà Nội Office', '123456', FALSE, 'employee', 'Development'),
+('tran@company.com', 'Trần Thị B',
+  (SELECT id FROM teams WHERE name = 'Development Team'),
+  'TP.HCM Office', '123456', FALSE, 'employee', 'Development'),
+('le@company.com', 'Lê Văn C',
+  (SELECT id FROM teams WHERE name = 'Development Team'),
+  'Remote', '123456', FALSE, 'employee', 'Development'),
+('pham@company.com', 'Phạm Văn D',
+  (SELECT id FROM teams WHERE name = 'Marketing Team'),
+  'Hà Nội Office', '123456', FALSE, 'employee', 'Marketing'),
+('hoang@company.com', 'Hoàng Thị E',
+  (SELECT id FROM teams WHERE name = 'Marketing Team'),
+  'TP.HCM Office', '123456', FALSE, 'employee', 'Marketing');
+
 -- Enable Row Level Security (RLS)
 ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies
 -- Teams: Members can only see their own team
@@ -188,4 +236,11 @@ CREATE POLICY "Members can view team members" ON members
 
 -- Members can update their own profile
 CREATE POLICY "Members can update own profile" ON members
+  FOR UPDATE USING (email = auth.jwt() ->> 'email');
+
+-- Users table policies (for app compatibility)
+CREATE POLICY "Users can view all users" ON users
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can update own profile" ON users
   FOR UPDATE USING (email = auth.jwt() ->> 'email');

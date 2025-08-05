@@ -121,38 +121,49 @@ class AuthService {
     }));
   }
 
-  // Get director (Khổng Đức Mạnh)
-  async getDirector(): Promise<User | null> {
-    const { data: user, error } = await supabase
+  // Get directors (only retail directors)
+  async getDirectors(): Promise<User[]> {
+    const { data: users, error } = await supabase
       .from('users')
       .select('*')
       .eq('role', 'retail_director')
-      .single();
+      .order('name');
 
     if (error) {
-      return null;
+      console.error('Error fetching directors:', error);
+      return [];
     }
 
-    if (!user) {
-      return null;
+    if (!users || users.length === 0) {
+      return [];
     }
 
-    // Get team info separately if needed
-    let team = null;
-    if (user.team_id) {
-      const { data: teamData } = await supabase
+    // Get all unique team IDs
+    const teamIds = [...new Set(users.map(user => user.team_id))].filter(Boolean);
+
+    let teamsMap = new Map();
+    if (teamIds.length > 0) {
+      const { data: teams } = await supabase
         .from('teams')
         .select('id, name')
-        .eq('id', user.team_id)
-        .single();
+        .in('id', teamIds);
 
-      team = teamData;
+      if (teams) {
+        teams.forEach(team => teamsMap.set(team.id, team));
+      }
     }
 
-    return {
+    // Combine users with team info
+    return users.map(user => ({
       ...user,
-      team
-    };
+      team: user.team_id ? teamsMap.get(user.team_id) || null : null
+    }));
+  }
+
+  // Get first director (for backward compatibility)
+  async getDirector(): Promise<User | null> {
+    const directors = await this.getDirectors();
+    return directors.length > 0 ? directors[0] : null;
   }
 
   // Login with email and password
@@ -170,9 +181,16 @@ class AuthService {
       throw new Error('Email không tồn tại trong hệ thống');
     }
 
-    // Password verification
-    const isValidPassword = password === user.password ||
-                           (!user.password_changed && password === '123456');
+    // Password verification - LOGIC ĐÚNG
+    let isValidPassword = false;
+
+    if (!user.password_changed) {
+      // Lần đầu đăng nhập: chỉ chấp nhận mật khẩu mặc định
+      isValidPassword = password === '123456';
+    } else {
+      // Đã đổi password: chỉ chấp nhận password mới, KHÔNG cho phép dùng 123456
+      isValidPassword = password === user.password;
+    }
 
     if (!isValidPassword) {
       throw new Error('Mật khẩu không đúng');
@@ -196,6 +214,18 @@ class AuthService {
       .update({ updated_at: new Date().toISOString() })
       .eq('id', user.id);
 
+    // Store user ID in localStorage for task creation
+    localStorage.setItem('currentUserId', user.id);
+    localStorage.setItem('currentUserEmail', user.email);
+    localStorage.setItem('currentUserName', user.name);
+    
+    // Also update auth_user to ensure consistency
+    const authUser = {
+      ...user,
+      team
+    };
+    localStorage.setItem('auth_user', JSON.stringify(authUser));
+
     return {
       ...user,
       team
@@ -217,9 +247,16 @@ class AuthService {
       throw new Error('Người dùng không tồn tại');
     }
 
-    // Verify current password
-    const isValidPassword = currentPassword === user.password ||
-                           (!user.password_changed && currentPassword === '123456');
+    // Verify current password - LOGIC ĐÚNG
+    let isValidPassword = false;
+
+    if (!user.password_changed) {
+      // Lần đầu đổi password: chỉ chấp nhận mật khẩu mặc định
+      isValidPassword = currentPassword === '123456';
+    } else {
+      // Đã đổi password rồi: chỉ chấp nhận password hiện tại
+      isValidPassword = currentPassword === user.password;
+    }
 
     if (!isValidPassword) {
       throw new Error('Mật khẩu hiện tại không đúng');

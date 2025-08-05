@@ -4,7 +4,9 @@ import { WORK_TYPES, WorkType } from '../data/dashboardMockData';
 import DatePicker from './DatePicker';
 import Dropdown from './Dropdown';
 import WorkTypeDropdown from './WorkTypeDropdown';
-import { getCurrentUser } from '../data/usersMockData';
+import TagUserInput from './TagUserInput';
+import ShareScopeSelector from './ShareScopeSelector';
+import { employeeService, Employee } from '../services/employeeService';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -13,10 +15,10 @@ interface CreateTaskModalProps {
 }
 
 const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSubmit }) => {
-  const currentUser = getCurrentUser();
-  const isDirector = currentUser.role === 'retail_director';
-  const defaultDepartment = currentUser.location === 'Hà Nội' ? 'HN' : 'HCM';
-  
+  const [currentUser, setCurrentUser] = React.useState<Employee | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  // All hooks must be declared before any conditional returns
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -25,12 +27,11 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     status: 'new-requests' as 'new-requests' | 'approved' | 'live',
     startDate: new Date().toISOString().split('T')[0],
     dueDate: '',
-    assignedTo: '',
-    department: defaultDepartment as 'HN' | 'HCM',
+    taggedUsers: [] as any[], // For all users (unified functionality)
+    department: 'HN' as 'HN' | 'HCM', // Default to HN, will be updated when user data loads
     platform: [] as string[],
     campaignType: '',
-    shareScope: 'team' as 'team' | 'private' | 'public',
-    assignToSelf: true // Default to assign to self
+    shareScope: 'team' as 'team' | 'private' | 'public'
   });
 
 
@@ -47,11 +48,54 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     { value: 'high', label: 'Cao', color: 'bg-red-500' }
   ];
 
-  const shareScopeOptions = [
-    { value: 'team', label: 'Nhóm của tôi' },
-    { value: 'private', label: 'Công việc của tôi' },
-    { value: 'public', label: 'Công việc chung' }
-  ];
+  // Load current user and assignable users
+  React.useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        setLoading(true);
+        const user = await employeeService.getCurrentEmployee();
+        if (user) {
+          setCurrentUser(user);
+
+          // Update form data with user's default department
+          const defaultDept = user.location === 'Hà Nội' ? 'HN' : 'HCM';
+          setFormData(prev => ({
+            ...prev,
+            department: defaultDept
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      loadUserData();
+    }
+  }, [isOpen]);
+
+  // Don't render if modal is closed
+  if (!isOpen) {
+    return null;
+  }
+
+  // Show loading state while fetching user data
+  if (loading || !currentUser) {
+    return (
+      <div className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive z-50">
+        <div className="create-task-modal bg-[#1a1f2e] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-700/50 modal-animate-in">
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-400">Đang tải thông tin người dùng...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isDirector = currentUser.role === 'retail_director';
 
   const handleWorkTypeChange = (workTypes: string[]) => {
     setFormData(prev => ({
@@ -62,15 +106,33 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const currentUser = getCurrentUser();
+
+    if (!currentUser) {
+      console.error('No current user found');
+      return;
+    }
+
+    // Ensure workType is properly set
+    const workType = formData.workTypes.length > 0 ? formData.workTypes[0] : 'other';
+
     onSubmit({
       ...formData,
+      workTypes: [workType], // Ensure single work type is used
       id: `task-${Date.now()}`,
       createdBy: { id: currentUser.id, name: currentUser.name, email: currentUser.email },
-      assignedTo: formData.assignToSelf ? { id: currentUser.id, name: currentUser.name, email: currentUser.email } : null,
+      assignedTo: formData.taggedUsers.length > 0 ? formData.taggedUsers[0] : null,
       endDate: formData.dueDate
     });
+
+    // Reset form after successful submission
+    handleReset();
     onClose();
+  };
+
+  const handleReset = () => {
+    if (!currentUser) return;
+
+    const defaultDept = currentUser.location === 'Hà Nội' ? 'HN' : 'HCM';
     setFormData({
       name: '',
       description: '',
@@ -79,20 +141,17 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       status: 'new-requests',
       startDate: new Date().toISOString().split('T')[0],
       dueDate: '',
-      assignedTo: '',
-      department: defaultDepartment,
+      taggedUsers: [],
+      department: defaultDept,
       platform: [],
       campaignType: '',
-      shareScope: 'team',
-      assignToSelf: true
+      shareScope: 'team'
     });
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-8">
-      <div className="bg-[#1a1f2e] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive z-50">
+      <div className="create-task-modal bg-[#1a1f2e] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-700/50 modal-animate-in">
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-gray-700 bg-gradient-to-r from-blue-600/10 to-purple-600/10">
           <div className="flex items-center justify-between">
@@ -116,13 +175,13 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
         </div>
 
         {/* Form */}
-        <div className="max-h-[calc(90vh-140px)] overflow-y-auto">
+        <div className="create-task-modal-content overflow-y-auto modal-scrollbar">
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
           <WorkTypeDropdown
-            label="Loại công việc"
+            label="Danh mục công việc"
             value={formData.workTypes}
             onChange={handleWorkTypeChange}
-            placeholder="Chọn loại công việc"
+            placeholder="Chọn danh mục công việc"
             required
           />
 
@@ -190,53 +249,57 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
             />
           </div>
 
+          {/* Chi nhánh - Chỉ hiển thị cho Khổng Đức Mạnh (Giám đốc) */}
           {isDirector && (
             <div>
               <Dropdown
                 label="Chi nhánh"
                 value={formData.department}
-                onChange={(value) => setFormData({ ...formData, department: value as 'HN' | 'HCM' })}
+                onChange={(value) => setFormData({
+                  ...formData,
+                  department: value as 'HN' | 'HCM',
+                  taggedUsers: [] // Clear tagged users when changing department
+                })}
                 options={[
                   { value: 'HN', label: 'Hà Nội', icon: Building },
                   { value: 'HCM', label: 'Hồ Chí Minh', icon: Building }
                 ]}
-                placeholder="Chọn chi nhánh"
-                required
+                placeholder="Chọn chi nhánh (tùy chọn)"
               />
+              <p className="text-gray-400 text-sm mt-1">
+                Tùy chọn - Chỉ chọn khi cần giao việc cho chi nhánh cụ thể
+              </p>
             </div>
           )}
 
-          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600">
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.assignToSelf}
-                onChange={(e) => setFormData({ ...formData, assignToSelf: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <span className="text-white font-medium">Tự phân công cho tôi</span>
-            </label>
-            <p className="text-gray-400 text-xs mt-1">
-              Nếu không chọn, công việc sẽ ở trạng thái "Chưa phân công"
-            </p>
+          {/* Tag Users Section - Unified for all users */}
+          <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-600/50">
+            <TagUserInput
+              label="Thêm người cùng làm việc"
+              value={formData.taggedUsers}
+              onChange={(users) => setFormData({ ...formData, taggedUsers: users })}
+              placeholder="Nhập tên để thêm đồng nghiệp cùng làm việc..."
+              currentUserId={currentUser.id}
+              currentUserLocation={isDirector ? (formData.department ? (formData.department === 'HN' ? 'Hà Nội' : 'Hồ Chí Minh') : currentUser.location) : currentUser.location}
+            />
+            <div className="text-gray-400 text-xs mt-2">
+              {isDirector
+                ? (formData.department
+                    ? `Chỉ hiển thị nhân viên tại ${formData.department === 'HN' ? 'Hà Nội' : 'Hồ Chí Minh'}`
+                    : `Chỉ hiển thị nhân viên tại ${currentUser.location} (chưa chọn chi nhánh)`
+                  )
+                : `Chỉ hiển thị nhân viên tại ${currentUser.location}`
+              }
+            </div>
           </div>
 
-          <div>
-            <Dropdown
-              label="Phạm vi chia sẻ"
-              value={formData.shareScope}
-              onChange={(value) => setFormData({ ...formData, shareScope: value as any })}
-              options={shareScopeOptions.map(option => ({
-                ...option,
-                icon: option.value === 'team' ? Users : option.value === 'private' ? User : Building
-              }))}
-              placeholder="Chọn phạm vi chia sẻ"
-              required
-            />
-            <p className="text-gray-400 text-sm mt-1">
-              Quyết định ai có thể xem công việc này
-            </p>
-          </div>
+          {/* Facebook-style Share Scope */}
+          <ShareScopeSelector
+            value={formData.shareScope}
+            onChange={(value) => setFormData({ ...formData, shareScope: value })}
+            label="Phạm vi chia sẻ"
+            required
+          />
 
           {/* Footer Actions */}
           <div className="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-gray-700/50 mt-6">

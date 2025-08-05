@@ -2,51 +2,51 @@
 export const dashboardMockData = {
   // Phần 1: Thống kê theo vai trò quản lý (KHỔNG ĐỨC MẠNH)
   managerStats: {
-    totalTasks: 156,
-    completedTasks: 142,
-    completionRate: 91.0,
-    hanoiRevenue: 2850000000, // 2.85 tỷ VNĐ
-    hcmRevenue: 3200000000,   // 3.2 tỷ VNĐ
+    totalTasks: 0,
+    completedTasks: 0,
+    completionRate: 0.0,
+    hanoiRevenue: 0, // 0 VNĐ
+    hcmRevenue: 0,   // 0 VNĐ
   },
 
   // Phần 2: Thống kê cá nhân (theo người dùng hiện tại)
   personalStats: {
-    totalTasks: 28,
-    completedTasks: 25,
-    completionRate: 89.3,
-    personalRevenue: 450000000, // 450 triệu VNĐ
+    totalTasks: 0,
+    completedTasks: 0,
+    completionRate: 0.0,
+    personalRevenue: 0, // 0 VNĐ
   },
 
   // Phần 3: Thống kê team
   teamStats: {
-    totalMembers: 24,
-    activeMembers: 22,
-    teamEfficiency: 87.5
+    totalMembers: 12, // Giữ nguyên số nhân viên thực tế
+    activeMembers: 12,
+    teamEfficiency: 0.0
   },
 
   // Phần 4: Thống kê tổng quan theo danh mục
   categoryStats: {
     architects: {
-      new: 12,
-      existing: 45,
-      total: 57
+      new: 0,
+      existing: 0,
+      total: 0
     },
     partners: {
-      new: 8,
-      existing: 23,
-      total: 31
+      new: 0,
+      existing: 0,
+      total: 0
     },
     customers: {
-      new: 34,
-      existing: 128,
-      total: 162
+      new: 0,
+      existing: 0,
+      total: 0
     },
     quotes: {
-      new: 18,
-      existing: 67,
-      total: 85
+      new: 0,
+      existing: 0,
+      total: 0
     },
-    otherTasks: 24
+    otherTasks: 0
   }
 };
 
@@ -90,7 +90,8 @@ export interface Task {
   startDate: string;
   endDate: string;
   createdBy: string;
-  status: 'new-requests' | 'approved' | 'live';
+  createdAt?: string;
+  status: 'new-requests' | 'approved' | 'live' | 'wont-do' | 'done';
   assignedTo?: string;
   group?: string;
   department?: 'HN' | 'HCM';
@@ -103,7 +104,7 @@ export interface Task {
 export interface TaskGroup {
   id: string;
   name: string;
-  status: 'new-requests' | 'approved' | 'live';
+  status: 'new-requests' | 'approved' | 'live' | 'wont-do' | 'done';
   tasks: Task[];
   isExpanded: boolean;
 }
@@ -120,8 +121,9 @@ export const tasksMockData: TaskGroup[] = [
         name: 'Phát triển chiến lược marketing cho Q4',
         campaignType: 'Marketing nội dung',
         platform: ['Google ads', 'LinkedIn'],
-        startDate: '10 Th9, 2023',
-        endDate: '30 Th9, 2023',
+        startDate: '2023-09-10',
+        endDate: '2023-09-30',
+        createdAt: '2023-09-10',
         createdBy: 'Nguyễn Văn A',
         status: 'new-requests',
         assignedTo: 'Khổng Đức Mạnh',
@@ -145,8 +147,8 @@ export const tasksMockData: TaskGroup[] = [
         name: 'Tổ chức workshop thiết kế xanh',
         campaignType: 'Lãnh đạo tư tưởng',
         platform: ['LinkedIn', 'Twitter'],
-        startDate: '15 Th10, 2023',
-        endDate: '30 Th10, 2023',
+        startDate: '2023-10-15',
+        endDate: '2023-10-30',
         createdBy: 'Lê Văn C',
         status: 'approved',
         assignedTo: 'Khổng Đức Mạnh',
@@ -155,7 +157,8 @@ export const tasksMockData: TaskGroup[] = [
         workType: 'kts-new',
         description: 'Tổ chức workshop về thiết kế bền vững cho kiến trúc sư mới, nâng cao nhận thức về kiến trúc xanh',
         priority: 'normal',
-        dueDate: '30 Th10, 2023'
+        dueDate: '2023-10-30',
+        createdAt: '2023-10-15'
       }
     ]
   },
@@ -170,8 +173,8 @@ export const tasksMockData: TaskGroup[] = [
         name: 'Tự động hóa quy trình',
         campaignType: 'Ra mắt sản phẩm',
         platform: ['Twitter', 'LinkedIn'],
-        startDate: '2 Th9, 2023',
-        endDate: '20 Th9, 2023',
+        startDate: '2023-09-02',
+        endDate: '2023-09-20',
         createdBy: 'Hoàng Văn E',
         status: 'live',
         assignedTo: 'Vũ Thị F',
@@ -180,15 +183,17 @@ export const tasksMockData: TaskGroup[] = [
         workType: 'partner-old',
         description: 'Tự động hóa quy trình làm việc với đối tác hiện tại',
         priority: 'high',
-        dueDate: '20 Th9, 2023'
+        dueDate: '2023-09-20',
+        createdAt: '2023-09-02'
       },
       {
         id: 'task-4',
         name: 'Trò chơi tương tác',
         campaignType: 'Nhận diện thương hiệu',
         platform: ['TikTok', 'Instagram'],
-        startDate: '6 Th9, 2023',
-        endDate: '23 Th9, 2023',
+        startDate: '2023-09-06',
+        endDate: '2023-09-23',
+        createdAt: '2023-09-06',
         createdBy: 'Đỗ Văn G',
         status: 'live',
         assignedTo: 'Bùi Thị H',
@@ -197,15 +202,15 @@ export const tasksMockData: TaskGroup[] = [
         workType: 'kts-old',
         description: 'Tạo trò chơi tương tác cho kiến trúc sư hiện tại',
         priority: 'normal',
-        dueDate: '23 Th9, 2023'
+        dueDate: '2023-09-23'
       },
       {
         id: 'task-5',
         name: 'Hợp tác sâu rộng',
         campaignType: 'Tạo khách hàng tiềm năng',
         platform: ['Google ads'],
-        startDate: '12 Th9, 2023',
-        endDate: '30 Th9, 2023',
+        startDate: '2023-09-12',
+        endDate: '2023-09-30',
         createdBy: 'Ngô Văn I',
         status: 'live',
         assignedTo: 'Khổng Đức Mạnh',
@@ -229,8 +234,8 @@ export const tasksMockData: TaskGroup[] = [
         name: 'Tái nhắm mục tiêu khách hàng tiềm năng',
         campaignType: 'Tái nhắm mục tiêu',
         platform: ['LinkedIn', 'Email'],
-        startDate: '31 Th10, 2023',
-        endDate: '12 Th11, 2023',
+        startDate: '2023-10-31',
+        endDate: '2023-11-12',
         createdBy: 'Trịnh Văn K',
         status: 'wont-do',
         assignedTo: 'Khổng Đức Mạnh',
@@ -239,7 +244,8 @@ export const tasksMockData: TaskGroup[] = [
         workType: 'partner-new',
         description: 'Phát triển đối tác mới thông qua tái nhắm mục tiêu',
         priority: 'low',
-        dueDate: '12 Th11, 2023'
+        dueDate: '2023-11-12',
+        createdAt: '2023-10-31'
       }
     ]
   },
@@ -254,8 +260,8 @@ export const tasksMockData: TaskGroup[] = [
         name: 'Tối ưu hóa chiến dịch Email',
         campaignType: 'Email marketing',
         platform: ['Email'],
-        startDate: '15 Th8, 2023',
-        endDate: '1 Th9, 2023',
+        startDate: '2023-08-15',
+        endDate: '2023-09-01',
         createdBy: 'Phan Văn M',
         status: 'done',
         assignedTo: 'Võ Thị N',
@@ -264,7 +270,8 @@ export const tasksMockData: TaskGroup[] = [
         workType: 'other',
         description: 'Tối ưu hóa hiệu quả chiến dịch email marketing',
         priority: 'normal',
-        dueDate: '1 Th9, 2023'
+        dueDate: '2023-09-01',
+        createdAt: '2023-08-15'
       }
     ]
   }

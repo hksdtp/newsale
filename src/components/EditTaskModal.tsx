@@ -50,7 +50,8 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
       id: task.id,
       workType: formData.workTypes[0] || 'other', // Use first selected work type
       startDate: task.startDate, // Keep original start date
-      endDate: formData.dueDate
+      dueDate: formData.dueDate, // Fix: use dueDate instead of endDate
+      assignedToId: task.assignedTo?.id // Keep original assigned user
     });
     onClose();
   };
@@ -79,8 +80,8 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-8">
-      <div className="bg-[#1a1f2e] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive z-50">
+      <div className="create-task-modal bg-[#1a1f2e] rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-700/50 modal-animate-in">
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-gray-700 bg-gradient-to-r from-blue-600/10 to-purple-600/10">
           <div className="flex items-center justify-between">
@@ -104,7 +105,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
         </div>
 
         {/* Form */}
-        <div className="max-h-[calc(90vh-140px)] overflow-y-auto">
+        <div className="create-task-modal-content overflow-y-auto modal-scrollbar">
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
           {/* Work Type */}
           <WorkTypeDropdown

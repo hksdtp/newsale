@@ -87,7 +87,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-gray-600 rounded-lg shadow-2xl z-50 overflow-hidden">
-          <div className="py-2">
+          <div className="py-2 max-h-60 overflow-y-auto modal-scrollbar">
             {options.map((option) => (
               <button
                 key={option.value}

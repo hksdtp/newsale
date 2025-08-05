@@ -49,7 +49,7 @@ export function HRManagement() {
       const employeesData: Employee[] = users.map(user => {
         const getRoleDisplay = (role: string) => {
           switch (role) {
-            case 'retail_director': return 'Trưởng phòng';
+            case 'retail_director': return 'Retail Director';
             case 'team_leader': return 'Trưởng nhóm';
             case 'employee': return 'Nhân viên';
             default: return role;
@@ -131,7 +131,7 @@ export function HRManagement() {
   // Calculate statistics
   const stats = {
     total: employees.length,
-    directors: employees.filter(emp => emp.role === 'Trưởng phòng').length,
+    directors: employees.filter(emp => emp.role === 'Retail Director').length,
     teamLeaders: employees.filter(emp => emp.role === 'Trưởng nhóm').length,
     employees: employees.filter(emp => emp.role === 'Nhân viên').length,
     hanoi: employees.filter(emp => emp.department.includes('Hà Nội')).length,
@@ -148,7 +148,7 @@ export function HRManagement() {
         </div>
         <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
           <div className="text-2xl font-bold text-blue-400">{stats.directors}</div>
-          <div className="text-sm text-gray-400">Trưởng phòng</div>
+          <div className="text-sm text-gray-400">Retail Director</div>
         </div>
         <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
           <div className="text-2xl font-bold text-green-400">{stats.teamLeaders}</div>

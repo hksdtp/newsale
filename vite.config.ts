@@ -23,6 +23,7 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    historyApiFallback: true, // Enable client-side routing
   },
   build: {
     outDir: 'dist',

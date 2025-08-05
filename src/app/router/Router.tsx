@@ -14,6 +14,7 @@ import { Dashboard } from '../../features/dashboard/components';
 
 // Test pages
 import TestDropdown from '../../pages/TestDropdown';
+import TaskActionsDemo from '../../components/TaskActionsDemo';
 
 export function Router() {
   return (
@@ -99,6 +100,15 @@ export function Router() {
         element={
           <AuthGuard requireAuth={false}>
             <TestDropdown />
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/test/task-actions"
+        element={
+          <AuthGuard requireAuth={false}>
+            <TaskActionsDemo />
           </AuthGuard>
         }
       />

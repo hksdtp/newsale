@@ -4,9 +4,10 @@ import { Clock, CheckCircle, XCircle, AlertTriangle, Pause, Flag, ArrowUp, Arrow
 interface TaskStatusPriorityProps {
   status: 'new-requests' | 'approved' | 'live';
   priority: 'low' | 'normal' | 'high';
+  iconOnly?: boolean; // Prop để chỉ hiển thị icon (Gmail style)
 }
 
-const TaskStatusPriority: React.FC<TaskStatusPriorityProps> = ({ status, priority }) => {
+const TaskStatusPriority: React.FC<TaskStatusPriorityProps> = ({ status, priority, iconOnly = false }) => {
   // Status icons và colors
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -89,8 +90,32 @@ const TaskStatusPriority: React.FC<TaskStatusPriorityProps> = ({ status, priorit
   const StatusIcon = statusConfig.icon;
   const PriorityIcon = priorityConfig.icon;
 
+  // Gmail-style: chỉ hiển thị icons nếu iconOnly = true
+  if (iconOnly) {
+    return (
+      <div className="flex items-center gap-1">
+        {/* Status Icon Only */}
+        <div
+          className={`flex items-center justify-center w-6 h-6 rounded-full ${statusConfig.bgColor}`}
+          title={statusConfig.label}
+        >
+          <StatusIcon className={`w-4 h-4 ${statusConfig.color}`} />
+        </div>
+
+        {/* Priority Icon Only */}
+        <div
+          className={`flex items-center justify-center w-6 h-6 rounded ${priorityConfig.bgColor}`}
+          title={`Ưu tiên ${priorityConfig.label}`}
+        >
+          <PriorityIcon className={`w-4 h-4 ${priorityConfig.color}`} />
+        </div>
+      </div>
+    );
+  }
+
+  // Default: hiển thị cả icon và text (cho các nơi khác)
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-row gap-2">
       {/* Status */}
       <div
         className={`flex items-center gap-2 px-3 py-1 rounded-lg border ${statusConfig.bgColor} ${statusConfig.borderColor}`}
