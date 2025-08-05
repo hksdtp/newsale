@@ -600,33 +600,38 @@ html {
 }
 
 /* WorkType Dropdown Mobile Improvements */
+.dropdown-options-list {
+  /* Smooth scrolling on all devices */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  /* Ensure scrolling works */
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+.dropdown-options-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dropdown-options-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-options-list::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, 0.4);
+  border-radius: 4px;
+}
+
+.dropdown-options-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.6);
+}
+
+/* Mobile specific adjustments */
 @media (max-width: 768px) {
   .dropdown-options-list {
-    /* Smooth scrolling on mobile */
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-  }
-
-  .dropdown-options-list::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .dropdown-options-list::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .dropdown-options-list::-webkit-scrollbar-thumb {
-    background: rgba(107, 114, 128, 0.4);
-    border-radius: 4px;
-  }
-
-  .dropdown-options-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(107, 114, 128, 0.6);
-  }
-
-  /* Ensure dropdown doesn't exceed viewport */
-  .dropdown-options-list {
+    /* Force scrolling on mobile */
     max-height: calc(70vh - 80px) !important;
+    min-height: 200px;
   }
 }
 

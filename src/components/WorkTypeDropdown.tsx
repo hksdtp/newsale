@@ -192,7 +192,7 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-50 overflow-hidden top-full mt-2 max-h-[70vh] md:max-h-[400px]">
+        <div className="absolute left-0 right-0 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-50 top-full mt-2 max-h-[70vh] md:max-h-[400px] flex flex-col">
           {/* Header with Done button - removed search */}
           <div className="p-3 border-b border-gray-600 bg-gray-700/30 flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -210,7 +210,7 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
               </button>
             </div>
           </div>
-          <div className="dropdown-options-list overflow-y-auto flex-1" style={{ maxHeight: 'calc(70vh - 80px)' }}>
+          <div className="dropdown-options-list overflow-y-auto flex-1 min-h-0">
             {Object.entries(filteredOptions).map(([category, options]) => {
               if (options.length === 0) return null;
               return (
