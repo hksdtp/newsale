@@ -47,7 +47,7 @@ test.describe('Tab Navigation', () => {
     
     // Should show teams even if they have no tasks
     const teamCards = page.locator('[data-testid="team-card"]');
-    await expect(teamCards).toHaveCountGreaterThan(0);
+    expect(await teamCards.count()).toBeGreaterThan(0);
 
     // Check for empty team message
     const emptyTeamMessage = page.locator('text=Nhóm này chưa có công việc nào');

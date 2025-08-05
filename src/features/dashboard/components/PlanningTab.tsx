@@ -6,7 +6,7 @@ function PlanningTab() {
     { id: 2, name: 'Task 2', completed: true },
   ]);
 
-  const toggleTaskCompletion = (taskId) => {
+  const toggleTaskCompletion = (taskId: number) => {
     setTasks(tasks.map(task =>
       task.id === taskId ? { ...task, completed: !task.completed } : task
     ));

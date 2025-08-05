@@ -101,7 +101,7 @@ export function PlanningTab() {
       console.log('📅 PlanningTab: Loaded monthly tasks:', tasks?.length || 0);
       if (tasks && tasks.length > 0) {
         console.log('📋 Monthly tasks:', tasks.map(t => ({
-          name: t.name || t.title,
+          name: t.name,
           date: t.scheduled_date,
           time: t.scheduled_time
         })));
@@ -114,12 +114,12 @@ export function PlanningTab() {
       console.error('❌ Error loading monthly tasks:', error);
 
       // Show user-friendly error
-      if (error.message?.includes('Failed to fetch')) {
+      if ((error as Error).message?.includes('Failed to fetch')) {
         console.error('🌐 Network error - check internet connection');
         alert('❌ Lỗi mạng: Không thể tải dữ liệu. Vui lòng kiểm tra kết nối internet và thử lại.');
       } else {
-        console.error('🔧 API error:', error.message);
-        alert('❌ Lỗi: ' + (error.message || 'Không thể tải dữ liệu kế hoạch'));
+        console.error('🔧 API error:', (error as Error).message);
+        alert('❌ Lỗi: ' + ((error as Error).message || 'Không thể tải dữ liệu kế hoạch'));
       }
 
       // Set empty array on error
@@ -148,7 +148,7 @@ export function PlanningTab() {
       console.log('📅 PlanningTab: Loaded daily tasks for', localDateStr, ':', tasks?.length || 0);
       if (tasks && tasks.length > 0) {
         console.log('📋 Daily tasks:', tasks.map(t => ({
-          name: t.name || t.title,
+          name: t.name,
           time: t.scheduled_time,
           scheduled_date: t.scheduled_date
         })));
@@ -481,7 +481,7 @@ export function PlanningTab() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <h3 className="font-medium text-white text-sm sm:text-base leading-tight">
-                            {task.title || task.name}
+                            {task.name}
                           </h3>
 
                           {/* Mobile-first action menu */}
@@ -542,11 +542,11 @@ export function PlanningTab() {
 
                           <div className={`px-2 py-1 rounded-full text-xs ${
                             task.priority === 'high' ? 'bg-red-500/20 text-red-400' :
-                            task.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                            task.priority === 'normal' ? 'bg-yellow-500/20 text-yellow-400' :
                             'bg-gray-500/20 text-gray-400'
                           }`}>
                             {task.priority === 'high' ? 'Cao' :
-                             task.priority === 'medium' ? 'TB' : 'Thấp'}
+                             task.priority === 'normal' ? 'TB' : 'Thấp'}
                           </div>
 
                           {task.source === 'scheduled' && (
@@ -557,7 +557,7 @@ export function PlanningTab() {
                             </div>
                           )}
 
-                          {task.source === 'checklist_item' && (
+                          {task.source === 'recurring' && (
                             <div className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded-full">
                               <span className="hidden sm:inline">Checklist</span>
                               <span className="sm:hidden">☑</span>

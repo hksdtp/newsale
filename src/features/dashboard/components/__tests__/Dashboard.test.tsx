@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { Dashboard } from '../Dashboard';
-import { AuthProvider } from '../../../auth/providers/AuthProvider';
+import { AuthProvider } from '../../../../app/providers/AuthProvider';
 
 // Mock useAuth hook
 const mockLogout = jest.fn();

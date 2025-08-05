@@ -788,8 +788,8 @@ const TaskList: React.FC<TaskListProps> = ({
                       })
                       .map((member) => {
                         const isSelected = selectedMemberId === member.id;
-                        const memberTasks = team.taskGroups.reduce((total, group) => {
-                          return total + group.tasks.filter(task =>
+                        const memberTasks = team.taskGroups.reduce((total: number, group: any) => {
+                          return total + group.tasks.filter((task: any) =>
                             task.assignedTo?.name === member.name || task.createdBy?.name === member.name
                           ).length;
                         }, 0);

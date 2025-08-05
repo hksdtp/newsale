@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Router } from '../Router';
-import { AuthProvider } from '../../../features/auth/providers/AuthProvider';
+import { AuthProvider } from '../../providers/AuthProvider';
 
 // Mock all the page components
 jest.mock('../../../features/auth/components/pages/PasswordPage', () => ({

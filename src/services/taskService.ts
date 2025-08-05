@@ -30,6 +30,7 @@ export interface CreateTaskData {
 export interface UpdateTaskData extends Partial<CreateTaskData> {
   id: string;
   status?: 'new-requests' | 'approved' | 'live';
+  source?: 'manual' | 'scheduled' | 'recurring';
 }
 
 export interface TaskWithUsers extends Omit<Task, 'createdBy' | 'assignedTo'> {
@@ -49,6 +50,7 @@ export interface TaskWithUsers extends Omit<Task, 'createdBy' | 'assignedTo'> {
   } | null;
   shareScope?: 'team' | 'private' | 'public';
   createdAt?: string; // Ngày tạo từ database
+  source?: 'manual' | 'scheduled' | 'recurring';
 }
 
 interface DbTask {

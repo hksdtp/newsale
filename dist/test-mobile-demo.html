@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Optimization Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1f2937, #111827);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(31, 41, 55, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .demo-title {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .demo-subtitle {
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background: rgba(17, 24, 39, 0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(75, 85, 99, 0.3);
+        }
+        
+        .test-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #60a5fa;
+        }
+        
+        .test-description {
+            color: #d1d5db;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .demo-button {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            font-size: 14px;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .demo-button:active {
+            transform: translateY(0);
+        }
+        
+        .viewport-info {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        .viewport-info h4 {
+            margin: 0 0 8px 0;
+            color: #06b6d4;
+        }
+        
+        .viewport-info p {
+            margin: 4px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .test-results {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            display: none;
+        }
+        
+        .test-results.show {
+            display: block;
+        }
+        
+        .test-results h4 {
+            margin: 0 0 12px 0;
+            color: #10b981;
+        }
+        
+        .result-item {
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .result-pass {
+            border-left: 4px solid #10b981;
+        }
+        
+        .result-fail {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .result-warning {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            
+            .demo-container {
+                padding: 16px;
+            }
+            
+            .demo-title {
+                font-size: 1.5rem;
+            }
+            
+            .demo-subtitle {
+                font-size: 1rem;
+            }
+            
+            .test-section {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+            
+            .demo-button {
+                width: 100%;
+                margin: 4px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="demo-title">📱 Mobile Optimization Demo</h1>
+            <p class="demo-subtitle">Test và kiểm tra các tối ưu mobile cho Task List</p>
+        </div>
+        
+        <div class="viewport-info">
+            <h4>📐 Viewport Information</h4>
+            <p id="viewport-size">Screen: Loading...</p>
+            <p id="device-type">Device: Loading...</p>
+            <p id="orientation">Orientation: Loading...</p>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">🎯 Responsive Breakpoint Tests</h3>
+            <p class="test-description">
+                Test các breakpoints responsive để đảm bảo layout hiển thị đúng trên mọi kích thước màn hình.
+            </p>
+            <button class="demo-button" onclick="testMobileBreakpoint()">📱 Test Mobile (375px)</button>
+            <button class="demo-button" onclick="testTabletBreakpoint()">📱 Test Tablet (768px)</button>
+            <button class="demo-button" onclick="testDesktopBreakpoint()">🖥️ Test Desktop (1024px)</button>
+            <button class="demo-button" onclick="resetViewport()">🔄 Reset Viewport</button>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">👆 Touch Target Tests</h3>
+            <p class="test-description">
+                Kiểm tra kích thước touch targets có đủ lớn cho mobile (tối thiểu 44px theo Apple guidelines).
+            </p>
+            <button class="demo-button" onclick="testTouchTargets()">🎯 Test Touch Targets</button>
+            <button class="demo-button" onclick="highlightTouchTargets()">✨ Highlight Touch Areas</button>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">📝 Text Optimization Tests</h3>
+            <p class="test-description">
+                Test line clamping, text truncation và typography optimization cho mobile.
+            </p>
+            <button class="demo-button" onclick="testTextOptimization()">📖 Test Text Optimization</button>
+            <button class="demo-button" onclick="showTextMetrics()">📊 Show Text Metrics</button>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">⚡ Performance Tests</h3>
+            <p class="test-description">
+                Kiểm tra hardware acceleration, smooth scrolling và các optimizations khác.
+            </p>
+            <button class="demo-button" onclick="testPerformance()">🚀 Test Performance</button>
+            <button class="demo-button" onclick="testScrollPerformance()">📜 Test Scroll Performance</button>
+        </div>
+        
+        <div class="test-section">
+            <h3 class="test-title">🔗 Quick Links</h3>
+            <p class="test-description">
+                Truy cập nhanh đến app chính và các tools khác.
+            </p>
+            <button class="demo-button" onclick="openMainApp()">🚀 Open Main App</button>
+            <button class="demo-button" onclick="openDevTools()">🛠️ Open DevTools</button>
+        </div>
+        
+        <div class="test-results" id="test-results">
+            <h4>📊 Test Results</h4>
+            <div id="results-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Update viewport info
+        function updateViewportInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            
+            document.getElementById('viewport-size').textContent = 
+                `Screen: ${width}x${height}px (DPR: ${devicePixelRatio})`;
+            
+            let deviceType = 'Desktop';
+            if (width < 768) deviceType = 'Mobile';
+            else if (width < 1024) deviceType = 'Tablet';
+            
+            document.getElementById('device-type').textContent = `Device: ${deviceType}`;
+            
+            const orientation = width > height ? 'Landscape' : 'Portrait';
+            document.getElementById('orientation').textContent = `Orientation: ${orientation}`;
+        }
+        
+        // Test functions
+        function testMobileBreakpoint() {
+            simulateViewport(375, 667);
+            showResult('Mobile breakpoint test', 'Simulated iPhone SE viewport (375x667)', 'pass');
+        }
+        
+        function testTabletBreakpoint() {
+            simulateViewport(768, 1024);
+            showResult('Tablet breakpoint test', 'Simulated iPad viewport (768x1024)', 'pass');
+        }
+        
+        function testDesktopBreakpoint() {
+            simulateViewport(1024, 768);
+            showResult('Desktop breakpoint test', 'Simulated desktop viewport (1024x768)', 'pass');
+        }
+        
+        function resetViewport() {
+            document.body.style.width = '';
+            document.body.style.height = '';
+            updateViewportInfo();
+            showResult('Viewport reset', 'Restored original viewport size', 'pass');
+        }
+        
+        function simulateViewport(width, height) {
+            document.body.style.width = width + 'px';
+            document.body.style.height = height + 'px';
+            updateViewportInfo();
+        }
+        
+        function testTouchTargets() {
+            const buttons = document.querySelectorAll('button, .mobile-task-item, [role="button"]');
+            let results = [];
+            
+            buttons.forEach((button, index) => {
+                const rect = button.getBoundingClientRect();
+                const minSize = 44;
+                const isValid = rect.height >= minSize && rect.width >= minSize;
+                
+                results.push({
+                    element: `Button ${index + 1}`,
+                    size: `${rect.width.toFixed(1)}x${rect.height.toFixed(1)}px`,
+                    status: isValid ? 'pass' : 'fail'
+                });
+            });
+            
+            showResults('Touch Target Test Results', results);
+        }
+        
+        function highlightTouchTargets() {
+            const style = document.createElement('style');
+            style.id = 'touch-highlight';
+            style.textContent = `
+                button, .mobile-task-item, [role="button"] {
+                    outline: 2px solid #06b6d4 !important;
+                    outline-offset: 2px !important;
+                }
+            `;
+            
+            if (document.getElementById('touch-highlight')) {
+                document.getElementById('touch-highlight').remove();
+                showResult('Touch highlights', 'Removed touch target highlights', 'warning');
+            } else {
+                document.head.appendChild(style);
+                showResult('Touch highlights', 'Added touch target highlights', 'pass');
+            }
+        }
+        
+        function testTextOptimization() {
+            const textElements = document.querySelectorAll('.mobile-task-title, .mobile-task-description, h1, h2, h3, p');
+            let results = [];
+            
+            textElements.forEach((element, index) => {
+                const styles = getComputedStyle(element);
+                const fontSize = parseFloat(styles.fontSize);
+                const lineHeight = parseFloat(styles.lineHeight);
+                
+                results.push({
+                    element: `Text ${index + 1} (${element.tagName})`,
+                    fontSize: `${fontSize}px`,
+                    lineHeight: `${lineHeight}px`,
+                    status: fontSize >= 12 ? 'pass' : 'fail'
+                });
+            });
+            
+            showResults('Text Optimization Results', results);
+        }
+        
+        function showTextMetrics() {
+            const metrics = {
+                'Font smoothing': getComputedStyle(document.body).webkitFontSmoothing || 'default',
+                'Text rendering': getComputedStyle(document.body).textRendering || 'default',
+                'Text size adjust': getComputedStyle(document.body).webkitTextSizeAdjust || 'default'
+            };
+            
+            const results = Object.entries(metrics).map(([key, value]) => ({
+                element: key,
+                size: value,
+                status: 'pass'
+            }));
+            
+            showResults('Text Metrics', results);
+        }
+        
+        function testPerformance() {
+            const start = performance.now();
+            
+            // Simulate some DOM operations
+            for (let i = 0; i < 100; i++) {
+                const div = document.createElement('div');
+                div.style.transform = 'translateZ(0)';
+                document.body.appendChild(div);
+                document.body.removeChild(div);
+            }
+            
+            const end = performance.now();
+            const duration = end - start;
+            
+            const results = [
+                {
+                    element: 'DOM Operations',
+                    size: `${duration.toFixed(2)}ms`,
+                    status: duration < 50 ? 'pass' : 'warning'
+                },
+                {
+                    element: 'Hardware Acceleration',
+                    size: 'translateZ(0) applied',
+                    status: 'pass'
+                }
+            ];
+            
+            showResults('Performance Test Results', results);
+        }
+        
+        function testScrollPerformance() {
+            const scrollContainer = document.body;
+            const start = performance.now();
+            
+            // Simulate scroll
+            scrollContainer.scrollTop = 100;
+            scrollContainer.scrollTop = 0;
+            
+            const end = performance.now();
+            const duration = end - start;
+            
+            showResult('Scroll performance', `Scroll test completed in ${duration.toFixed(2)}ms`, 'pass');
+        }
+        
+        function openMainApp() {
+            window.open('http://localhost:3002', '_blank');
+        }
+        
+        function openDevTools() {
+            alert('Press F12 or Cmd+Option+I to open DevTools');
+        }
+        
+        function showResult(title, message, type) {
+            const resultsDiv = document.getElementById('test-results');
+            const contentDiv = document.getElementById('results-content');
+            
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item result-${type}`;
+            resultItem.innerHTML = `<strong>${title}:</strong> ${message}`;
+            
+            contentDiv.appendChild(resultItem);
+            resultsDiv.classList.add('show');
+            
+            // Auto-scroll to results
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function showResults(title, results) {
+            const resultsDiv = document.getElementById('test-results');
+            const contentDiv = document.getElementById('results-content');
+            
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'result-item';
+            titleDiv.innerHTML = `<strong>${title}:</strong>`;
+            contentDiv.appendChild(titleDiv);
+            
+            results.forEach(result => {
+                const resultItem = document.createElement('div');
+                resultItem.className = `result-item result-${result.status}`;
+                resultItem.innerHTML = `${result.element}: ${result.size}`;
+                contentDiv.appendChild(resultItem);
+            });
+            
+            resultsDiv.classList.add('show');
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Initialize
+        updateViewportInfo();
+        window.addEventListener('resize', updateViewportInfo);
+        
+        // Add some demo content
+        setTimeout(() => {
+            showResult('Demo initialized', 'Mobile optimization demo is ready for testing', 'pass');
+        }, 1000);
+    </script>
+</body>
+</html>

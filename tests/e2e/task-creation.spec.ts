@@ -209,7 +209,7 @@ test.describe('Task Creation', () => {
     await expect(page.locator('text=KTS mới')).toBeVisible();
 
     // Remove one selection using the X button on badge
-    await page.click('[data-testid="work-type-dropdown"] button:has-text("×")').first();
+    await page.locator('[data-testid="work-type-dropdown"] button:has-text("×")').first().click();
 
     // Should have one less selection
     const badges = page.locator('[data-testid="work-type-dropdown"] span:has-text("mới")');

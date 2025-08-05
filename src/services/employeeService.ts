@@ -11,7 +11,10 @@ export interface Employee {
   team?: {
     id: string;
     name: string;
-  };
+  } | {
+    id: string;
+    name: string;
+  }[];
 }
 
 export interface TaggedUser {
@@ -101,7 +104,7 @@ class EmployeeService {
           email: emp.email,
           role: this.getRoleDisplay(emp.role),
           location: emp.location,
-          team_name: emp.team?.name || 'Không có nhóm'
+          team_name: Array.isArray(emp.team) ? emp.team[0]?.name : emp.team?.name || 'Không có nhóm'
         }));
     } catch (error) {
       console.error('Error in getTaggableEmployees:', error);

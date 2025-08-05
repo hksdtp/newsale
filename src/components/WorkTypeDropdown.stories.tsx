@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+const fn = (name?: string) => (...args: any[]) => console.log(name || 'action', args);
 import WorkTypeDropdown from './WorkTypeDropdown';
 
 const meta: Meta<typeof WorkTypeDropdown> = {

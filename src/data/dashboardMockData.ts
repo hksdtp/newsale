@@ -91,7 +91,7 @@ export interface Task {
   endDate: string;
   createdBy: string;
   createdAt?: string;
-  status: 'new-requests' | 'approved' | 'live' | 'wont-do' | 'done';
+  status: 'new-requests' | 'approved' | 'live';
   assignedTo?: string;
   group?: string;
   department?: 'HN' | 'HCM';
@@ -104,7 +104,7 @@ export interface Task {
 export interface TaskGroup {
   id: string;
   name: string;
-  status: 'new-requests' | 'approved' | 'live' | 'wont-do' | 'done';
+  status: 'new-requests' | 'approved' | 'live';
   tasks: Task[];
   isExpanded: boolean;
 }
@@ -226,7 +226,7 @@ export const tasksMockData: TaskGroup[] = [
   {
     id: 'wont-do',
     name: "Không thực hiện",
-    status: 'wont-do',
+    status: 'live',
     isExpanded: true,
     tasks: [
       {
@@ -237,7 +237,7 @@ export const tasksMockData: TaskGroup[] = [
         startDate: '2023-10-31',
         endDate: '2023-11-12',
         createdBy: 'Trịnh Văn K',
-        status: 'wont-do',
+        status: 'live',
         assignedTo: 'Khổng Đức Mạnh',
         group: 'Nhóm CRM HN',
         department: 'HN',
@@ -252,7 +252,7 @@ export const tasksMockData: TaskGroup[] = [
   {
     id: 'done',
     name: 'Hoàn thành',
-    status: 'done',
+    status: 'live',
     isExpanded: false,
     tasks: [
       {
@@ -263,7 +263,7 @@ export const tasksMockData: TaskGroup[] = [
         startDate: '2023-08-15',
         endDate: '2023-09-01',
         createdBy: 'Phan Văn M',
-        status: 'done',
+        status: 'live',
         assignedTo: 'Võ Thị N',
         group: 'Nhóm Email HCM',
         department: 'HCM',

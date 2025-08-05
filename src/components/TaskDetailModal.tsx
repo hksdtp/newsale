@@ -93,11 +93,11 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           ...task,
           scheduled_date: scheduled ? scheduledDate : null,
           scheduled_time: scheduled ? scheduledTime : null,
-          source: scheduled ? 'manual' : task.source
+          source: scheduled ? 'manual' : (task?.source || 'manual')
         };
 
         console.log('🔧 TaskDetailModal: Updating task with scheduling info:', {
-          taskId: task.id,
+          taskId: task?.id,
           scheduled_date: updatedTask.scheduled_date,
           scheduled_time: updatedTask.scheduled_time,
           allDates: {
@@ -384,7 +384,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         className="bg-gray-800/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:border-blue-500 focus:outline-none"
                       />
                     ) : (
-                      <span>{formatDate(task.dueDate)}</span>
+                      <span>{formatDate(task.dueDate || '')}</span>
                     )}
                   </div>
                 )}

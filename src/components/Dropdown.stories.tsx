@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+const fn = (name?: string) => (...args: any[]) => console.log(name || 'action', args);
 import Dropdown from './Dropdown';
 import { Clock, AlertTriangle, CheckCircle, Flag, User, Building } from 'lucide-react';
 

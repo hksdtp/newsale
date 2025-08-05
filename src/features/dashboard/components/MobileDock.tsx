@@ -27,7 +27,7 @@ export function MobileDock({
   const [lastScrollY, setLastScrollY] = useState(0);
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const hideTimeoutRef = useRef<NodeJS.Timeout>();
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle scroll direction detection
   useEffect(() => {
