@@ -192,10 +192,15 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-50 overflow-hidden top-full mt-2">
+        <div className="absolute left-0 right-0 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-50 overflow-hidden top-full mt-2 max-h-[70vh] md:max-h-[400px]">
           {/* Header with Done button - removed search */}
-          <div className="p-3 border-b border-gray-600 bg-gray-700/30">
-            <div className="flex items-center justify-end">
+          <div className="p-3 border-b border-gray-600 bg-gray-700/30 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              {selectedOptions.length > 0 && (
+                <div className="text-xs text-gray-400">
+                  Đã chọn: {selectedOptions.length} loại công việc
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
@@ -205,12 +210,7 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
               </button>
             </div>
           </div>
-          {selectedOptions.length > 0 && (
-            <div className="text-xs text-gray-400">
-              Đã chọn: {selectedOptions.length} loại công việc
-            </div>
-          )}
-          <div className="dropdown-options-list overflow-y-auto max-h-[400px]">
+          <div className="dropdown-options-list overflow-y-auto flex-1" style={{ maxHeight: 'calc(70vh - 80px)' }}>
             {Object.entries(filteredOptions).map(([category, options]) => {
               if (options.length === 0) return null;
               return (

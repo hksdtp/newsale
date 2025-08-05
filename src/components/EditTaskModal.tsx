@@ -105,7 +105,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
         </div>
 
         {/* Form */}
-        <div className="create-task-modal-content overflow-y-auto modal-scrollbar">
+        <div className="create-task-modal-content">
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
           {/* Work Type */}
           <WorkTypeDropdown

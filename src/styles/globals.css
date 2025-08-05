@@ -461,34 +461,43 @@ html {
 @media (max-width: 768px) {
   .create-task-modal {
     /* Optimized height with safe margins for nav buttons */
-    height: 90vh !important;
-    max-height: 90vh !important;
-    margin: 1rem !important;
+    height: 95vh !important;
+    max-height: 95vh !important;
+    margin: 0.5rem !important;
     border-radius: 1rem !important;
     overflow: hidden !important; /* Prevent modal container scroll */
     /* Keep rounded corners and margins for nav space */
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .create-task-modal-content {
-    /* Fixed height container - no scroll here */
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important; /* Prevent content container scroll */
+    /* Scrollable content area */
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     padding-bottom: env(safe-area-inset-bottom, 1rem);
+    /* Custom scrollbar for mobile */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 114, 128, 0.3) transparent;
   }
 
   /* Enhanced scrollbar for mobile */
-  .create-task-modal .modal-scrollbar::-webkit-scrollbar {
-    width: 3px;
+  .create-task-modal-content::-webkit-scrollbar {
+    width: 4px;
   }
 
-  .create-task-modal .modal-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(107, 114, 128, 0.3);
+  .create-task-modal-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .create-task-modal-content::-webkit-scrollbar-thumb {
+    background: rgba(107, 114, 128, 0.4);
     border-radius: 4px;
   }
 
-  .create-task-modal .modal-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(107, 114, 128, 0.5);
+  .create-task-modal-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.6);
   }
 }
 
@@ -497,13 +506,15 @@ html {
   .create-task-modal {
     height: 90vh !important;
     max-height: 90vh !important;
-    overflow: hidden !important; /* Prevent modal container scroll */
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .create-task-modal-content {
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important; /* Prevent content container scroll */
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
 }
 
@@ -586,6 +597,37 @@ html {
   /* Ensure smooth scrolling on mobile */
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+}
+
+/* WorkType Dropdown Mobile Improvements */
+@media (max-width: 768px) {
+  .dropdown-options-list {
+    /* Smooth scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  .dropdown-options-list::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .dropdown-options-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .dropdown-options-list::-webkit-scrollbar-thumb {
+    background: rgba(107, 114, 128, 0.4);
+    border-radius: 4px;
+  }
+
+  .dropdown-options-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.6);
+  }
+
+  /* Ensure dropdown doesn't exceed viewport */
+  .dropdown-options-list {
+    max-height: calc(70vh - 80px) !important;
+  }
 }
 
 .scrollbar-hide::-webkit-scrollbar {

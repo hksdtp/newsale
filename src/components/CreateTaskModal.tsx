@@ -175,7 +175,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
         </div>
 
         {/* Form */}
-        <div className="create-task-modal-content overflow-y-auto modal-scrollbar">
+        <div className="create-task-modal-content">
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
           <WorkTypeDropdown
             label="Danh mục công việc"
