@@ -172,9 +172,9 @@ class SchedulingService {
 
       // Filter by user if specified or if not admin
       if (userId) {
-        query = query.eq('user_id', userId);
+        query = query.or(`created_by_id.eq.${userId},assigned_to_id.eq.${userId}`);
       } else if (!canViewAllSchedules) {
-        query = query.eq('user_id', currentUser.id);
+        query = query.or(`created_by_id.eq.${currentUser.id},assigned_to_id.eq.${currentUser.id}`);
       }
 
       const { data, error } = await query.order('scheduled_time', { ascending: true });
@@ -340,7 +340,7 @@ class SchedulingService {
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
-        .eq('user_id', userId)
+        .or(`created_by_id.eq.${userId},assigned_to_id.eq.${userId}`)
         .not('scheduled_date', 'is', null)
         .order('scheduled_date', { ascending: true })
         .order('scheduled_time', { ascending: true });
@@ -391,9 +391,9 @@ class SchedulingService {
 
       // Filter by user if specified or if not admin
       if (userId) {
-        query = query.eq('user_id', userId);
+        query = query.or(`created_by_id.eq.${userId},assigned_to_id.eq.${userId}`);
       } else if (!canViewAllSchedules) {
-        query = query.eq('user_id', currentUser.id);
+        query = query.or(`created_by_id.eq.${currentUser.id},assigned_to_id.eq.${currentUser.id}`);
       }
 
       const { data, error } = await query
