@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authService, User } from '../../../api/authService';
+import { getLocationColors } from '../../../../../constants/locationIcons';
+import { User, authService } from '../../../api/authService';
 
 export function UserSelectionPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -49,7 +50,9 @@ export function UserSelectionPage() {
     setIsAnimating(true);
 
     setTimeout(() => {
-      navigate(`/auth/password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(user.name)}`);
+      navigate(
+        `/auth/password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(user.name)}`
+      );
     }, 600);
   };
 
@@ -58,24 +61,29 @@ export function UserSelectionPage() {
   };
 
   const getLocationColor = (location: string) => {
-    return location === 'Hà Nội'
-      ? { gradient: 'from-blue-600 to-blue-800', hover: 'hover:from-blue-700 hover:to-blue-900' }
-      : { gradient: 'from-green-600 to-green-800', hover: 'hover:from-green-700 hover:to-green-900' };
+    const colors = getLocationColors(location as 'Hà Nội' | 'Hồ Chí Minh');
+    return { gradient: colors.gradient, hover: colors.hover };
   };
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'team_leader': return '👑';
-      case 'employee': return '👤';
-      default: return '👤';
+      case 'team_leader':
+        return '👑';
+      case 'employee':
+        return '👤';
+      default:
+        return '👤';
     }
   };
 
   const getRoleName = (role: string) => {
     switch (role) {
-      case 'team_leader': return 'Trưởng nhóm';
-      case 'employee': return 'Nhân viên';
-      default: return 'Nhân viên';
+      case 'team_leader':
+        return 'Trưởng nhóm';
+      case 'employee':
+        return 'Nhân viên';
+      default:
+        return 'Nhân viên';
     }
   };
 
@@ -95,8 +103,18 @@ export function UserSelectionPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="bg-red-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            <svg
+              className="w-6 h-6 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Lỗi kết nối</h2>
@@ -125,7 +143,12 @@ export function UserSelectionPage() {
           className="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200"
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Quay lại
         </button>
@@ -136,12 +159,8 @@ export function UserSelectionPage() {
         <div className="w-full max-w-md">
           {/* Team Header */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-medium text-gray-900 mb-2">
-              {displayName}
-            </h1>
-            <p className="text-gray-600">
-              {location} • Chọn tài khoản của bạn
-            </p>
+            <h1 className="text-2xl font-medium text-gray-900 mb-2">{displayName}</h1>
+            <p className="text-gray-600">{location} • Chọn tài khoản của bạn</p>
           </div>
 
           {/* Users List */}
@@ -154,17 +173,11 @@ export function UserSelectionPage() {
                     w-full p-4 text-left bg-white border border-gray-200 rounded-lg
                     hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 ease-in-out
                     transform hover:scale-[1.02] active:scale-[0.98]
-                    ${selectedUser === user.email
-                      ? 'border-blue-500 bg-blue-50 scale-[1.02]'
-                      : ''
-                    }
-                    ${isAnimating && selectedUser !== user.email
-                      ? 'opacity-50'
-                      : ''
-                    }
+                    ${selectedUser === user.email ? 'border-blue-500 bg-blue-50 scale-[1.02]' : ''}
+                    ${isAnimating && selectedUser !== user.email ? 'opacity-50' : ''}
                   `}
                   style={{
-                    animationDelay: `${index * 100}ms`
+                    animationDelay: `${index * 100}ms`,
                   }}
                   onClick={() => handleSelectUser(user.email)}
                   disabled={isAnimating}
@@ -172,33 +185,44 @@ export function UserSelectionPage() {
                   <div className="flex items-center">
                     {/* User Info */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 truncate">
-                        {user.name}
-                      </h3>
-                      <p className="text-sm text-gray-500 truncate">
-                        {user.email}
-                      </p>
+                      <h3 className="font-medium text-gray-900 truncate">{user.name}</h3>
+                      <p className="text-sm text-gray-500 truncate">{user.email}</p>
                       <div className="flex items-center mt-1 text-xs">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          user.role === 'team_leader'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            user.role === 'team_leader'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {getRoleName(user.role)}
                         </span>
                       </div>
                     </div>
 
                     {/* Arrow */}
-                    <div className={`
+                    <div
+                      className={`
                       flex-shrink-0 text-gray-400 transition-all duration-200
-                      ${selectedUser === user.email
-                        ? 'text-blue-600 transform rotate-90'
-                        : 'group-hover:text-blue-600'
+                      ${
+                        selectedUser === user.email
+                          ? 'text-blue-600 transform rotate-90'
+                          : 'group-hover:text-blue-600'
                       }
-                    `}>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    `}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
                       </svg>
                     </div>
                   </div>
@@ -230,9 +254,7 @@ export function UserSelectionPage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6">
-        {/* Empty footer for spacing */}
-      </footer>
+      <footer className="p-6">{/* Empty footer for spacing */}</footer>
     </div>
   );
 }

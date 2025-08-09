@@ -1,5 +1,5 @@
+import { AlertTriangle, CheckCircle, Eye, EyeOff, Lock, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { X, Lock, Eye, EyeOff, CheckCircle, AlertTriangle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 interface ChangePasswordModalProps {
@@ -11,7 +11,7 @@ interface ChangePasswordModalProps {
 const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   isOpen,
   onClose,
-  onSuccess
+  onSuccess,
 }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,7 +30,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       setErrors(['Vui lòng nhập mật khẩu mới']);
       return;
     }
-    
+
     if (newPassword !== confirmPassword) {
       setErrors(['Mật khẩu xác nhận không khớp']);
       return;
@@ -45,14 +45,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     try {
       // Simulate API call - In real app, call your API here
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Show success message
       alert('✅ Đổi mật khẩu thành công!\n\n🔒 Mật khẩu đã được cập nhật.');
-      
+
       console.log('Password changed successfully');
       onSuccess();
       onClose();
-      
+
       // Reset form
       setNewPassword('');
       setConfirmPassword('');
@@ -65,7 +65,10 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive z-50">
+    <div
+      className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive"
+      style={{ zIndex: 1000000 }}
+    >
       <div className="create-task-modal bg-[#1a1f2e] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-700/50 modal-animate-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
@@ -75,10 +78,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-white">Đổi mật khẩu</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -108,7 +108,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={e => setNewPassword(e.target.value)}
                 placeholder="Nhập mật khẩu mới"
                 className="w-full px-4 py-3 pr-12 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
@@ -131,7 +131,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             <input
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={e => setConfirmPassword(e.target.value)}
               placeholder="Nhập lại mật khẩu mới"
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={loading}

@@ -1,13 +1,7 @@
-import { supabase } from '../shared/api/supabase';
 import { Task, WorkType } from '../data/dashboardMockData';
 import { getCurrentUser, getUserById, isDirector } from '../data/usersMockData';
-import { authService } from '../features/auth/api/authService';
-import {
-  canViewTeamTasks,
-  canViewLocationTasks,
-  getCurrentUserPermissions,
-  UserRole
-} from '../utils/roleBasedPermissions';
+import { supabase } from '../shared/api/supabase';
+import { getCurrentUserPermissions } from '../utils/roleBasedPermissions';
 
 export interface CreateTaskData {
   name: string;
@@ -57,7 +51,7 @@ interface DbTask {
   id: string;
   name: string;
   description?: string;
-  work_type: string;
+  work_type: string[]; // Changed to array
   priority: string;
   status: string;
   campaign_type?: string;
@@ -80,13 +74,22 @@ class TaskService {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
     return tasks.filter(task => {
-      // If task has scheduled_date and source is 'checklist_item'
-      if (task.scheduled_date && task.source === 'checklist_item') {
+      // If task has scheduled_date, filter based on source type
+      if (task.scheduled_date) {
         const scheduledDate = task.scheduled_date.split('T')[0]; // Extract date part
-        // Only show if scheduled date is today or past
-        return scheduledDate <= today;
+
+        // For tasks from checklist items, only show if scheduled date is today or past
+        if (task.source === 'checklist_item') {
+          return scheduledDate <= today;
+        }
+
+        // For manually scheduled tasks (from Planning), only show when it's the scheduled date
+        if (task.source === 'manual' || task.source === 'scheduled') {
+          return scheduledDate <= today;
+        }
       }
-      // Show all other tasks normally
+
+      // Show all other tasks normally (non-scheduled tasks)
       return true;
     });
   }
@@ -97,8 +100,12 @@ class TaskService {
 
     // List of all possible date fields
     const dateFields = [
-      'start_date', 'end_date', 'due_date',
-      'scheduled_date', 'created_at', 'updated_at'
+      'start_date',
+      'end_date',
+      'due_date',
+      'scheduled_date',
+      'created_at',
+      'updated_at',
     ];
 
     dateFields.forEach(field => {
@@ -125,8 +132,7 @@ class TaskService {
           else if (value.includes('-') || value.includes('T')) {
             // Looks like ISO format, keep as is
             cleaned[field] = value;
-          }
-          else {
+          } else {
             console.warn(`⚠️  Unknown date format for ${field}:`, value);
           }
         }
@@ -138,19 +144,19 @@ class TaskService {
   // Helper method to get user info from Supabase
   private async getUserInfo(userId: string) {
     if (!userId) return null;
-    
+
     try {
       const { data: user, error } = await supabase
         .from('users')
         .select('id, name, email, team_id, location')
         .eq('id', userId)
         .single();
-      
+
       if (error) {
         console.warn('Error fetching user info:', error);
         return null;
       }
-      
+
       return user;
     } catch (error) {
       console.error('Error in getUserInfo:', error);
@@ -167,11 +173,16 @@ class TaskService {
         throw new Error('Không tìm thấy thông tin người dùng');
       }
 
-      // Prepare data for database (without share_scope for now)
+      // Prepare data for database
       const dbTask = {
         name: taskData.name,
         description: taskData.description || '',
-        work_type: Array.isArray(taskData.workTypes) && taskData.workTypes.length > 0 ? taskData.workTypes[0] : (taskData.workType || 'other'),
+        work_type:
+          Array.isArray(taskData.workTypes) && taskData.workTypes.length > 0
+            ? taskData.workTypes // Use full array instead of just first element
+            : taskData.workType
+              ? [taskData.workType] // Convert single workType to array
+              : ['other'], // Default array
         priority: taskData.priority || 'normal',
         status: 'new-requests',
         campaign_type: taskData.campaignType || '',
@@ -182,16 +193,12 @@ class TaskService {
         created_by_id: createdById,
         assigned_to_id: taskData.assignedToId || createdById, // If no assignee, assign to creator
         team_id: currentUser.team_id || null,
-        department: taskData.department || (currentUser.location === 'Hà Nội' ? 'HN' : 'HCM')
-        // share_scope removed temporarily until table schema is updated
+        department: taskData.department || (currentUser.location === 'Hà Nội' ? 'HN' : 'HCM'),
+        share_scope: taskData.shareScope || 'team', // Add share_scope back
       };
 
       // Insert into Supabase
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert(dbTask)
-        .select()
-        .single();
+      const { data, error } = await supabase.from('tasks').insert(dbTask).select().single();
 
       if (error) {
         console.error('Supabase error:', error);
@@ -201,7 +208,7 @@ class TaskService {
       // Get user info for created_by and assigned_to
       const [createdByUser, assignedToUser] = await Promise.all([
         this.getUserInfo(data.created_by_id),
-        this.getUserInfo(data.assigned_to_id)
+        this.getUserInfo(data.assigned_to_id),
       ]);
 
       // Return formatted task
@@ -236,7 +243,7 @@ class TaskService {
         totalTasks: tasks.length,
         filteredTasks: filteredTasks.length,
         today: new Date().toISOString().split('T')[0],
-        hiddenScheduledTasks: tasks.length - filteredTasks.length
+        hiddenScheduledTasks: tasks.length - filteredTasks.length,
       });
 
       // Get unique user IDs from filtered tasks
@@ -256,11 +263,13 @@ class TaskService {
       users?.forEach(user => userMap.set(user.id, user));
 
       // Map filtered tasks with user info
-      return filteredTasks.map(task => this.mapDbTaskToTask(
-        task,
-        userMap.get(task.created_by_id),
-        userMap.get(task.assigned_to_id)
-      ));
+      return filteredTasks.map(task =>
+        this.mapDbTaskToTask(
+          task,
+          userMap.get(task.created_by_id),
+          userMap.get(task.assigned_to_id)
+        )
+      );
     } catch (error) {
       console.error('Error fetching tasks:', error);
       return [];
@@ -300,11 +309,13 @@ class TaskService {
       const userMap = new Map();
       users?.forEach(user => userMap.set(user.id, user));
 
-      return tasks.map(task => this.mapDbTaskToTask(
-        task,
-        userMap.get(task.created_by_id),
-        userMap.get(task.assigned_to_id)
-      ));
+      return tasks.map(task =>
+        this.mapDbTaskToTask(
+          task,
+          userMap.get(task.created_by_id),
+          userMap.get(task.assigned_to_id)
+        )
+      );
     } catch (error) {
       console.error('Error fetching user tasks:', error);
       return [];
@@ -323,9 +334,11 @@ class TaskService {
       if (taskData.description !== undefined) updateData.description = taskData.description;
       if (taskData.priority !== undefined) updateData.priority = taskData.priority;
       if (taskData.status !== undefined) updateData.status = taskData.status;
-      if (taskData.workType !== undefined) updateData.work_type = taskData.workType;
-      if (taskData.workTypes !== undefined && taskData.workTypes.length > 0) {
-        updateData.work_type = taskData.workTypes[0];
+      // Work types: support array and single
+      if (taskData.workTypes !== undefined) {
+        updateData.work_type = taskData.workTypes; // store full array
+      } else if (taskData.workType !== undefined) {
+        updateData.work_type = [taskData.workType];
       }
       if (taskData.campaignType !== undefined) updateData.campaign_type = taskData.campaignType;
       if (taskData.platform !== undefined) updateData.platform = taskData.platform;
@@ -341,6 +354,7 @@ class TaskService {
       }
       if (taskData.assignedToId !== undefined) updateData.assigned_to_id = taskData.assignedToId;
       if (taskData.department !== undefined) updateData.department = taskData.department;
+      if (taskData.shareScope !== undefined) updateData.share_scope = taskData.shareScope;
 
       // Handle any potential scheduled date fields
       if ('scheduledDate' in taskData && taskData.scheduledDate !== undefined) {
@@ -376,7 +390,7 @@ class TaskService {
       // Get user info
       const [createdByUser, assignedToUser] = await Promise.all([
         this.getUserInfo(data.created_by_id),
-        this.getUserInfo(data.assigned_to_id)
+        this.getUserInfo(data.assigned_to_id),
       ]);
 
       return this.mapDbTaskToTask(data, createdByUser, assignedToUser);
@@ -389,10 +403,7 @@ class TaskService {
   // Xóa task
   async deleteTask(taskId: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', taskId);
+      const { error } = await supabase.from('tasks').delete().eq('id', taskId);
 
       if (error) {
         console.error('Error deleting task:', error);
@@ -407,11 +418,7 @@ class TaskService {
   // Lấy task theo ID
   async getTaskById(taskId: string): Promise<TaskWithUsers | null> {
     try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('id', taskId)
-        .single();
+      const { data, error } = await supabase.from('tasks').select('*').eq('id', taskId).single();
 
       if (error) {
         if (error.code === 'PGRST116') return null; // Not found
@@ -421,7 +428,7 @@ class TaskService {
       // Get user info
       const [createdByUser, assignedToUser] = await Promise.all([
         this.getUserInfo(data.created_by_id),
-        this.getUserInfo(data.assigned_to_id)
+        this.getUserInfo(data.assigned_to_id),
       ]);
 
       return this.mapDbTaskToTask(data, createdByUser, assignedToUser);
@@ -431,38 +438,83 @@ class TaskService {
     }
   }
 
-  // Lọc tasks theo scope và user permissions
-  filterTasksByScope(tasks: TaskWithUsers[], currentUserId: string, scope: 'my-tasks' | 'team-tasks' | 'department-tasks'): TaskWithUsers[] {
+  // Lọc tasks theo scope và user permissions với shareScope
+  filterTasksByScope(
+    tasks: TaskWithUsers[],
+    currentUserId: string,
+    scope: 'my-tasks' | 'team-tasks' | 'department-tasks'
+  ): TaskWithUsers[] {
     const currentUser = getUserById(currentUserId) || getCurrentUser();
     const isUserDirector = isDirector(currentUserId);
-    
+    const userTeamId = currentUser?.team_id;
+    const userDepartment = currentUser?.location === 'Hà Nội' ? 'HN' : 'HCM';
+
     return tasks.filter(task => {
-      // Director can see everything
-      if (isUserDirector) {
-        return true;
+      const result = (() => {
+        switch (scope) {
+          case 'my-tasks':
+            // "Của Tôi" - Private tasks OR tasks assigned to me OR tasks I created
+            return (
+              task.shareScope === 'private' ||
+              task.createdBy?.id === currentUserId ||
+              task.assignedTo?.id === currentUserId
+            );
+
+          case 'team-tasks':
+            // "Của Nhóm" - ONLY team scope tasks within same team
+            if (task.shareScope !== 'team') {
+              return false; // Only show team scope tasks
+            }
+
+            if (isUserDirector) {
+              // Directors can see all team tasks across locations
+              return true;
+            } else {
+              // Regular users: same team_id and department
+              return (
+                // Task belongs to same team
+                (task.createdBy?.team_id === userTeamId ||
+                  task.assignedTo?.team_id === userTeamId) &&
+                // Task is in same department/location
+                task.department === userDepartment
+              );
+            }
+
+          case 'department-tasks':
+            // "Công việc chung" - ONLY public scope tasks (department-wide)
+            if (task.shareScope !== 'public') {
+              return false; // Only show public scope tasks
+            }
+
+            if (isUserDirector) {
+              // Directors can see all public tasks
+              return true;
+            } else {
+              // Regular users: same department only
+              return task.department === userDepartment;
+            }
+
+          default:
+            return false;
+        }
+      })();
+
+      // Debug log for each task
+      if (scope === 'my-tasks' || scope === 'team-tasks' || scope === 'department-tasks') {
+        console.log(
+          `🔍 Task "${task.name}" (shareScope: ${task.shareScope}) - ${scope}: ${result ? 'INCLUDED' : 'EXCLUDED'}`
+        );
       }
-      
-      switch (scope) {
-        case 'my-tasks':
-          // "Của Tôi" - Only tasks assigned to or created by current user
-          return task.shareScope === 'private' && (task.createdBy?.id === currentUserId || task.assignedTo?.id === currentUserId);
-        
-        case 'team-tasks':
-          // "Của Nhóm" - Tasks within user's team
-          return task.shareScope === 'team';
-        
-        case 'department-tasks':
-          // "Công việc chung" - Public tasks that can be seen by everyone
-          return task.shareScope === 'public';
-        
-        default:
-          return false;
-      }
+
+      return result;
     });
   }
-  
+
   // Get filtered tasks for specific view
-  async getFilteredTasks(scope: 'my-tasks' | 'team-tasks' | 'department-tasks', userId?: string): Promise<TaskWithUsers[]> {
+  async getFilteredTasks(
+    scope: 'my-tasks' | 'team-tasks' | 'department-tasks',
+    userId?: string
+  ): Promise<TaskWithUsers[]> {
     try {
       const allTasks = await this.getTasks();
       const currentUserId = userId || getCurrentUser().id;
@@ -474,37 +526,126 @@ class TaskService {
   }
 
   // Map database task to frontend task format
-  private mapDbTaskToTask(dbTask: DbTask, createdByUser?: any, assignedToUser?: any): TaskWithUsers {
+  private mapDbTaskToTask(
+    dbTask: DbTask,
+    createdByUser?: any,
+    assignedToUser?: any
+  ): TaskWithUsers {
+    // Debug log để kiểm tra work_type
+    console.log(
+      '🔍 mapDbTaskToTask - dbTask.work_type:',
+      dbTask.work_type,
+      'Type:',
+      typeof dbTask.work_type,
+      'IsArray:',
+      Array.isArray(dbTask.work_type)
+    );
+
+    // Helper function to normalize work type format
+    const normalizeWorkType = (workType: string): string => {
+      // Convert underscore to dash format
+      return workType.replace(/_/g, '-');
+    };
+
+    // Helper function to parse work_type from database
+    const parseWorkTypes = (rawWorkType: any): string[] => {
+      if (!rawWorkType) return ['other'];
+
+      // Case 1: Already an array
+      if (Array.isArray(rawWorkType)) {
+        return rawWorkType.map(normalizeWorkType);
+      }
+
+      // Case 2: JSON string array like "[\"partner-new\"]"
+      if (
+        typeof rawWorkType === 'string' &&
+        rawWorkType.startsWith('[') &&
+        rawWorkType.endsWith(']')
+      ) {
+        try {
+          const parsed = JSON.parse(rawWorkType);
+          if (Array.isArray(parsed)) {
+            return parsed.map(normalizeWorkType);
+          }
+        } catch (error) {
+          console.warn('Failed to parse work_type JSON:', rawWorkType, error);
+        }
+      }
+
+      // Case 3: Single string (with underscore format from old data)
+      if (typeof rawWorkType === 'string') {
+        return [normalizeWorkType(rawWorkType)];
+      }
+
+      return ['other'];
+    };
+
+    const normalizedWorkTypes = parseWorkTypes(dbTask.work_type);
+    console.log('✅ Normalized workTypes:', normalizedWorkTypes);
+
     return {
       id: dbTask.id,
       name: dbTask.name || '',
       description: dbTask.description || '',
-      workType: (dbTask.work_type || 'other') as WorkType,
+      workType: normalizedWorkTypes[0] as WorkType, // First work type for backward compatibility
+      workTypes: normalizedWorkTypes as WorkType[], // Full array
       priority: dbTask.priority as 'low' | 'normal' | 'high',
       status: dbTask.status as 'new-requests' | 'approved' | 'live',
       campaignType: dbTask.campaign_type || '',
       platform: dbTask.platform || [],
-      startDate: dbTask.start_date ? new Date(dbTask.start_date).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'}) : (dbTask.created_at ? new Date(dbTask.created_at).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'}) : new Date().toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})),
-      endDate: dbTask.end_date ? new Date(dbTask.end_date).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '',
-      dueDate: dbTask.due_date ? new Date(dbTask.due_date).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'}) : '',
+      startDate: dbTask.start_date
+        ? new Date(dbTask.start_date).toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
+        : dbTask.created_at
+          ? new Date(dbTask.created_at).toLocaleDateString('vi-VN', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            })
+          : new Date().toLocaleDateString('vi-VN', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            }),
+      endDate: dbTask.end_date
+        ? new Date(dbTask.end_date).toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
+        : '',
+      dueDate: dbTask.due_date
+        ? new Date(dbTask.due_date).toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
+        : '',
       createdAt: dbTask.created_at || new Date().toISOString(),
-      department: dbTask.department as 'HN' | 'HCM' || 'HN',
+      department: (dbTask.department as 'HN' | 'HCM') || 'HN',
       group: '',
-      shareScope: dbTask.share_scope as 'team' | 'private' | 'public' || 'team',
-      createdBy: createdByUser ? {
-        id: createdByUser.id,
-        name: createdByUser.name,
-        email: createdByUser.email,
-        team_id: createdByUser.team_id,
-        location: createdByUser.location
-      } : null,
-      assignedTo: assignedToUser ? {
-        id: assignedToUser.id,
-        name: assignedToUser.name,
-        email: assignedToUser.email,
-        team_id: assignedToUser.team_id,
-        location: assignedToUser.location
-      } : null
+      shareScope: (dbTask.share_scope as 'team' | 'private' | 'public') || 'team',
+      createdBy: createdByUser
+        ? {
+            id: createdByUser.id,
+            name: createdByUser.name,
+            email: createdByUser.email,
+            team_id: createdByUser.team_id,
+            location: createdByUser.location,
+          }
+        : null,
+      assignedTo: assignedToUser
+        ? {
+            id: assignedToUser.id,
+            name: assignedToUser.name,
+            email: assignedToUser.email,
+            team_id: assignedToUser.team_id,
+            location: assignedToUser.location,
+          }
+        : null,
     };
   }
 
@@ -518,27 +659,20 @@ class TaskService {
         throw new Error('User not found');
       }
 
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .or(`created_by_id.eq.${currentUser.id},assigned_to_id.eq.${currentUser.id}`)
-        .order('created_at', { ascending: false });
+      // Get all tasks first
+      const allTasks = await this.getTasks();
 
-      if (error) {
-        console.error('Error fetching my tasks:', error);
-        throw new Error('Không thể tải công việc của tôi');
-      }
+      // Filter by shareScope using filterTasksByScope
+      const filteredTasks = this.filterTasksByScope(allTasks, currentUser.id, 'my-tasks');
 
-      // Apply scheduled task filtering
-      const filteredTasks = this.filterScheduledTasks(data || []);
-
-      console.log('📅 Task filtering in getMyTasks:', {
-        totalTasks: data?.length || 0,
+      console.log('📅 ShareScope filtering in getMyTasks:', {
+        totalTasks: allTasks.length,
         filteredTasks: filteredTasks.length,
-        hiddenScheduledTasks: (data?.length || 0) - filteredTasks.length
+        userId: currentUser.id,
+        scope: 'my-tasks',
       });
 
-      return this.mapDbTasksToTasks(filteredTasks);
+      return filteredTasks;
     } catch (error) {
       console.error('Error in getMyTasks:', error);
       throw error;
@@ -549,35 +683,21 @@ class TaskService {
   async getTeamTasks(teamId?: string, location?: 'HN' | 'HCM'): Promise<TaskWithUsers[]> {
     try {
       const currentUser = getCurrentUser();
-      const permissions = getCurrentUserPermissions();
 
-      let query = supabase.from('tasks').select('*');
+      // Get all tasks first
+      const allTasks = await this.getTasks();
 
-      if (currentUser.role === 'retail_director') {
-        // Directors can view all teams or filter by specific team/location
-        if (teamId) {
-          query = query.eq('team_id', teamId);
-        }
-        if (location) {
-          query = query.eq('department', location);
-        }
-      } else {
-        // Team leaders and employees can only see their own team
-        query = query.eq('team_id', currentUser.team_id);
+      // Filter by shareScope using filterTasksByScope
+      const filteredTasks = this.filterTasksByScope(allTasks, currentUser.id, 'team-tasks');
 
-        // Also filter by location for non-directors
-        const userLocation = currentUser.location === 'Hà Nội' ? 'HN' : 'HCM';
-        query = query.eq('department', userLocation);
-      }
+      console.log('📅 ShareScope filtering in getTeamTasks:', {
+        totalTasks: allTasks.length,
+        filteredTasks: filteredTasks.length,
+        userId: currentUser.id,
+        scope: 'team-tasks',
+      });
 
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching team tasks:', error);
-        throw new Error('Không thể tải công việc của nhóm');
-      }
-
-      return this.mapDbTasksToTasks(data || []);
+      return filteredTasks;
     } catch (error) {
       console.error('Error in getTeamTasks:', error);
       throw error;
@@ -588,31 +708,21 @@ class TaskService {
   async getDepartmentTasks(location?: 'HN' | 'HCM'): Promise<TaskWithUsers[]> {
     try {
       const currentUser = getCurrentUser();
-      const permissions = getCurrentUserPermissions();
 
-      let query = supabase.from('tasks').select('*');
+      // Get all tasks first
+      const allTasks = await this.getTasks();
 
-      if (currentUser.role === 'retail_director') {
-        // Directors can view all locations or filter by specific location
-        if (location) {
-          query = query.eq('department', location);
-        }
-      } else {
-        // Non-directors can only see their own location AND their own team's tasks
-        const userLocation = currentUser.location === 'Hà Nội' ? 'HN' : 'HCM';
-        query = query
-          .eq('department', userLocation)
-          .eq('team_id', currentUser.team_id); // Only show tasks from user's own team
-      }
+      // Filter by shareScope using filterTasksByScope
+      const filteredTasks = this.filterTasksByScope(allTasks, currentUser.id, 'department-tasks');
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      console.log('📅 ShareScope filtering in getDepartmentTasks:', {
+        totalTasks: allTasks.length,
+        filteredTasks: filteredTasks.length,
+        userId: currentUser.id,
+        scope: 'department-tasks',
+      });
 
-      if (error) {
-        console.error('Error fetching department tasks:', error);
-        throw new Error('Không thể tải công việc chung');
-      }
-
-      return this.mapDbTasksToTasks(data || []);
+      return filteredTasks;
     } catch (error) {
       console.error('Error in getDepartmentTasks:', error);
       throw error;
@@ -627,10 +737,7 @@ class TaskService {
 
       if (permissions.canViewAllTeams) {
         // Directors can see all teams
-        const { data: teams, error } = await supabase
-          .from('teams')
-          .select('*')
-          .order('name');
+        const { data: teams, error } = await supabase.from('teams').select('*').order('name');
 
         if (error) {
           console.error('Error fetching all teams:', error);
@@ -666,10 +773,10 @@ class TaskService {
     }
 
     const tasks = await Promise.all(
-      dbTasks.map(async (dbTask) => {
+      dbTasks.map(async dbTask => {
         const [createdByUser, assignedToUser] = await Promise.all([
           this.getUserInfo(dbTask.created_by_id),
-          this.getUserInfo(dbTask.assigned_to_id)
+          this.getUserInfo(dbTask.assigned_to_id),
         ]);
 
         return this.mapDbTaskToTask(dbTask, createdByUser, assignedToUser);
@@ -700,7 +807,7 @@ class TaskService {
       console.log('👤 Current user for checklist scheduling:', {
         id: currentUserId,
         email: currentUserEmail,
-        name: currentUserName
+        name: currentUserName,
       });
 
       // Get user details from database to get team_id and location
@@ -733,18 +840,18 @@ class TaskService {
       console.log('📅 Creating scheduled task for checklist item:', data);
 
       const taskData = {
-        name: data.itemTitle,                   // Clean item name: "Gặp khách hàng"
-        description: `Từ: ${parentTaskName}`,   // Vietnamese: "Từ: Parent Task Name"
+        name: data.itemTitle, // Clean item name: "Gặp khách hàng"
+        description: `Từ: ${parentTaskName}`, // Vietnamese: "Từ: Parent Task Name"
         scheduled_date: data.scheduledDate,
         scheduled_time: data.scheduledTime || null,
         source: 'checklist_item',
         priority: 'medium',
         status: 'new-requests',
-        work_type: 'other',                     // Use 'other' as default
-        created_by_id: currentUserId,        // ✅ Correct column name
-        assigned_to_id: currentUserId,       // ✅ Correct column name
+        work_type: 'other', // Use 'other' as default
+        created_by_id: currentUserId, // ✅ Correct column name
+        assigned_to_id: currentUserId, // ✅ Correct column name
         team_id: userDetails?.team_id || null, // Use user's team_id
-        department: userDetails?.location || 'unknown' // Use user's location
+        department: userDetails?.location || 'unknown', // Use user's location
       };
 
       console.log('📋 Task data before cleaning:', taskData);
@@ -763,14 +870,13 @@ class TaskService {
           code: error.code,
           message: error.message,
           details: error.details,
-          hint: error.hint
+          hint: error.hint,
         });
         throw new Error(`Không thể tạo lịch: ${error.message}`);
       }
 
       console.log('✅ Scheduled checklist item created:', result);
       return result;
-
     } catch (error) {
       console.error('❌ Error creating scheduled checklist item:', error);
       throw error;

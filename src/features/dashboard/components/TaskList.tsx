@@ -1,27 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { tasksMockData, TaskGroup, WORK_TYPES } from '../../../data/dashboardMockData';
+import { Building, Target, User, Users } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import CreateTaskModal from '../../../components/CreateTaskModal';
-import EditTaskModal from '../../../components/EditTaskModal';
 import DeleteConfirmModal from '../../../components/DeleteConfirmModal';
-import TaskDetailModal from '../../../components/TaskDetailModal';
-import TaskStatusPriority from '../../../components/TaskStatusPriority';
+import EditTaskModal from '../../../components/EditTaskModal';
+import MultiWorkTypeBadges from '../../../components/MultiWorkTypeBadges';
+import PriorityBadge from '../../../components/PriorityBadge';
+import ShareScopeBadge from '../../../components/ShareScopeBadge';
+import StatusBadge from '../../../components/StatusBadge';
 import TaskActions from '../../../components/TaskActions';
+import TaskDetailModal from '../../../components/TaskDetailModal';
 import TaskFilters, { FilterState } from '../../../components/TaskFilters';
-import { taskService, TaskWithUsers } from '../../../services/taskService';
-import { mockTaskService } from '../../../services/mockTaskService';
+import { getCurrentUser } from '../../../data/usersMockData';
+import { TaskWithUsers, taskService } from '../../../services/taskService';
 import { supabase } from '../../../shared/api/supabase';
-import { Building, Users, Target, User, Globe } from 'lucide-react';
-import { getCurrentUser, getUserById, isDirector } from '../../../data/usersMockData';
+import { formatVietnameseDate, parseDate } from '../../../utils/dateUtils';
 import {
   getCurrentUserPermissions,
+  getDefaultLocationFilter,
   shouldShowLocationTabs,
-  shouldShowTeamSelector,
   shouldShowTeamSelectorButtons,
-  getDefaultLocationFilter
 } from '../../../utils/roleBasedPermissions';
-import { parseDate, formatVietnameseDate } from '../../../utils/dateUtils';
-
-
+import { clearPermissionCache } from '../../../utils/taskPermissions';
 
 interface TaskListProps {
   userRole: 'manager' | 'employee';
@@ -29,11 +28,7 @@ interface TaskListProps {
   onModalStateChange?: (isOpen: boolean) => void;
 }
 
-const TaskList: React.FC<TaskListProps> = ({
-  userRole,
-  currentUser,
-  onModalStateChange
-}) => {
+const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalStateChange }) => {
   // Get current user and permissions with error handling
   const user = (() => {
     try {
@@ -51,15 +46,17 @@ const TaskList: React.FC<TaskListProps> = ({
         team: {
           id: '0',
           name: 'Unknown Team',
-          location: 'HN' as const
-        }
+          location: 'HN' as const,
+        },
       };
     }
   })();
   const permissions = getCurrentUserPermissions();
 
   const [activeTab, setActiveTab] = useState('my-tasks');
-  const [departmentTab, setDepartmentTab] = useState<'hanoi' | 'hcm'>(getDefaultLocationFilter(user));
+  const [departmentTab, setDepartmentTab] = useState<'hanoi' | 'hcm'>(
+    getDefaultLocationFilter(user)
+  );
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -68,9 +65,16 @@ const TaskList: React.FC<TaskListProps> = ({
 
   // Notify parent about modal state changes
   useEffect(() => {
-    const isAnyModalOpen = isCreateModalOpen || isEditModalOpen || isDeleteModalOpen || isDetailModalOpen;
+    const isAnyModalOpen =
+      isCreateModalOpen || isEditModalOpen || isDeleteModalOpen || isDetailModalOpen;
     onModalStateChange?.(isAnyModalOpen);
-  }, [isCreateModalOpen, isEditModalOpen, isDeleteModalOpen, isDetailModalOpen, onModalStateChange]);
+  }, [
+    isCreateModalOpen,
+    isEditModalOpen,
+    isDeleteModalOpen,
+    isDetailModalOpen,
+    onModalStateChange,
+  ]);
   const [selectedTask, setSelectedTask] = useState<TaskWithUsers | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<TaskWithUsers | null>(null);
   const [tasks, setTasks] = useState<TaskWithUsers[]>([]);
@@ -81,7 +85,7 @@ const TaskList: React.FC<TaskListProps> = ({
     searchTerm: '',
     dateFilter: 'all',
     workTypeFilter: 'all',
-    priorityFilter: 'all'
+    priorityFilter: 'all',
   });
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
@@ -146,7 +150,7 @@ const TaskList: React.FC<TaskListProps> = ({
     try {
       const [teamsResponse, usersResponse] = await Promise.all([
         supabase.from('teams').select('*').order('id'),
-        supabase.from('users').select('*').order('name')
+        supabase.from('users').select('*').order('name'),
       ]);
 
       if (teamsResponse.error) throw teamsResponse.error;
@@ -174,21 +178,26 @@ const TaskList: React.FC<TaskListProps> = ({
       console.log('🎯 Current user:', user);
 
       // Database is now working - save directly to Supabase
-      const newTask = await taskService.createTask({
-        name: taskData.name,
-        description: taskData.description,
-        workTypes: taskData.workTypes,
-        priority: taskData.priority,
-        campaignType: taskData.campaignType,
-        platform: taskData.platform,
-        startDate: taskData.startDate,
-        endDate: taskData.endDate,
-        dueDate: taskData.dueDate,
-        assignedToId: taskData.assignedTo?.id || currentUserId,
-        department: taskData.department,
-        createdAt: taskData.startDate ? new Date(taskData.startDate).toISOString() : new Date().toISOString(), // Sử dụng startDate làm ngày tạo
-        shareScope: taskData.shareScope
-      }, currentUserId);
+      const newTask = await taskService.createTask(
+        {
+          name: taskData.name,
+          description: taskData.description,
+          workTypes: taskData.workTypes,
+          priority: taskData.priority,
+          campaignType: taskData.campaignType,
+          platform: taskData.platform,
+          startDate: taskData.startDate,
+          endDate: taskData.endDate,
+          dueDate: taskData.dueDate,
+          assignedToId: taskData.assignedTo?.id || currentUserId,
+          department: taskData.department,
+          createdAt: taskData.startDate
+            ? new Date(taskData.startDate).toISOString()
+            : new Date().toISOString(), // Sử dụng startDate làm ngày tạo
+          shareScope: taskData.shareScope,
+        },
+        currentUserId
+      );
 
       console.log('✅ Task created successfully:', newTask);
 
@@ -221,7 +230,12 @@ const TaskList: React.FC<TaskListProps> = ({
       await loadTasks();
 
       // Show success message with tab info
-      const tabName = targetTab === 'my-tasks' ? 'Của Tôi' : targetTab === 'team-tasks' ? 'Của Nhóm' : 'Của Phòng Ban';
+      const tabName =
+        targetTab === 'my-tasks'
+          ? 'Của Tôi'
+          : targetTab === 'team-tasks'
+            ? 'Của Nhóm'
+            : 'Của Phòng Ban';
       // Removed alert for creating task successfully
 
       console.log('🔄 Tasks reloaded, should be visible in tab:', targetTab);
@@ -249,6 +263,10 @@ const TaskList: React.FC<TaskListProps> = ({
 
       // Database is now working - update directly in Supabase
       await taskService.updateTask(taskData);
+
+      // Xóa cache permissions khi task được cập nhật (real-time updates)
+      clearPermissionCache(taskData.id);
+
       await loadTasks();
 
       // Silent update - no success notification needed
@@ -277,6 +295,10 @@ const TaskList: React.FC<TaskListProps> = ({
 
       // Database is now working - delete directly from Supabase
       await taskService.deleteTask(taskToDelete.id);
+
+      // Xóa cache permissions khi task bị xóa (real-time updates)
+      clearPermissionCache(taskToDelete.id);
+
       await loadTasks();
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -293,12 +315,12 @@ const TaskList: React.FC<TaskListProps> = ({
       // Search filter
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           task.name.toLowerCase().includes(searchLower) ||
           task.description?.toLowerCase().includes(searchLower) ||
           task.createdBy?.name.toLowerCase().includes(searchLower) ||
           task.assignedTo?.name.toLowerCase().includes(searchLower);
-        
+
         if (!matchesSearch) return false;
       }
 
@@ -306,7 +328,7 @@ const TaskList: React.FC<TaskListProps> = ({
       if (filters.dateFilter !== 'all') {
         const today = new Date();
         const taskDate = new Date(task.startDate);
-        
+
         switch (filters.dateFilter) {
           case 'today':
             if (taskDate.toDateString() !== today.toDateString()) return false;
@@ -344,22 +366,22 @@ const TaskList: React.FC<TaskListProps> = ({
         name: 'Chưa tiến hành',
         status: 'new-requests' as const,
         isExpanded: true,
-        tasks: filteredTasks.filter(task => task.status === 'new-requests')
+        tasks: filteredTasks.filter(task => task.status === 'new-requests'),
       },
       {
         id: 'approved',
         name: 'Đang tiến hành',
         status: 'approved' as const,
         isExpanded: true,
-        tasks: filteredTasks.filter(task => task.status === 'approved')
+        tasks: filteredTasks.filter(task => task.status === 'approved'),
       },
       {
         id: 'live',
         name: 'Đã hoàn thành',
         status: 'live' as const,
         isExpanded: true,
-        tasks: filteredTasks.filter(task => task.status === 'live')
-      }
+        tasks: filteredTasks.filter(task => task.status === 'live'),
+      },
     ].sort((a, b) => {
       const order = ['new-requests', 'approved', 'live'];
       return order.indexOf(a.id) - order.indexOf(b.id);
@@ -384,7 +406,9 @@ const TaskList: React.FC<TaskListProps> = ({
     // Get all teams for the selected location (show ALL teams, even without tasks)
     const locationTeams = teams.filter(team => {
       const teamUsers = users.filter(user => user.team_id === team.id.toString());
-      return teamUsers.some(user => user.location === (departmentTab === 'hanoi' ? 'Hà Nội' : 'Hồ Chí Minh'));
+      return teamUsers.some(
+        user => user.location === (departmentTab === 'hanoi' ? 'Hà Nội' : 'Hồ Chí Minh')
+      );
     });
 
     // Sort teams by their numeric order (extract number from team name)
@@ -394,21 +418,24 @@ const TaskList: React.FC<TaskListProps> = ({
         const match = teamName.match(/\d+/);
         return match ? parseInt(match[0]) : 999; // Put teams without numbers at the end
       };
-      
+
       return getTeamNumber(a.name) - getTeamNumber(b.name);
     });
 
     return sortedTeams.map(team => {
-      const teamMembers = users.filter(user =>
-        user.team_id === team.id.toString() &&
-        user.location === (departmentTab === 'hanoi' ? 'Hà Nội' : 'Hồ Chí Minh')
+      const teamMembers = users.filter(
+        user =>
+          user.team_id === team.id.toString() &&
+          user.location === (departmentTab === 'hanoi' ? 'Hà Nội' : 'Hồ Chí Minh')
       );
 
       let teamTasks = filteredTasks.filter(task => {
         const assignedUser = users.find(u => u.name === task.assignedTo?.name);
         const createdUser = users.find(u => u.name === task.createdBy?.name);
-        return (assignedUser && assignedUser.team_id === team.id.toString()) ||
-               (createdUser && createdUser.team_id === team.id.toString());
+        return (
+          (assignedUser && assignedUser.team_id === team.id.toString()) ||
+          (createdUser && createdUser.team_id === team.id.toString())
+        );
       });
 
       // Filter by selected member if any
@@ -416,8 +443,10 @@ const TaskList: React.FC<TaskListProps> = ({
         const selectedMember = users.find(u => u.id === selectedMemberId);
         if (selectedMember) {
           teamTasks = teamTasks.filter(task => {
-            return task.assignedTo?.name === selectedMember.name ||
-                   task.createdBy?.name === selectedMember.name;
+            return (
+              task.assignedTo?.name === selectedMember.name ||
+              task.createdBy?.name === selectedMember.name
+            );
           });
         }
       }
@@ -428,22 +457,22 @@ const TaskList: React.FC<TaskListProps> = ({
           name: 'Chưa tiến hành',
           status: 'new-requests' as const,
           isExpanded: true,
-          tasks: teamTasks.filter(task => task.status === 'new-requests')
+          tasks: teamTasks.filter(task => task.status === 'new-requests'),
         },
         {
           id: 'approved',
           name: 'Đang tiến hành',
           status: 'approved' as const,
           isExpanded: true,
-          tasks: teamTasks.filter(task => task.status === 'approved')
+          tasks: teamTasks.filter(task => task.status === 'approved'),
         },
         {
           id: 'live',
           name: 'Đã hoàn thành',
           status: 'live' as const,
           isExpanded: true,
-          tasks: teamTasks.filter(task => task.status === 'live')
-        }
+          tasks: teamTasks.filter(task => task.status === 'live'),
+        },
       ].filter(group => group.tasks.length > 0);
 
       return {
@@ -451,7 +480,7 @@ const TaskList: React.FC<TaskListProps> = ({
         name: team.name,
         members: teamMembers,
         taskGroups: teamTaskGroups,
-        totalTasks: teamTasks.length
+        totalTasks: teamTasks.length,
       };
     }); // Remove filter - show ALL teams even if they have 0 tasks
   };
@@ -467,34 +496,61 @@ const TaskList: React.FC<TaskListProps> = ({
     { value: 'kts-new', label: 'KTS mới', icon: Target, color: 'bg-purple-500' },
     { value: 'kts-old', label: 'KTS cũ', icon: Target, color: 'bg-purple-400' },
     { value: 'customer-new', label: 'Khách hàng mới', icon: User, color: 'bg-orange-500' },
-    { value: 'customer-old', label: 'Khách hàng cũ', icon: User, color: 'bg-orange-400' }
+    { value: 'customer-old', label: 'Khách hàng cũ', icon: User, color: 'bg-orange-400' },
   ];
 
   const getWorkTypeInfo = (workType: string) => {
-    console.log('🔍 Debug workType:', workType, 'Type:', typeof workType);
-    console.log('🔍 Available options:', workTypeOptions.map(o => o.value));
+    if (!workType) {
+      return workTypeOptions[0]; // Default to 'Công việc khác'
+    }
+
+    // Handle array string format like "[\"sbg-new\"]"
+    let cleanWorkType = workType;
+    if (typeof workType === 'string' && workType.startsWith('[') && workType.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(workType);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          cleanWorkType = parsed[0]; // Take first element
+        }
+      } catch (e) {
+        console.warn('Failed to parse workType array string:', workType);
+      }
+    }
 
     // Normalize workType - handle potential data inconsistencies
-    const normalizedWorkType = workType?.toString().toLowerCase().trim();
+    const normalizedWorkType = cleanWorkType.toString().toLowerCase().trim();
 
-    const found = workTypeOptions.find(option =>
-      option.value === workType ||
-      option.value === normalizedWorkType ||
-      option.value.toLowerCase() === normalizedWorkType
+    const found = workTypeOptions.find(
+      option =>
+        option.value === cleanWorkType ||
+        option.value === normalizedWorkType ||
+        option.value.toLowerCase() === normalizedWorkType
     );
 
-    console.log('🎯 Found workType info:', found);
-    console.log('🎯 Using fallback:', !found ? 'YES (Công việc khác)' : 'NO');
+    // If no match found, log for debugging (but don't spam)
+    if (!found) {
+      console.warn('⚠️ Unknown workType:', workType, '- Using fallback: Công việc khác');
+    }
 
     return found || workTypeOptions[0];
+  };
+
+  // Helper function to get multiple work type info
+  const getMultipleWorkTypeInfo = (workTypes: string[] | string | undefined) => {
+    if (!workTypes) {
+      return [workTypeOptions[0]]; // Default to 'Công việc khác'
+    }
+
+    // Handle both array and single string
+    const typesArray = Array.isArray(workTypes) ? workTypes : [workTypes];
+
+    return typesArray.map(workType => getWorkTypeInfo(workType));
   };
 
   const handleTaskClick = (task: TaskWithUsers) => {
     setSelectedTask(task);
     setIsDetailModalOpen(true);
   };
-
-
 
   const handleEditFromDetail = () => {
     setIsDetailModalOpen(false);
@@ -529,14 +585,14 @@ const TaskList: React.FC<TaskListProps> = ({
     const tabData = [
       { id: 'my-tasks', label: 'Của Tôi' },
       { id: 'team-tasks', label: 'Của Nhóm' },
-      { id: 'department-tasks', label: 'Công việc chung' }
+      { id: 'department-tasks', label: 'Công việc chung' },
     ];
 
     return (
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         {/* iOS 18 Style Tab Navigation - Mobile Optimized */}
         <nav className="mobile-tab-nav">
-          {tabData.map((tab) => {
+          {tabData.map(tab => {
             const isActive = activeTab === tab.id;
             return (
               <button
@@ -544,9 +600,10 @@ const TaskList: React.FC<TaskListProps> = ({
                 onClick={() => handleTabChange(tab.id)}
                 className={`
                   relative transition-all duration-300
-                  ${isActive
-                    ? 'text-white bg-gradient-to-r from-cyan-600 to-blue-700 shadow-md'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ${
+                    isActive
+                      ? 'text-white bg-gradient-to-r from-cyan-600 to-blue-700 shadow-md'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
                   }
                 `}
               >
@@ -555,7 +612,7 @@ const TaskList: React.FC<TaskListProps> = ({
             );
           })}
         </nav>
-        
+
         {/* Enhanced Premium Create Task Button */}
         <button
           onClick={() => {
@@ -566,7 +623,9 @@ const TaskList: React.FC<TaskListProps> = ({
 
             // Add subtle click sound effect (optional)
             try {
-              const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+              const audio = new Audio(
+                'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'
+              );
               audio.volume = 0.05;
               audio.play().catch(() => {}); // Ignore errors if audio fails
             } catch (e) {
@@ -602,8 +661,19 @@ const TaskList: React.FC<TaskListProps> = ({
           <div className="relative z-10 flex items-center justify-center w-5 h-5">
             {loading ? (
               <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
             ) : (
               <svg
@@ -625,10 +695,22 @@ const TaskList: React.FC<TaskListProps> = ({
 
           {/* Floating particles effect */}
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <div className="absolute top-2 left-4 w-1 h-1 bg-white/60 rounded-full animate-ping" style={{animationDelay: '0s'}}></div>
-            <div className="absolute top-4 right-6 w-1 h-1 bg-white/40 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
-            <div className="absolute bottom-3 left-8 w-1 h-1 bg-white/50 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
-            <div className="absolute bottom-2 right-4 w-1 h-1 bg-white/30 rounded-full animate-ping" style={{animationDelay: '1.5s'}}></div>
+            <div
+              className="absolute top-2 left-4 w-1 h-1 bg-white/60 rounded-full animate-ping"
+              style={{ animationDelay: '0s' }}
+            ></div>
+            <div
+              className="absolute top-4 right-6 w-1 h-1 bg-white/40 rounded-full animate-ping"
+              style={{ animationDelay: '0.5s' }}
+            ></div>
+            <div
+              className="absolute bottom-3 left-8 w-1 h-1 bg-white/50 rounded-full animate-ping"
+              style={{ animationDelay: '1s' }}
+            ></div>
+            <div
+              className="absolute bottom-2 right-4 w-1 h-1 bg-white/30 rounded-full animate-ping"
+              style={{ animationDelay: '1.5s' }}
+            ></div>
           </div>
         </button>
       </div>
@@ -655,9 +737,10 @@ const TaskList: React.FC<TaskListProps> = ({
             className={`
               px-3 py-1.5 text-xs font-medium rounded-full
               transition-all duration-300
-              ${departmentTab === 'hanoi'
-                ? 'text-blue-400 bg-blue-900/50 shadow-inner '
-                : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              ${
+                departmentTab === 'hanoi'
+                  ? 'text-blue-400 bg-blue-900/50 shadow-inner '
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
               }
             `}
           >
@@ -668,9 +751,10 @@ const TaskList: React.FC<TaskListProps> = ({
             className={`
               px-3 py-1.5 text-xs font-medium rounded-full
               transition-all duration-300
-              ${departmentTab === 'hcm'
-                ? 'text-blue-400 bg-blue-900/50 shadow-inner'
-                : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              ${
+                departmentTab === 'hcm'
+                  ? 'text-blue-400 bg-blue-900/50 shadow-inner'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
               }
             `}
           >
@@ -704,42 +788,43 @@ const TaskList: React.FC<TaskListProps> = ({
           <TaskFilters onFilterChange={setFilters} />
         </div>
 
-      {/* Team Selector Buttons for team-tasks tab - Only for directors */}
-      {activeTab === 'team-tasks' && teamGroups.length > 0 && shouldShowTeamSelectorButtons(user.role) && (
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-2">
-            {teamGroups.map((team) => {
-              const isSelected = selectedTeamId === team.id;
-              return (
-                <button
-                  key={team.id}
-                  onClick={() => setSelectedTeamId(isSelected ? null : team.id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isSelected
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white border border-gray-700'
-                  }`}
-                >
-                  {team.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Task Groups - Mobile Optimized */}
-      <div className="space-y-3 md:space-y-4">
-        {activeTab === 'team-tasks' ? (
-          // Render by teams
-          teamGroups.length === 0 ? (
-            <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
-              <div className="text-gray-400">
-                Không có nhóm nào tại {departmentTab === 'hanoi' ? 'Hà Nội' : 'Hồ Chí Minh'}
+        {/* Team Selector Buttons for team-tasks tab - Only for directors */}
+        {activeTab === 'team-tasks' &&
+          teamGroups.length > 0 &&
+          shouldShowTeamSelectorButtons(user.role) && (
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-2">
+                {teamGroups.map(team => {
+                  const isSelected = selectedTeamId === team.id;
+                  return (
+                    <button
+                      key={team.id}
+                      onClick={() => setSelectedTeamId(isSelected ? null : team.id)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isSelected
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white border border-gray-700'
+                      }`}
+                    >
+                      {team.name}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          ) : (
-            selectedTeamId || !shouldShowTeamSelectorButtons(user.role) ? (
+          )}
+
+        {/* Task Groups - Mobile Optimized */}
+        <div className="space-y-3 md:space-y-4">
+          {activeTab === 'team-tasks' ? (
+            // Render by teams
+            teamGroups.length === 0 ? (
+              <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
+                <div className="text-gray-400">
+                  Không có nhóm nào tại {departmentTab === 'hanoi' ? 'Hà Nội' : 'Hồ Chí Minh'}
+                </div>
+              </div>
+            ) : selectedTeamId || !shouldShowTeamSelectorButtons(user.role) ? (
               // Show selected team OR user's own team if they can't select teams
               (() => {
                 let team;
@@ -753,164 +838,282 @@ const TaskList: React.FC<TaskListProps> = ({
 
                 if (!team) return null;
                 return (
-              <div key={team.id} className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-                {/* Team Header */}
-                <div className="bg-gray-900 px-6 py-4 border-b border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <h3 className="text-lg font-semibold text-white">{team.name}</h3>
-                      <span className="text-sm text-gray-400">({team.members.length} thành viên)</span>
-                      {selectedMemberId && (
-                        <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium">
-                          Lọc theo: {users.find(u => u.id === selectedMemberId)?.name}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-400">{team.totalTasks} công việc</span>
-                      {selectedMemberId && team.totalTasks > 0 && (
-                        <span className="text-xs text-blue-400">
-                          (đã lọc)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {/* Team Members */}
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {/* Sort members: team leaders first, then others */}
-                    {team.members
-                      .sort((a, b) => {
-                        // Team leaders come first
-                        if (a.role === 'team_leader' && b.role !== 'team_leader') return -1;
-                        if (a.role !== 'team_leader' && b.role === 'team_leader') return 1;
-                        // Then sort alphabetically by name
-                        return a.name.localeCompare(b.name);
-                      })
-                      .map((member) => {
-                        const isSelected = selectedMemberId === member.id;
-                        const memberTasks = team.taskGroups.reduce((total: number, group: any) => {
-                          return total + group.tasks.filter((task: any) =>
-                            task.assignedTo?.name === member.name || task.createdBy?.name === member.name
-                          ).length;
-                        }, 0);
+                  <div
+                    key={team.id}
+                    className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden"
+                  >
+                    {/* Team Header */}
+                    <div className="bg-gray-900 px-6 py-4 border-b border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <h3 className="text-lg font-semibold text-white">{team.name}</h3>
+                          <span className="text-sm text-gray-400">
+                            ({team.members.length} thành viên)
+                          </span>
+                          {selectedMemberId && (
+                            <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium">
+                              Lọc theo: {users.find(u => u.id === selectedMemberId)?.name}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-400">{team.totalTasks} công việc</span>
+                          {selectedMemberId && team.totalTasks > 0 && (
+                            <span className="text-xs text-blue-400">(đã lọc)</span>
+                          )}
+                        </div>
+                      </div>
+                      {/* Team Members */}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {/* Sort members: team leaders first, then others */}
+                        {team.members
+                          .sort((a, b) => {
+                            // Team leaders come first
+                            if (a.role === 'team_leader' && b.role !== 'team_leader') return -1;
+                            if (a.role !== 'team_leader' && b.role === 'team_leader') return 1;
+                            // Then sort alphabetically by name
+                            return a.name.localeCompare(b.name);
+                          })
+                          .map(member => {
+                            const isSelected = selectedMemberId === member.id;
+                            const memberTasks = team.taskGroups.reduce(
+                              (total: number, group: any) => {
+                                return (
+                                  total +
+                                  group.tasks.filter(
+                                    (task: any) =>
+                                      task.assignedTo?.name === member.name ||
+                                      task.createdBy?.name === member.name
+                                  ).length
+                                );
+                              },
+                              0
+                            );
 
-                        return (
+                            return (
+                              <button
+                                key={member.id}
+                                data-testid="team-member-button"
+                                onClick={() => handleMemberClick(member.id)}
+                                className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 ${
+                                  isSelected
+                                    ? 'bg-blue-600 text-white ring-2 ring-blue-400'
+                                    : member.role === 'team_leader'
+                                      ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                                      : 'bg-gray-500/20 text-gray-400 hover:bg-gray-500/30'
+                                }`}
+                                title={`Click để lọc công việc của ${member.name} (${memberTasks} công việc)`}
+                              >
+                                {member.name} {member.role === 'team_leader' && '(Trưởng nhóm)'}
+                                {memberTasks > 0 && (
+                                  <span
+                                    className={`ml-1 px-1 py-0.5 rounded text-xs ${
+                                      isSelected ? 'bg-white/20' : 'bg-black/20'
+                                    }`}
+                                  >
+                                    {memberTasks}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        {selectedMemberId && (
                           <button
-                            key={member.id}
-                            data-testid="team-member-button"
-                            onClick={() => handleMemberClick(member.id)}
-                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 ${
-                              isSelected
-                                ? 'bg-blue-600 text-white ring-2 ring-blue-400'
-                                : member.role === 'team_leader'
-                                ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
-                                : 'bg-gray-500/20 text-gray-400 hover:bg-gray-500/30'
-                            }`}
-                            title={`Click để lọc công việc của ${member.name} (${memberTasks} công việc)`}
+                            onClick={() => setSelectedMemberId(null)}
+                            className="px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                            title="Xóa bộ lọc thành viên"
                           >
-                            {member.name} {member.role === 'team_leader' && '(Trưởng nhóm)'}
-                            {memberTasks > 0 && (
-                              <span className={`ml-1 px-1 py-0.5 rounded text-xs ${
-                                isSelected ? 'bg-white/20' : 'bg-black/20'
-                              }`}>
-                                {memberTasks}
-                              </span>
-                            )}
+                            ✕ Bỏ lọc
                           </button>
-                        );
-                      })}
-                    {selectedMemberId && (
-                      <button
-                        onClick={() => setSelectedMemberId(null)}
-                        className="px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
-                        title="Xóa bộ lọc thành viên"
-                      >
-                        ✕ Bỏ lọc
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Team Task Groups */}
-                <div className="p-6 space-y-4">
-                  {team.taskGroups.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="text-gray-400 text-sm">
-                        Nhóm này chưa có công việc nào
+                        )}
                       </div>
                     </div>
-                  ) : (
-                    (() => {
-                      // Flatten all tasks from all team groups
-                      const allTeamTasks = team.taskGroups.flatMap(group => group.tasks);
 
-                      return (
-                        <div className="mobile-task-list">
-                          {/* Gmail-Style Team Tasks List - Mobile Optimized */}
-                          <div>
-                            {allTeamTasks.map((task) => {
-                            const workTypeInfo = getWorkTypeInfo(task.workType);
-                            const WorkTypeIcon = workTypeInfo.icon;
-                            return (
-                              <div
-                                key={task.id}
-                                className="mobile-task-item group hover:bg-gray-700/30 transition-all duration-200 cursor-pointer relative"
-                                onClick={() => handleTaskClick(task)}
-                              >
-                                {/* Icons - Hidden on mobile only */}
-                                <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-                                  {/* Work Type Badge - Full Label */}
-                                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${workTypeInfo.color}`} title={workTypeInfo.label}>
-                                    {workTypeInfo.label}
-                                  </div>
+                    {/* Team Task Groups */}
+                    <div className="p-6 space-y-4">
+                      {team.taskGroups.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="text-gray-400 text-sm">
+                            Nhóm này chưa có công việc nào
+                          </div>
+                        </div>
+                      ) : (
+                        (() => {
+                          // Flatten all tasks from all team groups
+                          const allTeamTasks = team.taskGroups.flatMap(group => group.tasks);
 
-                                  {/* Status Icon Only */}
-                                  <TaskStatusPriority status={task.status} priority={task.priority} iconOnly />
-                                </div>
+                          return (
+                            <div className="mobile-task-list">
+                              {/* Gmail-Style Team Tasks List - Mobile Optimized */}
+                              <div>
+                                {allTeamTasks.map(task => {
+                                  return (
+                                    <div
+                                      key={task.id}
+                                      className="mobile-task-item group hover:bg-gray-700/30 transition-all duration-200 cursor-pointer relative"
+                                      onClick={() => handleTaskClick(task)}
+                                    >
+                                      {/* Icons - Hidden on mobile only */}
+                                      <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+                                        {/* Work Type Badges - Multiple Labels */}
+                                        <MultiWorkTypeBadges
+                                          workTypes={task.workTypes || [task.workType]}
+                                          onChange={newWorkTypes => {
+                                            console.log('WorkTypes changed:', newWorkTypes);
+                                            handleUpdateTask({
+                                              id: task.id,
+                                              workTypes: newWorkTypes as any,
+                                            });
+                                          }}
+                                          maxDisplay={2}
+                                        />
 
-                                {/* Main Content Area - Mobile Optimized */}
-                                <div className="mobile-task-content">
-                                  {/* Desktop/Tablet Layout */}
-                                  <div className="hidden md:flex items-center w-full">
-                                    <span className="mobile-assignee" title={task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}>
-                                      {task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}
-                                    </span>
-                                    <h5 className="font-medium text-white group-hover:text-blue-300 transition-colors text-sm min-w-0 flex-1 ml-8" title={task.name}>
-                                      {task.name}
-                                      {task.description && (
-                                        <span className="text-gray-300 font-normal">
-                                          {' - '}{task.description}
-                                        </span>
-                                      )}
-                                    </h5>
-                                  </div>
-
-                                  {/* Mobile Layout - Optimized */}
-                                  <div className="md:hidden w-full">
-                                    {/* Task Title */}
-                                    <h5 className="mobile-task-title" title={task.name}>
-                                      {task.name}
-                                    </h5>
-
-                                    {/* Task Description */}
-                                    {task.description && (
-                                      <p className="mobile-task-description" title={task.description}>
-                                        {task.description}
-                                      </p>
-                                    )}
-
-                                    {/* Meta Information */}
-                                    <div className="mobile-task-meta">
-                                      <div className={`mobile-task-badge text-white ${workTypeInfo.color}`} title={workTypeInfo.label}>
-                                        {workTypeInfo.label}
+                                        {/* Editable Status & Priority Badges */}
+                                        <StatusBadge
+                                          value={task.status}
+                                          onChange={(
+                                            newStatus: 'new-requests' | 'approved' | 'live'
+                                          ) => handleUpdateTask({ id: task.id, status: newStatus })}
+                                        />
+                                        <PriorityBadge
+                                          value={task.priority}
+                                          onChange={(newPriority: 'low' | 'normal' | 'high') =>
+                                            handleUpdateTask({ id: task.id, priority: newPriority })
+                                          }
+                                        />
+                                        <ShareScopeBadge
+                                          value={task.shareScope || 'team'}
+                                          onChange={(newScope: 'private' | 'team' | 'public') =>
+                                            handleUpdateTask({ id: task.id, shareScope: newScope })
+                                          }
+                                        />
                                       </div>
-                                      <TaskStatusPriority status={task.status} priority={task.priority} iconOnly />
-                                      <span className="mobile-assignee" title={task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}>
-                                        {task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}
-                                      </span>
-                                      <span className="text-xs text-gray-400 font-medium">
+
+                                      {/* Main Content Area - Mobile Optimized */}
+                                      <div className="mobile-task-content">
+                                        {/* Desktop/Tablet Layout */}
+                                        <div className="hidden md:flex items-center w-full">
+                                          <span
+                                            className="mobile-assignee"
+                                            title={
+                                              task.assignedTo?.name ||
+                                              task.createdBy?.name ||
+                                              'Chưa giao'
+                                            }
+                                          >
+                                            {task.assignedTo?.name ||
+                                              task.createdBy?.name ||
+                                              'Chưa giao'}
+                                          </span>
+                                          <h5
+                                            className="font-bold text-white group-hover:text-blue-300 transition-colors text-base min-w-0 flex-1 ml-8"
+                                            title={task.name}
+                                          >
+                                            {task.name}
+                                            {task.description && (
+                                              <span className="text-gray-300 font-normal">
+                                                {' - '}
+                                                {task.description}
+                                              </span>
+                                            )}
+                                          </h5>
+                                        </div>
+
+                                        {/* Mobile Layout - Optimized */}
+                                        <div className="md:hidden w-full">
+                                          {/* Task Title */}
+                                          <h5 className="mobile-task-title" title={task.name}>
+                                            {task.name}
+                                          </h5>
+
+                                          {/* Task Description */}
+                                          {task.description && (
+                                            <p
+                                              className="mobile-task-description"
+                                              title={task.description}
+                                            >
+                                              {task.description}
+                                            </p>
+                                          )}
+
+                                          {/* Meta Information */}
+                                          <div className="mobile-task-meta">
+                                            <MultiWorkTypeBadges
+                                              workTypes={task.workTypes || [task.workType]}
+                                              onChange={newWorkTypes => {
+                                                console.log('WorkTypes changed:', newWorkTypes);
+                                                handleUpdateTask({
+                                                  id: task.id,
+                                                  workTypes: newWorkTypes as any,
+                                                });
+                                              }}
+                                              maxDisplay={2}
+                                              className="mobile-task-badge"
+                                            />
+                                            <StatusBadge
+                                              value={task.status}
+                                              onChange={(
+                                                newStatus: 'new-requests' | 'approved' | 'live'
+                                              ) =>
+                                                handleUpdateTask({ id: task.id, status: newStatus })
+                                              }
+                                            />
+                                            <PriorityBadge
+                                              value={task.priority}
+                                              onChange={newPriority =>
+                                                handleUpdateTask({
+                                                  id: task.id,
+                                                  priority: newPriority,
+                                                })
+                                              }
+                                            />
+                                            <ShareScopeBadge
+                                              value={task.shareScope || 'team'}
+                                              onChange={(newScope: 'private' | 'team' | 'public') =>
+                                                handleUpdateTask({
+                                                  id: task.id,
+                                                  shareScope: newScope,
+                                                })
+                                              }
+                                            />
+                                            <span
+                                              className="mobile-assignee"
+                                              title={
+                                                task.assignedTo?.name ||
+                                                task.createdBy?.name ||
+                                                'Chưa giao'
+                                              }
+                                            >
+                                              {task.assignedTo?.name ||
+                                                task.createdBy?.name ||
+                                                'Chưa giao'}
+                                            </span>
+                                            <span className="text-xs text-gray-400 font-medium">
+                                              {(() => {
+                                                const dateStr =
+                                                  task.startDate || task.createdAt || task.dueDate;
+                                                if (dateStr) {
+                                                  const date = parseDate(dateStr);
+                                                  if (date) {
+                                                    return formatVietnameseDate(date);
+                                                  }
+                                                }
+                                                return 'N/A';
+                                              })()}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Date - Right aligned like Gmail (Desktop/Tablet only) */}
+                                      <div
+                                        className="hidden md:block flex-shrink-0 text-xs text-gray-400 font-medium min-w-0"
+                                        style={{ width: '60px', textAlign: 'right' }}
+                                      >
                                         {(() => {
-                                          const dateStr = task.startDate || task.createdAt || task.dueDate;
+                                          // Ưu tiên startDate > createdAt > dueDate
+                                          const dateStr =
+                                            task.startDate || task.createdAt || task.dueDate;
                                           if (dateStr) {
                                             const date = parseDate(dateStr);
                                             if (date) {
@@ -919,115 +1122,137 @@ const TaskList: React.FC<TaskListProps> = ({
                                           }
                                           return 'N/A';
                                         })()}
-                                      </span>
+                                      </div>
+
+                                      {/* Desktop: Compact actions - Chỉ hiển thị khi hover */}
+                                      <div className="hidden md:flex flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute right-4 top-1/2 -translate-y-1/2">
+                                        <TaskActions
+                                          task={task}
+                                          onEdit={e => {
+                                            e?.stopPropagation();
+                                            handleEditTask(task.id);
+                                          }}
+                                          onDelete={e => {
+                                            e?.stopPropagation();
+                                            handleDeleteTask(task.id);
+                                          }}
+                                          compact
+                                        />
+                                      </div>
                                     </div>
-                                  </div>
-                                </div>
-
-                                {/* Date - Right aligned like Gmail (Desktop/Tablet only) */}
-                                <div className="hidden md:block flex-shrink-0 text-xs text-gray-400 font-medium min-w-0" style={{width: '60px', textAlign: 'right'}}>
-                                   {(() => {
-                                     // Ưu tiên startDate > createdAt > dueDate
-                                     const dateStr = task.startDate || task.createdAt || task.dueDate;
-                                     if (dateStr) {
-                                       const date = parseDate(dateStr);
-                                       if (date) {
-                                         return formatVietnameseDate(date);
-                                       }
-                                     }
-                                     return 'N/A';
-                                   })()}
-                                </div>
-
-                                {/* Desktop: Compact actions - Chỉ hiển thị khi hover */}
-                                <div className="hidden md:flex flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute right-4 top-1/2 -translate-y-1/2">
-                                  <TaskActions
-                                    onEdit={(e) => {
-                                      e?.stopPropagation();
-                                      handleEditTask(task.id);
-                                    }}
-                                    onDelete={(e) => {
-                                      e?.stopPropagation();
-                                      handleDeleteTask(task.id);
-                                    }}
-                                    compact
-                                  />
-                                </div>
-
-
+                                  );
+                                })}
                               </div>
-                            );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })()
-                  )}
-                </div>
-              </div>
+                            </div>
+                          );
+                        })()
+                      )}
+                    </div>
+                  </div>
                 );
               })()
-            ) : (
-              // No team selected message - Only for directors who can select teams
-              shouldShowTeamSelectorButtons(user.role) ? (
-                <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
-                  <div className="text-gray-400">
-                    <div className="mb-2">
-                      <svg className="w-12 h-12 mx-auto text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                    </div>
-                    <p className="text-lg font-medium mb-1">Vui lòng chọn một nhóm</p>
-                    <p className="text-sm">Chọn nhóm từ các nút ở trên để xem danh sách công việc</p>
+            ) : // No team selected message - Only for directors who can select teams
+            shouldShowTeamSelectorButtons(user.role) ? (
+              <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
+                <div className="text-gray-400">
+                  <div className="mb-2">
+                    <svg
+                      className="w-12 h-12 mx-auto text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
                   </div>
+                  <p className="text-lg font-medium mb-1">Vui lòng chọn một nhóm</p>
+                  <p className="text-sm">Chọn nhóm từ các nút ở trên để xem danh sách công việc</p>
                 </div>
-              ) : null
-            )
-          )
-        ) : (
-          // Render normal task groups
+              </div>
+            ) : null
+          ) : // Render normal task groups
           taskGroups.length === 0 ? (
             <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
               <div className="text-gray-400">
-                {tasks.length === 0 ? 'Không có công việc nào' : 'Không tìm thấy công việc phù hợp với bộ lọc'}
+                {tasks.length === 0
+                  ? 'Không có công việc nào'
+                  : 'Không tìm thấy công việc phù hợp với bộ lọc'}
               </div>
             </div>
           ) : (
             <div className="mobile-task-list">
               {/* Gmail-Style Tasks List - Mobile Optimized */}
               <div>
-                {filteredTasks.map((task) => {
-                  const workTypeInfo = getWorkTypeInfo(task.workType);
-                  const WorkTypeIcon = workTypeInfo.icon;
+                {filteredTasks.map(task => {
                   return (
                     <div
                       key={task.id}
+                      data-testid="task-item"
                       className="mobile-task-item mobile-touch-feedback mobile-optimized group hover:bg-gray-700/30 transition-all duration-200 cursor-pointer relative"
                       onClick={() => handleTaskClick(task)}
                     >
                       {/* Icons - Hidden on mobile only */}
                       <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-                        {/* Work Type Badge - Full Label */}
-                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${workTypeInfo.color}`} title={workTypeInfo.label}>
-                          {workTypeInfo.label}
-                        </div>
+                        {/* Work Type Badges - Multiple Labels */}
+                        <MultiWorkTypeBadges
+                          workTypes={task.workTypes || [task.workType]}
+                          onChange={newWorkTypes => {
+                            console.log('WorkTypes changed:', newWorkTypes);
+                            handleUpdateTask({
+                              id: task.id,
+                              workTypes: newWorkTypes as any,
+                            });
+                          }}
+                          maxDisplay={2}
+                        />
 
-                        {/* Status Icon Only */}
-                        <TaskStatusPriority status={task.status} priority={task.priority} iconOnly />
+                        {/* Editable Status & Priority Badges */}
+                        <StatusBadge
+                          value={task.status}
+                          onChange={(newStatus: 'new-requests' | 'approved' | 'live') =>
+                            handleUpdateTask({ id: task.id, status: newStatus })
+                          }
+                        />
+                        <PriorityBadge
+                          value={task.priority}
+                          onChange={(newPriority: 'low' | 'normal' | 'high') =>
+                            handleUpdateTask({ id: task.id, priority: newPriority })
+                          }
+                        />
+                        <ShareScopeBadge
+                          value={task.shareScope || 'team'}
+                          onChange={(newScope: 'private' | 'team' | 'public') =>
+                            handleUpdateTask({ id: task.id, shareScope: newScope })
+                          }
+                        />
                       </div>
 
                       {/* Main Content Area - Mobile Optimized */}
                       <div className="mobile-task-content">
                         {/* Desktop/Tablet Layout */}
                         <div className="hidden md:flex items-center w-full">
-                          <span className="mobile-assignee" title={task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}>
+                          <span
+                            className="mobile-assignee"
+                            title={task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}
+                          >
                             {task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}
                           </span>
-                          <h5 className="font-medium text-white group-hover:text-blue-300 transition-colors text-sm min-w-0 flex-1 ml-8" title={task.name}>
+                          <h5
+                            className="font-bold text-white group-hover:text-blue-300 transition-colors text-base min-w-0 flex-1 ml-8"
+                            title={task.name + (task.description ? ' - ' + task.description : '')}
+                          >
                             {task.name}
                             {task.description && (
                               <span className="text-gray-300 font-normal">
-                                {' - '}{task.description}
+                                {' - '}
+                                {task.description.length > 50
+                                  ? task.description.substring(0, 50) + '...'
+                                  : task.description}
                               </span>
                             )}
                           </h5>
@@ -1043,17 +1268,48 @@ const TaskList: React.FC<TaskListProps> = ({
                           {/* Task Description */}
                           {task.description && (
                             <p className="mobile-task-description" title={task.description}>
-                              {task.description}
+                              {task.description.length > 80
+                                ? task.description.substring(0, 80) + '...'
+                                : task.description}
                             </p>
                           )}
 
                           {/* Meta Information */}
                           <div className="mobile-task-meta">
-                            <div className={`mobile-task-badge text-white ${workTypeInfo.color}`} title={workTypeInfo.label}>
-                              {workTypeInfo.label}
-                            </div>
-                            <TaskStatusPriority status={task.status} priority={task.priority} iconOnly />
-                            <span className="mobile-assignee" title={task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}>
+                            <MultiWorkTypeBadges
+                              workTypes={task.workTypes || [task.workType]}
+                              onChange={newWorkTypes => {
+                                console.log('WorkTypes changed:', newWorkTypes);
+                                handleUpdateTask({
+                                  id: task.id,
+                                  workTypes: newWorkTypes as any,
+                                });
+                              }}
+                              maxDisplay={2}
+                              className="mobile-task-badge"
+                            />
+                            <StatusBadge
+                              value={task.status}
+                              onChange={(newStatus: 'new-requests' | 'approved' | 'live') =>
+                                handleUpdateTask({ id: task.id, status: newStatus })
+                              }
+                            />
+                            <PriorityBadge
+                              value={task.priority}
+                              onChange={(newPriority: 'low' | 'normal' | 'high') =>
+                                handleUpdateTask({ id: task.id, priority: newPriority })
+                              }
+                            />
+                            <ShareScopeBadge
+                              value={task.shareScope || 'team'}
+                              onChange={(newScope: 'private' | 'team' | 'public') =>
+                                handleUpdateTask({ id: task.id, shareScope: newScope })
+                              }
+                            />
+                            <span
+                              className="mobile-assignee"
+                              title={task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}
+                            >
                               {task.assignedTo?.name || task.createdBy?.name || 'Chưa giao'}
                             </span>
                             <span className="text-xs text-gray-400 font-medium">
@@ -1073,7 +1329,10 @@ const TaskList: React.FC<TaskListProps> = ({
                       </div>
 
                       {/* Date - Right aligned like Gmail (Desktop/Tablet only) */}
-                      <div className="hidden md:block flex-shrink-0 text-xs text-gray-400 font-medium min-w-0" style={{width: '60px', textAlign: 'right'}}>
+                      <div
+                        className="hidden md:block flex-shrink-0 text-xs text-gray-400 font-medium min-w-0"
+                        style={{ width: '60px', textAlign: 'right' }}
+                      >
                         {(() => {
                           // Ưu tiên startDate > createdAt > dueDate
                           const dateStr = task.startDate || task.createdAt || task.dueDate;
@@ -1090,11 +1349,12 @@ const TaskList: React.FC<TaskListProps> = ({
                       {/* Desktop: Compact actions - Chỉ hiển thị khi hover */}
                       <div className="hidden md:flex flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute right-4 top-1/2 -translate-y-1/2">
                         <TaskActions
-                          onEdit={(e) => {
+                          task={task}
+                          onEdit={e => {
                             e?.stopPropagation();
                             handleEditTask(task.id);
                           }}
-                          onDelete={(e) => {
+                          onDelete={e => {
                             e?.stopPropagation();
                             handleDeleteTask(task.id);
                           }}
@@ -1106,9 +1366,8 @@ const TaskList: React.FC<TaskListProps> = ({
                 })}
               </div>
             </div>
-          )
-        )}
-      </div>
+          )}
+        </div>
       </div>
 
       {/* Modals */}

@@ -1,14 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Home,
-  Briefcase,
-  Calendar,
-  Users,
-  Settings,
-  User
-} from 'lucide-react';
-import { getCurrentUser } from '../../../data/usersMockData';
+import { Briefcase, Calendar, Home, User, Users } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import ProfileModal from '../../../components/ProfileModal';
+import { getCurrentUser } from '../../../data/usersMockData';
 
 interface MobileDockProps {
   activeTab: string;
@@ -21,13 +14,14 @@ export function MobileDock({
   activeTab,
   onTabChange,
   isModalOpen = false,
-  onLogout
+  onLogout,
 }: MobileDockProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const showTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle scroll direction detection
   useEffect(() => {
@@ -35,26 +29,38 @@ export function MobileDock({
       const currentScrollY = window.scrollY;
       const scrollDifference = Math.abs(currentScrollY - lastScrollY);
 
+      // Check if user is near bottom of page
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrolledToBottom = currentScrollY + windowHeight >= documentHeight - 50; // 50px threshold
+
       // Only update if scroll difference is significant (avoid micro-scrolls)
-      if (scrollDifference > 5) {
+      if (scrollDifference > 3) {
         const direction = currentScrollY > lastScrollY ? 'down' : 'up';
         setScrollDirection(direction);
         setLastScrollY(currentScrollY);
 
-        // Clear existing timeout
+        // Clear existing timeouts
         if (hideTimeoutRef.current) {
           clearTimeout(hideTimeoutRef.current);
         }
-
-        // Show dock when scrolling up
-        if (direction === 'up') {
-          setIsVisible(true);
-        } else {
-          // Hide dock when scrolling down, but with a delay
-          hideTimeoutRef.current = setTimeout(() => {
-            setIsVisible(false);
-          }, 150);
+        if (showTimeoutRef.current) {
+          clearTimeout(showTimeoutRef.current);
         }
+
+        // Scroll down → Ẩn dock (kể cả ở cuối trang)
+        if (direction === 'down') {
+          setIsVisible(false);
+        }
+        // Scroll up → Hiện dock
+        else if (direction === 'up') {
+          setIsVisible(true);
+        }
+
+        // Dừng scroll → Dock tự hiện (accessibility) - sau 1.5 giây
+        showTimeoutRef.current = setTimeout(() => {
+          setIsVisible(true);
+        }, 1500);
       }
     };
 
@@ -64,23 +70,32 @@ export function MobileDock({
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current);
       }
+      if (showTimeoutRef.current) {
+        clearTimeout(showTimeoutRef.current);
+      }
     };
   }, [lastScrollY]);
 
-  // Hide dock when modals are open (but NOT when scrolled to bottom per requirement)
+  // Hide dock when modals are open
   useEffect(() => {
     if (isModalOpen || isProfileModalOpen) {
       setIsVisible(false);
     } else {
-      setIsVisible(true);
+      // Chỉ hiện dock khi không có modal và không đang scroll down
+      if (scrollDirection === 'up' || lastScrollY === 0) {
+        setIsVisible(true);
+      }
     }
-  }, [isModalOpen, isProfileModalOpen]);
+  }, [isModalOpen, isProfileModalOpen, scrollDirection, lastScrollY]);
 
   // Show dock when tab changes (user interaction)
   useEffect(() => {
     setIsVisible(true);
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
+    }
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
     }
   }, [activeTab]);
 
@@ -101,8 +116,8 @@ export function MobileDock({
         team: {
           id: '0',
           name: 'Unknown Team',
-          location: 'HN' as const
-        }
+          location: 'HN' as const,
+        },
       };
     }
   })();
@@ -122,28 +137,28 @@ export function MobileDock({
       label: 'Trang Chủ',
       icon: Home,
       color: 'text-blue-400',
-      activeColor: 'text-blue-500'
+      activeColor: 'text-blue-500',
     },
     {
       id: 'work',
       label: 'Công Việc',
       icon: Briefcase,
       color: 'text-green-400',
-      activeColor: 'text-green-500'
+      activeColor: 'text-green-500',
     },
     {
       id: 'plan',
       label: 'Kế Hoạch',
       icon: Calendar,
       color: 'text-purple-400',
-      activeColor: 'text-purple-500'
+      activeColor: 'text-purple-500',
     },
     {
       id: 'customers',
       label: 'Khách Hàng',
       icon: Users,
       color: 'text-orange-400',
-      activeColor: 'text-orange-500'
+      activeColor: 'text-orange-500',
     },
 
     {
@@ -152,75 +167,89 @@ export function MobileDock({
       icon: User,
       color: 'text-purple-400',
       activeColor: 'text-purple-500',
-      isProfile: true
-    }
+      isProfile: true,
+    },
   ];
 
   return (
-    <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 ease-in-out ${
-      isVisible ? 'translate-y-0' : 'translate-y-full'
-    }`}>
+    <div
+      className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 transition-all duration-300 ease-in-out ${
+        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+      }`}
+      style={{
+        // Đảm bảo dock hoàn toàn ẩn khỏi viewport khi scroll down
+        pointerEvents: isVisible ? 'auto' : 'none',
+      }}
+    >
       {/* Dock container with rounded corners and improved styling */}
-      <div className="mx-4 mb-2">
-        <div className="bg-gray-800/90 backdrop-blur-xl border border-gray-600/30 rounded-2xl shadow-2xl">
-          <div className="flex items-center justify-around px-2 py-2">
-          {dockItems.map((item: any) => {
-            const isActive = activeTab === item.id;
-            const Icon = item.icon;
+      <div className="mx-3 mb-1">
+        <div className="bg-gray-800/90 backdrop-blur-xl border border-gray-600/30 rounded-xl shadow-2xl">
+          <div className="flex items-center justify-around px-1 py-1">
+            {dockItems.map((item: any) => {
+              const isActive = activeTab === item.id;
+              const Icon = item.icon;
 
-            return (
-              <button
-                key={item.id}
-                onClick={() => item.isProfile ? setIsProfileModalOpen(true) : onTabChange(item.id)}
-                className={`
-                  flex flex-col items-center justify-center p-2 rounded-xl min-w-[56px] min-h-[56px]
+              return (
+                <button
+                  key={item.id}
+                  onClick={() =>
+                    item.isProfile ? setIsProfileModalOpen(true) : onTabChange(item.id)
+                  }
+                  className={`
+                  flex flex-col items-center justify-center p-1 rounded-lg min-w-[40px] min-h-[40px]
                   transition-all duration-300 ease-out transform
-                  ${isActive
-                    ? 'bg-white/15 scale-105 shadow-lg shadow-black/20'
-                    : 'hover:bg-white/8 hover:scale-102 active:scale-95'
+                  ${
+                    isActive
+                      ? 'bg-white/15 scale-105 shadow-lg shadow-black/20'
+                      : 'hover:bg-white/8 hover:scale-102 active:scale-95'
                   }
                 `}
-              >
-                {/* Icon Container or Avatar */}
-                <div className={`
-                  relative mb-1 transition-all duration-300
+                >
+                  {/* Icon Container or Avatar */}
+                  <div
+                    className={`
+                  relative mb-0.5 transition-all duration-300
                   ${isActive ? 'scale-105' : 'group-hover:scale-102'}
-                `}>
-                  {item.isProfile ? (
-                    // User Avatar
-                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
-                      {getAvatarInitials(user.name)}
-                    </div>
-                  ) : (
-                    // Regular Icon
-                    <Icon
-                      className={`
-                        w-5 h-5 transition-all duration-300
+                `}
+                  >
+                    {item.isProfile ? (
+                      // User Avatar
+                      <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                        {getAvatarInitials(user.name)}
+                      </div>
+                    ) : (
+                      // Regular Icon
+                      <Icon
+                        className={`
+                        w-4 h-4 transition-all duration-300
                         ${isActive ? `${item.activeColor} drop-shadow-lg` : `${item.color} group-hover:text-white`}
                       `}
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                  )}
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                    )}
 
-                  {/* Active indicator dot */}
-                  {isActive && (
-                    <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full animate-pulse shadow-lg" />
-                  )}
-                </div>
+                    {/* Active indicator dot */}
+                    {isActive && (
+                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full animate-pulse shadow-lg" />
+                    )}
+                  </div>
 
-                {/* Label */}
-                <span className={`
+                  {/* Label */}
+                  <span
+                    className={`
                   text-xs font-medium transition-all duration-300
-                  ${isActive
-                    ? 'text-white scale-102 font-semibold'
-                    : 'text-gray-400 group-hover:text-gray-200'
+                  ${
+                    isActive
+                      ? 'text-white scale-102 font-semibold'
+                      : 'text-gray-400 group-hover:text-gray-200'
                   }
-                `}>
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
+                `}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

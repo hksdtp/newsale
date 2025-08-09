@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { X, Camera, Upload, RotateCcw, Check, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Camera, Check, RotateCcw, Upload, X } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 interface ChangeAvatarModalProps {
@@ -8,11 +8,7 @@ interface ChangeAvatarModalProps {
   onSuccess: () => void;
 }
 
-const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({
-  isOpen,
-  onClose,
-  onSuccess
-}) => {
+const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -44,7 +40,14 @@ const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({
       const savedUser = localStorage.getItem('auth_user');
       if (savedUser) {
         const user = JSON.parse(savedUser);
-        return user.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
+        return (
+          user.name
+            ?.split(' ')
+            .map((n: string) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2) || 'U'
+        );
       }
     } catch (error) {
       console.error('Error getting user name:', error);
@@ -54,36 +57,36 @@ const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({
 
   const validateFile = (file: File): string[] => {
     const errors = [];
-    
+
     // Check file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
       errors.push('Chỉ hỗ trợ file JPG, PNG, GIF');
     }
-    
+
     // Check file size (5MB max)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       errors.push('Kích thước file không được vượt quá 5MB');
     }
-    
+
     return errors;
   };
 
   const handleFileSelect = (file: File) => {
     const validationErrors = validateFile(file);
-    
+
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
       return;
     }
-    
+
     setErrors([]);
     setSelectedFile(file);
-    
+
     // Create preview URL
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       if (e.target?.result) {
         setPreviewUrl(e.target.result as string);
       }
@@ -111,7 +114,7 @@ const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    
+
     const file = e.dataTransfer.files[0];
     if (file) {
       handleFileSelect(file);
@@ -135,7 +138,7 @@ const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({
 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // For now, just update localStorage with preview URL
       try {
         const savedUser = localStorage.getItem('auth_user');
@@ -147,16 +150,17 @@ const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({
       } catch (error) {
         console.error('Error updating localStorage:', error);
       }
-      
-      alert('✅ Đổi avatar thành công!\n\n📷 Avatar mới đã được cập nhật và sẽ hiển thị trên toàn bộ hệ thống.');
-      
+
+      alert(
+        '✅ Đổi avatar thành công!\n\n📷 Avatar mới đã được cập nhật và sẽ hiển thị trên toàn bộ hệ thống.'
+      );
+
       onSuccess();
       onClose();
-      
+
       // Reset form
       setSelectedFile(null);
       setPreviewUrl('');
-      
     } catch (error) {
       console.error('Error uploading avatar:', error);
       setErrors(['Có lỗi xảy ra khi upload avatar. Vui lòng thử lại.']);
@@ -183,7 +187,10 @@ const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive z-50">
+    <div
+      className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive"
+      style={{ zIndex: 1000000 }}
+    >
       <div className="create-task-modal bg-[#1a1f2e] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-700/50 modal-animate-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
@@ -193,10 +200,7 @@ const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-white">Đổi avatar</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -280,9 +284,7 @@ const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({
                     <Upload className="w-8 h-8 text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-white font-medium mb-2">
-                      Kéo thả ảnh vào đây hoặc
-                    </p>
+                    <p className="text-white font-medium mb-2">Kéo thả ảnh vào đây hoặc</p>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}

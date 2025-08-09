@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getLocationColors, getLocationIcon } from '../../../../../constants/locationIcons';
 import { authService } from '../../../api/authService';
 
 export function TeamSelectionPage() {
@@ -16,7 +17,7 @@ export function TeamSelectionPage() {
       try {
         setIsLoading(true);
         const teamsData = await authService.getTeamsByLocation(location);
-        
+
         // Sort teams by numeric order if they contain numbers
         const sortedTeams = teamsData.sort((a, b) => {
           // Extract numbers from team names (e.g., "Nhóm 1" => 1)
@@ -24,19 +25,19 @@ export function TeamSelectionPage() {
             const match = name.match(/\d+/);
             return match ? parseInt(match[0]) : 0;
           };
-          
+
           const numA = getNumber(a.name);
           const numB = getNumber(b.name);
-          
+
           // If both have numbers, sort numerically
           if (numA && numB) {
             return numA - numB;
           }
-          
+
           // Otherwise, sort alphabetically
           return a.name.localeCompare(b.name);
         });
-        
+
         setTeams(sortedTeams);
       } catch (error) {
         console.error('Failed to load teams:', error);
@@ -52,7 +53,7 @@ export function TeamSelectionPage() {
 
   const handleTeamSelect = (teamId: string) => {
     if (isAnimating) return;
-    
+
     setSelectedTeam(teamId);
     setIsAnimating(true);
 
@@ -65,14 +66,13 @@ export function TeamSelectionPage() {
     navigate('/');
   };
 
-  const getLocationIcon = (location: string) => {
-    return location === 'Hà Nội' ? '🏢' : '🌆';
+  const getTeamLocationIcon = (location: string) => {
+    return getLocationIcon(location as 'Hà Nội' | 'Hồ Chí Minh');
   };
 
-  const getLocationColor = (location: string) => {
-    return location === 'Hà Nội' 
-      ? { gradient: 'from-blue-600 to-blue-800', hover: 'hover:from-blue-700 hover:to-blue-900' }
-      : { gradient: 'from-green-600 to-green-800', hover: 'hover:from-green-700 hover:to-green-900' };
+  const getTeamLocationColor = (location: string) => {
+    const colors = getLocationColors(location as 'Hà Nội' | 'Hồ Chí Minh');
+    return { gradient: colors.gradient, hover: colors.hover };
   };
 
   if (isLoading) {
@@ -95,7 +95,12 @@ export function TeamSelectionPage() {
           className="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200"
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Quay lại
         </button>
@@ -109,9 +114,7 @@ export function TeamSelectionPage() {
             <h1 className="text-2xl font-medium text-gray-900 mb-2 animate-slide-down">
               Khu vực {location}
             </h1>
-            <p className="text-gray-600 animate-fade-in animate-stagger-1">
-              Chọn nhóm của bạn
-            </p>
+            <p className="text-gray-600 animate-fade-in animate-stagger-1">Chọn nhóm của bạn</p>
           </div>
 
           {/* Teams List with enhanced animations */}
@@ -126,21 +129,16 @@ export function TeamSelectionPage() {
                     hover:border-blue-300 hover:bg-blue-50
                     transition-all-smooth focus-ring
                     animate-slide-up
-                    ${selectedTeam === team.id
-                      ? 'border-blue-500 bg-blue-50 scale-[1.02] shadow-lg'
-                      : 'shadow-sm'
+                    ${
+                      selectedTeam === team.id
+                        ? 'border-blue-500 bg-blue-50 scale-[1.02] shadow-lg'
+                        : 'shadow-sm'
                     }
-                    ${isAnimating && selectedTeam !== team.id
-                      ? 'opacity-30 scale-95'
-                      : ''
-                    }
-                    ${isAnimating && selectedTeam === team.id
-                      ? 'border-blue-600 bg-blue-100'
-                      : ''
-                    }
+                    ${isAnimating && selectedTeam !== team.id ? 'opacity-30 scale-95' : ''}
+                    ${isAnimating && selectedTeam === team.id ? 'border-blue-600 bg-blue-100' : ''}
                   `}
                   style={{
-                    animationDelay: `${index * 150}ms`
+                    animationDelay: `${index * 150}ms`,
                   }}
                   onClick={() => handleTeamSelect(team.id)}
                   disabled={isAnimating}
@@ -151,19 +149,20 @@ export function TeamSelectionPage() {
                       <h3 className="text-lg font-medium text-gray-900 mb-1 transition-colors-smooth">
                         {team.name}
                       </h3>
-                      <p className="text-sm text-gray-500 transition-colors-smooth">
-                        {location}
-                      </p>
+                      <p className="text-sm text-gray-500 transition-colors-smooth">{location}</p>
                     </div>
 
                     {/* Arrow with enhanced animation */}
-                    <div className={`
+                    <div
+                      className={`
                       text-gray-400 transition-all-smooth
-                      ${selectedTeam === team.id
-                        ? 'text-blue-600 transform rotate-90 scale-110'
-                        : 'group-hover:text-blue-600 group-hover:translate-x-1'
+                      ${
+                        selectedTeam === team.id
+                          ? 'text-blue-600 transform rotate-90 scale-110'
+                          : 'group-hover:text-blue-600 group-hover:translate-x-1'
                       }
-                    `}>
+                    `}
+                    >
                       <svg
                         className="w-5 h-5 transition-transform-smooth"
                         fill="none"
@@ -178,8 +177,6 @@ export function TeamSelectionPage() {
                         />
                       </svg>
                     </div>
-
-
                   </div>
                 </button>
               ))}
@@ -187,13 +184,21 @@ export function TeamSelectionPage() {
           ) : (
             <div className="text-center py-12 animate-fade-in">
               <div className="text-gray-400 mb-4 animate-float">
-                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg
+                  className="w-12 h-12 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Không tìm thấy nhóm nào
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy nhóm nào</h3>
               <p className="text-gray-600 text-sm">
                 Hiện tại chưa có nhóm nào tại khu vực {location}
               </p>
@@ -213,9 +218,7 @@ export function TeamSelectionPage() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6">
-        {/* Empty footer for spacing */}
-      </footer>
+      <footer className="p-6">{/* Empty footer for spacing */}</footer>
     </div>
   );
 }

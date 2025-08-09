@@ -1,5 +1,5 @@
+import { AlertTriangle, CheckCircle, Mail, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { X, Mail, CheckCircle, AlertTriangle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 interface ChangeEmailModalProps {
@@ -8,11 +8,7 @@ interface ChangeEmailModalProps {
   onSuccess: () => void;
 }
 
-const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
-  isOpen,
-  onClose,
-  onSuccess
-}) => {
+const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [newEmail, setNewEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -75,8 +71,10 @@ const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
       }
 
       // Show success message
-      alert(`✅ Đổi email thành công!\n\n📧 Email đã được cập nhật từ:\n${currentEmail}\n\nThành:\n${newEmail}`);
-      
+      alert(
+        `✅ Đổi email thành công!\n\n📧 Email đã được cập nhật từ:\n${currentEmail}\n\nThành:\n${newEmail}`
+      );
+
       console.log('Email changed successfully');
       onSuccess();
       onClose();
@@ -89,7 +87,10 @@ const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive z-50">
+    <div
+      className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive"
+      style={{ zIndex: 1000000 }}
+    >
       <div className="create-task-modal bg-[#1a1f2e] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-700/50 modal-animate-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
@@ -99,10 +100,7 @@ const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-white">Đổi email</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -139,7 +137,7 @@ const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
             <input
               type="email"
               value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
+              onChange={e => setNewEmail(e.target.value)}
               placeholder="Nhập email mới"
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={loading}

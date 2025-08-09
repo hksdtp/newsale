@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, X, Check, Building, Users, Target, User } from 'lucide-react';
+import { Building, Check, ChevronDown, Target, User, Users, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export interface WorkTypeOption {
   value: string;
@@ -34,37 +34,73 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
 
   // Work type options with categories
   const workTypeOptions: WorkTypeOption[] = [
-    { value: 'sbg_new', label: 'SBG mới', icon: Building, color: 'bg-blue-500', category: 'SBG' },
-    { value: 'sbg_old', label: 'SBG cũ', icon: Building, color: 'bg-blue-600', category: 'SBG' },
-    { value: 'partner_new', label: 'Đối tác mới', icon: Users, color: 'bg-green-500', category: 'ĐỐI TÁC' },
-    { value: 'partner_old', label: 'Đối tác cũ', icon: Users, color: 'bg-green-600', category: 'ĐỐI TÁC' },
-    { value: 'kts_new', label: 'KTS mới', icon: Target, color: 'bg-purple-500', category: 'KTS' },
-    { value: 'kts_old', label: 'KTS cũ', icon: Target, color: 'bg-purple-600', category: 'KTS' },
-    { value: 'customer_new', label: 'Khách hàng mới', icon: User, color: 'bg-orange-500', category: 'KHÁCH HÀNG' },
-    { value: 'customer_old', label: 'Khách hàng cũ', icon: User, color: 'bg-orange-600', category: 'KHÁCH HÀNG' },
-    { value: 'other', label: 'Công việc khác', icon: Building, color: 'bg-gray-500', category: 'KHÁC' },
+    { value: 'sbg-new', label: 'SBG mới', icon: Building, color: 'bg-blue-500', category: 'SBG' },
+    { value: 'sbg-old', label: 'SBG cũ', icon: Building, color: 'bg-blue-600', category: 'SBG' },
+    {
+      value: 'partner-new',
+      label: 'Đối tác mới',
+      icon: Users,
+      color: 'bg-green-500',
+      category: 'ĐỐI TÁC',
+    },
+    {
+      value: 'partner-old',
+      label: 'Đối tác cũ',
+      icon: Users,
+      color: 'bg-green-600',
+      category: 'ĐỐI TÁC',
+    },
+    { value: 'kts-new', label: 'KTS mới', icon: Target, color: 'bg-purple-500', category: 'KTS' },
+    { value: 'kts-old', label: 'KTS cũ', icon: Target, color: 'bg-purple-600', category: 'KTS' },
+    {
+      value: 'customer-new',
+      label: 'Khách hàng mới',
+      icon: User,
+      color: 'bg-orange-500',
+      category: 'KHÁCH HÀNG',
+    },
+    {
+      value: 'customer-old',
+      label: 'Khách hàng cũ',
+      icon: User,
+      color: 'bg-orange-600',
+      category: 'KHÁCH HÀNG',
+    },
+    {
+      value: 'other',
+      label: 'Công việc khác',
+      icon: Building,
+      color: 'bg-gray-500',
+      category: 'KHÁC',
+    },
   ];
 
   // Group options by category
-  const groupedOptions = workTypeOptions.reduce((acc, option) => {
-    const category = option.category || 'Khác';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(option);
-    return acc;
-  }, {} as Record<string, WorkTypeOption[]>);
+  const groupedOptions = workTypeOptions.reduce(
+    (acc, option) => {
+      const category = option.category || 'Khác';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(option);
+      return acc;
+    },
+    {} as Record<string, WorkTypeOption[]>
+  );
 
   // Filter options based on search term
-  const filteredOptions = Object.entries(groupedOptions).reduce((acc, [category, options]) => {
-    const filtered = options.filter(option => 
-      option.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    if (filtered.length > 0) {
-      acc[category] = filtered;
-    }
-    return acc;
-  }, {} as Record<string, WorkTypeOption[]>);
+  const filteredOptions = Object.entries(groupedOptions).reduce(
+    (acc, [category, options]) => {
+      const filtered = options.filter(option =>
+        option.label.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      if (filtered.length > 0) {
+        acc[category] = filtered;
+      }
+      return acc;
+    },
+    {} as Record<string, WorkTypeOption[]>
+  );
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -130,21 +166,21 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
               <span className="text-gray-400 text-sm">{placeholder}</span>
             ) : (
               <div className="flex flex-wrap gap-1.5">
-                {displayedBadges.map((option) => (
+                {displayedBadges.map(option => (
                   <span
                     key={option.value}
                     className={`dropdown-badge inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white ${option.color}`}
                   >
                     <span className="truncate max-w-[120px]">{option.label}</span>
                     <span
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         handleRemoveOption(option.value);
                       }}
                       className="ml-1.5 hover:bg-white/20 rounded-full p-0.5 transition-colors cursor-pointer inline-flex items-center justify-center"
                       role="button"
                       tabIndex={0}
-                      onKeyDown={(e) => {
+                      onKeyDown={e => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
                           e.stopPropagation();
@@ -167,14 +203,14 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
           <div className="flex items-center gap-2 ml-2">
             {selectedOptions.length > 0 && (
               <span
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   handleClearAll();
                 }}
                 className="text-gray-400 hover:text-gray-200 transition-colors cursor-pointer inline-flex items-center justify-center"
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     e.stopPropagation();
@@ -186,7 +222,9 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
                 <X className="w-4 h-4" />
               </span>
             )}
-            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            />
           </div>
         </div>
       </button>
@@ -221,7 +259,7 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
                     </span>
                   </div>
                   <div className="dropdown-grid p-3">
-                    {options.map((option) => {
+                    {options.map(option => {
                       const isSelected = value.includes(option.value);
                       return (
                         <button
@@ -253,11 +291,7 @@ const WorkTypeDropdown: React.FC<WorkTypeDropdownProps> = ({
       )}
 
       {/* Helper Text */}
-      {helperText && (
-        <div className="text-gray-400 text-sm mt-2">
-          {helperText}
-        </div>
-      )}
+      {helperText && <div className="text-gray-400 text-sm mt-2">{helperText}</div>}
     </div>
   );
 };

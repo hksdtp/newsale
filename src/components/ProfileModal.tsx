@@ -1,16 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { Camera, ChevronRight, Lock, LogOut, Mail, Settings, User, Users, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  X,
-  User,
-  Settings,
-  Lock,
-  Mail,
-  LogOut,
-  Camera,
-  Users,
-  ChevronRight
-} from 'lucide-react';
 import { getCurrentUser } from '../data/usersMockData';
 import ChangeAvatarModal from './ChangeAvatarModal';
 import ChangeEmailModal from './ChangeEmailModalNew';
@@ -23,12 +13,7 @@ interface ProfileModalProps {
   onNavigate: (tab: string) => void;
 }
 
-const ProfileModal: React.FC<ProfileModalProps> = ({
-  isOpen,
-  onClose,
-  onLogout,
-  onNavigate
-}) => {
+const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onLogout, onNavigate }) => {
   const [activeSection, setActiveSection] = useState<'main' | 'settings' | 'hr'>('main');
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -60,13 +45,18 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         name: 'Test User',
         email: 'test@example.com',
         role: 'employee',
-        location: 'Hà Nội'
+        location: 'Hà Nội',
       };
     }
   };
 
   const user = getUserData();
   console.log('🔧 ProfileModal isOpen:', isOpen, 'user:', user.name);
+  console.log('🔧 Modal states:', {
+    showChangePasswordModal,
+    showChangeEmailModal,
+    showChangeAvatarModal,
+  });
 
   if (!isOpen) return null;
 
@@ -121,7 +111,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
               <Camera className="w-3 h-3 text-white" />
             </button>
           </div>
-          
+
           {/* User Details */}
           <div className="flex-1">
             <h3 className="text-white font-semibold text-lg">{user.name}</h3>
@@ -192,24 +182,33 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
       {/* Settings Items */}
       <div className="space-y-2">
         <button
-          onClick={() => setShowChangePasswordModal(true)}
-          className="w-full flex items-center gap-3 p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+          onClick={() => {
+            console.log('🔐 Change password button clicked');
+            setShowChangePasswordModal(true);
+          }}
+          className="w-full flex items-center gap-3 p-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg transition-colors touch-manipulation"
         >
           <Lock className="w-5 h-5 text-yellow-400" />
           <span className="text-white">Đổi mật khẩu</span>
         </button>
 
         <button
-          onClick={() => setShowChangeEmailModal(true)}
-          className="w-full flex items-center gap-3 p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+          onClick={() => {
+            console.log('📧 Change email button clicked');
+            setShowChangeEmailModal(true);
+          }}
+          className="w-full flex items-center gap-3 p-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg transition-colors touch-manipulation"
         >
           <Mail className="w-5 h-5 text-blue-400" />
           <span className="text-white">Đổi email</span>
         </button>
 
         <button
-          onClick={() => setShowChangeAvatarModal(true)}
-          className="w-full flex items-center gap-3 p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+          onClick={() => {
+            console.log('📷 Change avatar button clicked');
+            setShowChangeAvatarModal(true);
+          }}
+          className="w-full flex items-center gap-3 p-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-lg transition-colors touch-manipulation"
         >
           <Camera className="w-5 h-5 text-purple-400" />
           <span className="text-white">Đổi avatar</span>
@@ -217,7 +216,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
         <button
           onClick={() => {
-            alert('Thông tin cá nhân bao gồm:\n\n• Họ và tên\n• Email\n• Số điện thoại\n• Địa chỉ\n• Ngày sinh\n• Giới tính\n• Phòng ban\n• Chức vụ\n• Ngày vào làm\n• Trạng thái làm việc');
+            alert(
+              'Thông tin cá nhân bao gồm:\n\n• Họ và tên\n• Email\n• Số điện thoại\n• Địa chỉ\n• Ngày sinh\n• Giới tính\n• Phòng ban\n• Chức vụ\n• Ngày vào làm\n• Trạng thái làm việc'
+            );
           }}
           className="w-full flex items-center gap-3 p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
         >
@@ -243,7 +244,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
       <div className="bg-gray-700 rounded-lg p-4">
         <h3 className="text-white font-semibold mb-2">Quản lý Nhân viên</h3>
         <p className="text-gray-400 text-sm">
-          Chức năng này cho phép bạn quản lý thông tin nhân viên, phân quyền và theo dõi hiệu suất làm việc.
+          Chức năng này cho phép bạn quản lý thông tin nhân viên, phân quyền và theo dõi hiệu suất
+          làm việc.
         </p>
       </div>
 
@@ -271,14 +273,20 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
       />
 
       {/* Modal */}
-      <div className={`profile-modal-content bg-gray-800/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl border border-gray-600/50 transform transition-all duration-300 ease-out ${
-        isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-      }`} style={{ zIndex: 999999 }}>
+      <div
+        className={`profile-modal-content bg-gray-800/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl border border-gray-600/50 transform transition-all duration-300 ease-out ${
+          isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+        }`}
+        style={{ zIndex: 999999 }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-600/50">
           <h2 className="text-xl font-semibold text-white">
-            {activeSection === 'main' ? 'Tài khoản' :
-             activeSection === 'settings' ? 'Cài đặt' : 'Quản lý Nhân viên'}
+            {activeSection === 'main'
+              ? 'Tài khoản'
+              : activeSection === 'settings'
+                ? 'Cài đặt'
+                : 'Quản lý Nhân viên'}
           </h2>
           <button
             onClick={onClose}

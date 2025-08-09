@@ -35,10 +35,13 @@ class SchedulingService {
         return { success: false, error: 'Invalid scheduled date' };
       }
 
-      // Check if date is in the future
+      // Check if date is in the past (allow today)
       const now = new Date();
-      if (scheduledDate < now) {
-        return { success: false, error: 'Scheduled date must be in the future' };
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const scheduleDate = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate());
+      
+      if (scheduleDate < today) {
+        return { success: false, error: 'Scheduled date cannot be in the past' };
       }
 
       // Validate time format if provided

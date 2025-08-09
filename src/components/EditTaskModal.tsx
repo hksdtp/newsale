@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { X, Save, Calendar, Clock, User, Building, Flag, FileText, Users, Target } from 'lucide-react';
-import { WORK_TYPES, WorkType } from '../data/dashboardMockData';
+import { Save, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { TaskWithUsers } from '../services/taskService';
+import { getPermissionErrorMessage, getTaskPermissions } from '../utils/taskPermissions';
 import WorkTypeDropdown from './WorkTypeDropdown';
 
 interface EditTaskModalProps {
@@ -21,7 +21,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
     dueDate: '',
     assignedTo: '',
     department: 'HN' as 'HN' | 'HCM',
-    campaignType: ''
+    campaignType: '',
   });
 
   // Load task data when modal opens
@@ -36,7 +36,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
         dueDate: task.dueDate || '',
         assignedTo: task.assignedTo?.name || '',
         department: task.department || 'HN',
-        campaignType: task.campaignType || ''
+        campaignType: task.campaignType || '',
       });
     }
   }, [isOpen, task]);
@@ -45,13 +45,20 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
     e.preventDefault();
     if (!task) return;
 
+    // Kiểm tra quyền chỉnh sửa (có ghi log nếu trái phép)
+    const permissions = getTaskPermissions(task);
+    if (!permissions.canEdit) {
+      alert(getPermissionErrorMessage('chỉnh sửa', task.name, task.id));
+      return;
+    }
+
     onSubmit({
       ...formData,
       id: task.id,
       workType: formData.workTypes[0] || 'other', // Use first selected work type
       startDate: task.startDate, // Keep original start date
       dueDate: formData.dueDate, // Fix: use dueDate instead of endDate
-      assignedToId: task.assignedTo?.id // Keep original assigned user
+      assignedToId: task.assignedTo?.id, // Keep original assigned user
     });
     onClose();
   };
@@ -59,24 +66,27 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
   const handleWorkTypeChange = (workTypes: string[]) => {
     setFormData(prev => ({
       ...prev,
-      workTypes
+      workTypes,
     }));
   };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-
   if (!isOpen || !task) return null;
+
+  // Kiểm tra quyền chỉnh sửa
+  const permissions = getTaskPermissions(task);
+  const canEdit = permissions.canEdit;
 
   const statusOptions = [
     { value: 'new-requests', label: 'Chưa tiến hành' },
     { value: 'approved', label: 'Đang tiến hành' },
-    { value: 'live', label: 'Đã hoàn thành' }
+    { value: 'live', label: 'Đã hoàn thành' },
   ];
 
   return (
@@ -90,8 +100,14 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
                 <Save className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-white">Chỉnh sửa công việc</h2>
-                <p className="text-gray-400 text-sm mt-1">Cập nhật thông tin công việc</p>
+                <h2 className="text-xl font-semibold text-white">
+                  {canEdit ? 'Chỉnh sửa công việc' : 'Xem chi tiết công việc'}
+                </h2>
+                <p className="text-gray-400 text-sm mt-1">
+                  {canEdit
+                    ? 'Cập nhật thông tin công việc'
+                    : 'Chỉ người tạo công việc mới có quyền chỉnh sửa'}
+                </p>
               </div>
             </div>
             <button
@@ -107,90 +123,109 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
         {/* Form */}
         <div className="create-task-modal-content">
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
-          {/* Work Type */}
-          <WorkTypeDropdown
-            label="Loại công việc"
-            value={formData.workTypes}
-            onChange={handleWorkTypeChange}
-            placeholder="Chọn loại công việc"
-            required
-          />
-
-          {/* Task Name */}
-          <div>
-            <label className="block text-white font-medium mb-2">
-              Tên công việc <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
-              placeholder="Nhập tên công việc..."
+            {/* Work Type */}
+            <WorkTypeDropdown
+              label="Loại công việc"
+              value={formData.workTypes}
+              onChange={handleWorkTypeChange}
+              placeholder="Chọn loại công việc"
+              disabled={!canEdit}
               required
             />
-          </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-white font-medium mb-2">
-              Mô tả chi tiết
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              rows={4}
-              className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
-              placeholder="Mô tả chi tiết về công việc, yêu cầu, mục tiêu..."
-            />
-          </div>
-
-          {/* Priority */}
-          <div>
-            <label className="block text-white font-medium mb-2">
-              Mức độ ưu tiên
-            </label>
-            <select
-              value={formData.priority}
-              onChange={(e) => handleInputChange('priority', e.target.value)}
-              className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
-            >
-              <option value="low">Thấp</option>
-              <option value="normal">Bình thường</option>
-              <option value="high">Cao</option>
-            </select>
-          </div>
-
-          {/* Status & Due Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Task Name */}
             <div>
               <label className="block text-white font-medium mb-2">
-                Trạng thái
+                Tên công việc <span className="text-red-400">*</span>
               </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={e => handleInputChange('name', e.target.value)}
+                disabled={!canEdit}
+                className={`w-full p-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none ${
+                  canEdit
+                    ? 'bg-gray-800/50 border-gray-600 focus:border-blue-500'
+                    : 'bg-gray-700/30 border-gray-700 cursor-not-allowed opacity-60'
+                }`}
+                placeholder="Nhập tên công việc..."
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-white font-medium mb-2">Mô tả chi tiết</label>
+              <textarea
+                value={formData.description}
+                onChange={e => handleInputChange('description', e.target.value)}
+                disabled={!canEdit}
+                rows={4}
+                className={`w-full p-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none resize-none ${
+                  canEdit
+                    ? 'bg-gray-800/50 border-gray-600 focus:border-blue-500'
+                    : 'bg-gray-700/30 border-gray-700 cursor-not-allowed opacity-60'
+                }`}
+                placeholder="Mô tả chi tiết về công việc, yêu cầu, mục tiêu..."
+              />
+            </div>
+
+            {/* Priority */}
+            <div>
+              <label className="block text-white font-medium mb-2">Mức độ ưu tiên</label>
               <select
-                value={formData.status}
-                onChange={(e) => handleInputChange('status', e.target.value)}
-                className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                value={formData.priority}
+                onChange={e => handleInputChange('priority', e.target.value)}
+                disabled={!canEdit}
+                className={`w-full p-3 border rounded-lg text-white focus:outline-none ${
+                  canEdit
+                    ? 'bg-gray-800/50 border-gray-600 focus:border-blue-500'
+                    : 'bg-gray-700/30 border-gray-700 cursor-not-allowed opacity-60'
+                }`}
               >
-                {statusOptions.map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
+                <option value="low">Thấp</option>
+                <option value="normal">Bình thường</option>
+                <option value="high">Cao</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-white font-medium mb-2">
-                Ngày hoàn thành
-              </label>
-              <input
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) => handleInputChange('dueDate', e.target.value)}
-                className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-          </div>
+            {/* Status & Due Date */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-white font-medium mb-2">Trạng thái</label>
+                <select
+                  value={formData.status}
+                  onChange={e => handleInputChange('status', e.target.value)}
+                  disabled={!canEdit}
+                  className={`w-full p-3 border rounded-lg text-white focus:outline-none ${
+                    canEdit
+                      ? 'bg-gray-800/50 border-gray-600 focus:border-blue-500'
+                      : 'bg-gray-700/30 border-gray-700 cursor-not-allowed opacity-60'
+                  }`}
+                >
+                  {statusOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
+              <div>
+                <label className="block text-white font-medium mb-2">Ngày hoàn thành</label>
+                <input
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={e => handleInputChange('dueDate', e.target.value)}
+                  disabled={!canEdit}
+                  className={`w-full p-3 border rounded-lg text-white focus:outline-none ${
+                    canEdit
+                      ? 'bg-gray-800/50 border-gray-600 focus:border-blue-500'
+                      : 'bg-gray-700/30 border-gray-700 cursor-not-allowed opacity-60'
+                  }`}
+                />
+              </div>
+            </div>
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-gray-700/50 mt-6">
@@ -199,15 +234,17 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
                 onClick={onClose}
                 className="w-full sm:w-auto px-6 py-3 text-gray-300 hover:text-white hover:bg-gray-700/30 rounded-lg transition-colors font-medium"
               >
-                Hủy
+                {canEdit ? 'Hủy' : 'Đóng'}
               </button>
-              <button
-                type="submit"
-                className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-              >
-                <Save className="w-4 h-4" />
-                Lưu thay đổi
-              </button>
+              {canEdit && (
+                <button
+                  type="submit"
+                  className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                >
+                  <Save className="w-4 h-4" />
+                  Lưu thay đổi
+                </button>
+              )}
             </div>
           </form>
         </div>

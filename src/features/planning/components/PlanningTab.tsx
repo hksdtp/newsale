@@ -1,9 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, CheckCircle, Circle, Plus, ArrowRight, CalendarDays, Target, Trash2, Edit3, MoreVertical, ChevronLeft, ChevronRight, Users, Eye, Grid3X3 } from 'lucide-react';
-import { schedulingService, ScheduledTask } from '../../../services/schedulingService';
-import { taskService } from '../../../services/taskService';
-import { supabase } from '../../../shared/api/supabase';
+import {
+  ArrowRight,
+  Calendar,
+  CalendarDays,
+  CheckCircle,
+  Clock,
+  Grid3X3,
+  MoreVertical,
+  Plus,
+  Target,
+  Trash2,
+  Users,
+  X,
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { getCurrentUser } from '../../../data/usersMockData';
+import { ScheduledTask, schedulingService } from '../../../services/schedulingService';
+import { CreateTaskData, taskService } from '../../../services/taskService';
+import { supabase } from '../../../shared/api/supabase';
 import { WeeklyScheduleManager } from './WeeklyScheduleManager';
 
 export function PlanningTab() {
@@ -21,16 +34,28 @@ export function PlanningTab() {
   const [users, setUsers] = useState<any[]>([]);
 
   // Check if current user is Khổng Đức Mạnh (can view all schedules)
-  const canViewAllSchedules = currentUser?.name === 'Khổng Đức Mạnh' || currentUser?.email === 'manh.khong@company.com';
+  const canViewAllSchedules =
+    currentUser?.name === 'Khổng Đức Mạnh' || currentUser?.email === 'manh.khong@company.com';
 
   // Weekly schedule manager state
   const [showWeeklySchedule, setShowWeeklySchedule] = useState(false);
+
+  // Add plan modal state
+  const [showAddPlanModal, setShowAddPlanModal] = useState(false);
+  const [newPlanData, setNewPlanData] = useState({
+    name: '',
+    description: '',
+    scheduledDate: '',
+    scheduledTime: '',
+    priority: 'normal' as 'low' | 'normal' | 'high',
+  });
+  const [isCreatingPlan, setIsCreatingPlan] = useState(false);
 
   // Debug: Log initial state
   console.log('📅 PlanningTab: Initial state:', {
     selectedDate: selectedDate.toISOString().split('T')[0],
     currentMonth: currentMonth.toISOString().split('T')[0],
-    scheduledTasksCount: scheduledTasks.length
+    scheduledTasksCount: scheduledTasks.length,
   });
 
   // Load users if current user can view all schedules
@@ -42,7 +67,10 @@ export function PlanningTab() {
 
   // Load scheduled tasks for current month
   useEffect(() => {
-    console.log('📅 PlanningTab: Loading tasks for month:', currentMonth.toISOString().split('T')[0]);
+    console.log(
+      '📅 PlanningTab: Loading tasks for month:',
+      currentMonth.toISOString().split('T')[0]
+    );
     loadMonthlyTasks();
   }, [currentMonth, selectedUserId]);
 
@@ -79,14 +107,18 @@ export function PlanningTab() {
       console.log('📅 PlanningTab: Loading monthly tasks for range:', {
         month: currentMonth.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }),
         startDate: startDateStr,
-        endDate: endDateStr
+        endDate: endDateStr,
       });
 
       // If admin viewing specific user, filter by user
       let tasks;
       if (canViewAllSchedules && selectedUserId) {
         // Load tasks for specific user in date range
-        tasks = await schedulingService.getScheduledTasksInRange(startDateStr, endDateStr, selectedUserId);
+        tasks = await schedulingService.getScheduledTasksInRange(
+          startDateStr,
+          endDateStr,
+          selectedUserId
+        );
         console.log(`📅 PlanningTab: Loaded tasks for user ${selectedUserId}:`, tasks?.length || 0);
       } else if (canViewAllSchedules && !selectedUserId) {
         // Load all tasks for admin in date range
@@ -100,11 +132,14 @@ export function PlanningTab() {
 
       console.log('📅 PlanningTab: Loaded monthly tasks:', tasks?.length || 0);
       if (tasks && tasks.length > 0) {
-        console.log('📋 Monthly tasks:', tasks.map(t => ({
-          name: t.name,
-          date: t.scheduled_date,
-          time: t.scheduled_time
-        })));
+        console.log(
+          '📋 Monthly tasks:',
+          tasks.map(t => ({
+            name: t.name,
+            date: t.scheduled_date,
+            time: t.scheduled_time,
+          }))
+        );
       } else {
         console.log('📋 No monthly tasks found for range:', startDateStr, 'to', endDateStr);
       }
@@ -132,26 +167,35 @@ export function PlanningTab() {
   const loadDailyTasks = async () => {
     try {
       // Use local date string to avoid timezone issues
-      const localDateStr = selectedDate.getFullYear() + '-' +
-        String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' +
+      const localDateStr =
+        selectedDate.getFullYear() +
+        '-' +
+        String(selectedDate.getMonth() + 1).padStart(2, '0') +
+        '-' +
         String(selectedDate.getDate()).padStart(2, '0');
 
       console.log('📅 PlanningTab: Loading daily tasks for local date:', {
         selectedDate: selectedDate.toLocaleDateString('vi-VN'),
         localDateStr: localDateStr,
-        isoWouldBe: selectedDate.toISOString().split('T')[0]
+        isoWouldBe: selectedDate.toISOString().split('T')[0],
       });
 
       // Apply user filtering for daily tasks too
-      const tasks = await schedulingService.getScheduledTasks(localDateStr, selectedUserId || undefined);
+      const tasks = await schedulingService.getScheduledTasks(
+        localDateStr,
+        selectedUserId || undefined
+      );
 
       console.log('📅 PlanningTab: Loaded daily tasks for', localDateStr, ':', tasks?.length || 0);
       if (tasks && tasks.length > 0) {
-        console.log('📋 Daily tasks:', tasks.map(t => ({
-          name: t.name,
-          time: t.scheduled_time,
-          scheduled_date: t.scheduled_date
-        })));
+        console.log(
+          '📋 Daily tasks:',
+          tasks.map(t => ({
+            name: t.name,
+            time: t.scheduled_time,
+            scheduled_date: t.scheduled_date,
+          }))
+        );
       }
 
       setDailyTasks(tasks);
@@ -162,8 +206,11 @@ export function PlanningTab() {
 
   const getTasksForDate = (date: Date) => {
     // Use local date string to avoid timezone issues
-    const localDateStr = date.getFullYear() + '-' +
-      String(date.getMonth() + 1).padStart(2, '0') + '-' +
+    const localDateStr =
+      date.getFullYear() +
+      '-' +
+      String(date.getMonth() + 1).padStart(2, '0') +
+      '-' +
       String(date.getDate()).padStart(2, '0');
 
     console.log('🔍 PlanningTab: Getting tasks for date:', {
@@ -172,8 +219,8 @@ export function PlanningTab() {
       tasksToCheck: scheduledTasks.map(t => ({
         name: t.name,
         scheduled_date: t.scheduled_date,
-        dateOnly: t.scheduled_date?.split('T')[0]
-      }))
+        dateOnly: t.scheduled_date?.split('T')[0],
+      })),
     });
 
     const matchingTasks = scheduledTasks.filter(task => {
@@ -187,7 +234,7 @@ export function PlanningTab() {
         console.log('✅ Task matches date:', {
           taskName: task.name,
           taskDate: taskDateOnly,
-          searchDate: localDateStr
+          searchDate: localDateStr,
         });
       }
 
@@ -219,7 +266,7 @@ export function PlanningTab() {
     try {
       await taskService.updateTask({
         id: taskId,
-        source: 'scheduled'
+        source: 'scheduled',
       });
 
       // Refresh data
@@ -270,6 +317,102 @@ export function PlanningTab() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  // Create new plan
+  const createNewPlan = async () => {
+    if (!newPlanData.name.trim()) {
+      alert('❌ Vui lòng nhập tên kế hoạch!');
+      return;
+    }
+    
+    if (!newPlanData.scheduledDate) {
+      alert('❌ Vui lòng chọn ngày thực hiện!');
+      return;
+    }
+    
+    // Validate selected date is not in the past
+    const selectedDate = new Date(newPlanData.scheduledDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      alert('❌ Không thể tạo kế hoạch cho ngày trong quá khứ!');
+      return;
+    }
+
+    try {
+      setIsCreatingPlan(true);
+
+      // Create task data
+      const taskData: CreateTaskData = {
+        name: newPlanData.name,
+        description: newPlanData.description,
+        priority: newPlanData.priority,
+        startDate: newPlanData.scheduledDate,
+        dueDate: newPlanData.scheduledDate,
+        workType: 'other',
+      };
+
+      // Create the task first
+      const newTask = await taskService.createTask(taskData, currentUser?.id || '');
+
+      // Then schedule it
+      const scheduleResult = await schedulingService.scheduleTask({
+        taskId: newTask.id,
+        scheduledDate: newPlanData.scheduledDate,
+        scheduledTime: newPlanData.scheduledTime || undefined,
+      });
+
+      if (scheduleResult.success) {
+        // Reset form
+        setNewPlanData({
+          name: '',
+          description: '',
+          scheduledDate: '',
+          scheduledTime: '',
+          priority: 'normal',
+        });
+
+        // Close modal
+        setShowAddPlanModal(false);
+
+        // Refresh data
+        await loadMonthlyTasks();
+        await loadDailyTasks();
+
+        alert(`✅ Kế hoạch "${newPlanData.name}" đã được tạo thành công!`);
+      } else {
+        throw new Error(scheduleResult.error || 'Không thể lên lịch cho kế hoạch');
+      }
+    } catch (error) {
+      console.error('Error creating plan:', error);
+      const errorMessage = (error as Error).message;
+      if (errorMessage.includes('Scheduled date cannot be in the past')) {
+        alert('❌ Không thể tạo kế hoạch cho ngày trong quá khứ. Vui lòng chọn ngày hôm nay hoặc ngày trong tương lai.');
+      } else {
+        alert('❌ Không thể tạo kế hoạch: ' + errorMessage);
+      }
+    } finally {
+      setIsCreatingPlan(false);
+    }
+  };
+
+  // Open add plan modal - default to today, or use selected date if different from today
+  const openAddPlanModal = () => {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // Check if user has selected a different date from today
+    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    const useSelectedDate = selectedDateStr !== todayStr;
+    
+    setNewPlanData(prev => ({
+      ...prev,
+      scheduledDate: useSelectedDate ? selectedDateStr : todayStr,
+    }));
+    setShowAddPlanModal(true);
+  };
+
   return (
     <div className="h-full bg-gray-900 text-white">
       {/* Header - Responsive */}
@@ -289,7 +432,7 @@ export function PlanningTab() {
                 <Users className="w-4 h-4 text-purple-400" />
                 <select
                   value={selectedUserId || ''}
-                  onChange={(e) => setSelectedUserId(e.target.value || null)}
+                  onChange={e => setSelectedUserId(e.target.value || null)}
                   className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:border-purple-400 focus:outline-none"
                 >
                   <option value="">Tất cả nhân viên</option>
@@ -328,6 +471,15 @@ export function PlanningTab() {
               )}
 
               <button
+                onClick={openAddPlanModal}
+                className="px-2 sm:px-3 py-1 bg-green-500/20 text-green-400 rounded text-xs hover:bg-green-500/30 transition-colors flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" />
+                <span className="hidden sm:inline">Thêm Kế Hoạch</span>
+                <span className="sm:hidden">Thêm</span>
+              </button>
+
+              <button
                 onClick={() => {
                   console.log('🔄 Manual refresh triggered');
                   loadMonthlyTasks();
@@ -358,7 +510,11 @@ export function PlanningTab() {
               {/* Month Navigation */}
               <div className="flex items-center justify-between">
                 <button
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                  onClick={() =>
+                    setCurrentMonth(
+                      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+                    )
+                  }
                   className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   ←
@@ -369,7 +525,11 @@ export function PlanningTab() {
                 </h3>
 
                 <button
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                  onClick={() =>
+                    setCurrentMonth(
+                      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+                    )
+                  }
                   className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   →
@@ -387,7 +547,11 @@ export function PlanningTab() {
 
                 {/* Calendar days */}
                 {Array.from({ length: 42 }, (_, i) => {
-                  const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+                  const startOfMonth = new Date(
+                    currentMonth.getFullYear(),
+                    currentMonth.getMonth(),
+                    1
+                  );
                   const startOfCalendar = new Date(startOfMonth);
                   startOfCalendar.setDate(startOfCalendar.getDate() - startOfMonth.getDay());
 
@@ -461,8 +625,7 @@ export function PlanningTab() {
                   <p className="text-sm text-gray-500">
                     {isToday(selectedDate)
                       ? 'Hôm nay bạn không có công việc nào được lên lịch'
-                      : 'Ngày này chưa có công việc nào được lên lịch'
-                    }
+                      : 'Ngày này chưa có công việc nào được lên lịch'}
                   </p>
                 </div>
               ) : (
@@ -471,9 +634,10 @@ export function PlanningTab() {
                     key={task.id}
                     className={`
                       relative p-3 sm:p-4 rounded-xl border transition-all group
-                      ${isPastDate(selectedDate)
-                        ? 'bg-gray-800/40 border-gray-600/50'
-                        : 'bg-white/5 border-gray-700/50 hover:bg-white/10 hover:border-gray-600'
+                      ${
+                        isPastDate(selectedDate)
+                          ? 'bg-gray-800/40 border-gray-600/50'
+                          : 'bg-white/5 border-gray-700/50 hover:bg-white/10 hover:border-gray-600'
                       }
                     `}
                   >
@@ -487,7 +651,7 @@ export function PlanningTab() {
                           {/* Mobile-first action menu */}
                           <div className="relative flex-shrink-0">
                             <button
-                              onClick={(e) => toggleDropdown(task.id, e)}
+                              onClick={e => toggleDropdown(task.id, e)}
                               className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors"
                               title="Tùy chọn"
                             >
@@ -535,18 +699,26 @@ export function PlanningTab() {
                                 {formatTime(task.scheduled_time)}
                               </span>
                               <span className="sm:hidden">
-                                {formatTime(task.scheduled_time).split(':')[0]}:{formatTime(task.scheduled_time).split(':')[1]}
+                                {formatTime(task.scheduled_time).split(':')[0]}:
+                                {formatTime(task.scheduled_time).split(':')[1]}
                               </span>
                             </div>
                           )}
 
-                          <div className={`px-2 py-1 rounded-full text-xs ${
-                            task.priority === 'high' ? 'bg-red-500/20 text-red-400' :
-                            task.priority === 'normal' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-gray-500/20 text-gray-400'
-                          }`}>
-                            {task.priority === 'high' ? 'Cao' :
-                             task.priority === 'normal' ? 'TB' : 'Thấp'}
+                          <div
+                            className={`px-2 py-1 rounded-full text-xs ${
+                              task.priority === 'high'
+                                ? 'bg-red-500/20 text-red-400'
+                                : task.priority === 'normal'
+                                  ? 'bg-yellow-500/20 text-yellow-400'
+                                  : 'bg-gray-500/20 text-gray-400'
+                            }`}
+                          >
+                            {task.priority === 'high'
+                              ? 'Cao'
+                              : task.priority === 'normal'
+                                ? 'TB'
+                                : 'Thấp'}
                           </div>
 
                           {task.source === 'scheduled' && (
@@ -576,9 +748,7 @@ export function PlanningTab() {
               <div className="mt-6 pt-4 border-t border-gray-700">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-lg font-semibold text-blue-400">
-                      {dailyTasks.length}
-                    </div>
+                    <div className="text-lg font-semibold text-blue-400">{dailyTasks.length}</div>
                     <div className="text-xs text-gray-500">Tổng số</div>
                   </div>
 
@@ -602,10 +772,155 @@ export function PlanningTab() {
         </div>
       </div>
 
-      {/* Weekly Schedule Manager Modal */}
-      {showWeeklySchedule && (
-        <WeeklyScheduleManager onClose={() => setShowWeeklySchedule(false)} />
+      {/* Add Plan Modal */}
+      {showAddPlanModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Plus className="w-5 h-5 text-green-400" />
+                Thêm Kế Hoạch Mới
+              </h2>
+              <button
+                onClick={() => setShowAddPlanModal(false)}
+                className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 space-y-4">
+              {/* Task Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Tên kế hoạch *
+                </label>
+                <input
+                  type="text"
+                  value={newPlanData.name}
+                  onChange={e => setNewPlanData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Nhập tên kế hoạch..."
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-green-400 focus:outline-none"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Mô tả</label>
+                <textarea
+                  value={newPlanData.description}
+                  onChange={e => setNewPlanData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Mô tả chi tiết kế hoạch..."
+                  rows={3}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-green-400 focus:outline-none resize-none"
+                />
+              </div>
+
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Ngày thực hiện *
+                </label>
+                <input
+                  type="date"
+                  value={newPlanData.scheduledDate}
+                  onChange={e =>
+                    setNewPlanData(prev => ({ ...prev, scheduledDate: e.target.value }))
+                  }
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none"
+                />
+              </div>
+
+              {/* Time */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Thời gian (tùy chọn)
+                </label>
+                <input
+                  type="time"
+                  value={newPlanData.scheduledTime}
+                  onChange={e =>
+                    setNewPlanData(prev => ({ ...prev, scheduledTime: e.target.value }))
+                  }
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none"
+                />
+              </div>
+
+              {/* Priority */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Mức độ ưu tiên
+                </label>
+                <div className="relative">
+                  <select
+                    value={newPlanData.priority}
+                    onChange={e =>
+                      setNewPlanData(prev => ({
+                        ...prev,
+                        priority: e.target.value as 'low' | 'normal' | 'high',
+                      }))
+                    }
+                    className="w-full pl-10 pr-10 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="low" className="bg-gray-700 text-green-400">🡇 Thấp</option>
+                    <option value="normal" className="bg-gray-700 text-blue-400">⸺ Bình thường</option>
+                    <option value="high" className="bg-gray-700 text-red-400">🡅 Cao</option>
+                  </select>
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                  {/* Priority indicator */}
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    {newPlanData.priority === 'high' && (
+                      <span className="text-red-400">🡅</span>
+                    )}
+                    {newPlanData.priority === 'normal' && (
+                      <span className="text-blue-400">⸺</span>
+                    )}
+                    {newPlanData.priority === 'low' && (
+                      <span className="text-green-400">🡇</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
+              <button
+                onClick={() => setShowAddPlanModal(false)}
+                className="px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={createNewPlan}
+                disabled={isCreatingPlan || !newPlanData.name.trim() || !newPlanData.scheduledDate}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isCreatingPlan ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Đang tạo...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    Tạo Kế Hoạch
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* Weekly Schedule Manager Modal */}
+      {showWeeklySchedule && <WeeklyScheduleManager onClose={() => setShowWeeklySchedule(false)} />}
     </div>
   );
 }

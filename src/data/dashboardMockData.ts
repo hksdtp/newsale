@@ -6,7 +6,7 @@ export const dashboardMockData = {
     completedTasks: 0,
     completionRate: 0.0,
     hanoiRevenue: 0, // 0 VNĐ
-    hcmRevenue: 0,   // 0 VNĐ
+    hcmRevenue: 0, // 0 VNĐ
   },
 
   // Phần 2: Thống kê cá nhân (theo người dùng hiện tại)
@@ -21,7 +21,7 @@ export const dashboardMockData = {
   teamStats: {
     totalMembers: 12, // Giữ nguyên số nhân viên thực tế
     activeMembers: 12,
-    teamEfficiency: 0.0
+    teamEfficiency: 0.0,
   },
 
   // Phần 4: Thống kê tổng quan theo danh mục
@@ -29,25 +29,25 @@ export const dashboardMockData = {
     architects: {
       new: 0,
       existing: 0,
-      total: 0
+      total: 0,
     },
     partners: {
       new: 0,
       existing: 0,
-      total: 0
+      total: 0,
     },
     customers: {
       new: 0,
       existing: 0,
-      total: 0
+      total: 0,
     },
     quotes: {
       new: 0,
       existing: 0,
-      total: 0
+      total: 0,
     },
-    otherTasks: 0
-  }
+    otherTasks: 0,
+  },
 };
 
 // Utility function để format tiền tệ VNĐ
@@ -68,7 +68,7 @@ export const formatPercentage = (value: number): string => {
 
 // Constants cho loại công việc
 export const WORK_TYPES = {
-  'other': 'Công việc khác',
+  other: 'Công việc khác',
   'sbg-new': 'SBG mới',
   'sbg-old': 'SBG cũ',
   'partner-new': 'Đối tác mới',
@@ -76,7 +76,7 @@ export const WORK_TYPES = {
   'kts-new': 'KTS mới',
   'kts-old': 'KTS cũ',
   'customer-new': 'Khách hàng mới',
-  'customer-old': 'Khách hàng cũ'
+  'customer-old': 'Khách hàng cũ',
 } as const;
 
 export type WorkType = keyof typeof WORK_TYPES;
@@ -95,7 +95,8 @@ export interface Task {
   assignedTo?: string;
   group?: string;
   department?: 'HN' | 'HCM';
-  workType: WorkType;
+  workType: WorkType; // Keep for backward compatibility
+  workTypes?: WorkType[]; // Add support for multiple work types
   description?: string;
   priority: 'low' | 'normal' | 'high';
   dueDate?: string;
@@ -130,11 +131,12 @@ export const tasksMockData: TaskGroup[] = [
         group: 'Nhóm Marketing HN',
         department: 'HN',
         workType: 'sbg-new',
-        description: 'Phát triển chiến lược nhắm mục tiêu cho sàn bất động sản mới trong quý 4, tập trung vào phân khúc khách hàng trẻ',
+        description:
+          'Phát triển chiến lược nhắm mục tiêu cho sàn bất động sản mới trong quý 4, tập trung vào phân khúc khách hàng trẻ',
         priority: 'high',
-        dueDate: '30 Th9, 2023'
-      }
-    ]
+        dueDate: '30 Th9, 2023',
+      },
+    ],
   },
   {
     id: 'approved',
@@ -155,12 +157,13 @@ export const tasksMockData: TaskGroup[] = [
         group: 'Nhóm Content HN',
         department: 'HN',
         workType: 'kts-new',
-        description: 'Tổ chức workshop về thiết kế bền vững cho kiến trúc sư mới, nâng cao nhận thức về kiến trúc xanh',
+        description:
+          'Tổ chức workshop về thiết kế bền vững cho kiến trúc sư mới, nâng cao nhận thức về kiến trúc xanh',
         priority: 'normal',
         dueDate: '2023-10-30',
-        createdAt: '2023-10-15'
-      }
-    ]
+        createdAt: '2023-10-15',
+      },
+    ],
   },
   {
     id: 'live',
@@ -184,7 +187,7 @@ export const tasksMockData: TaskGroup[] = [
         description: 'Tự động hóa quy trình làm việc với đối tác hiện tại',
         priority: 'high',
         dueDate: '2023-09-20',
-        createdAt: '2023-09-02'
+        createdAt: '2023-09-02',
       },
       {
         id: 'task-4',
@@ -202,7 +205,7 @@ export const tasksMockData: TaskGroup[] = [
         workType: 'kts-old',
         description: 'Tạo trò chơi tương tác cho kiến trúc sư hiện tại',
         priority: 'normal',
-        dueDate: '2023-09-23'
+        dueDate: '2023-09-23',
       },
       {
         id: 'task-5',
@@ -219,13 +222,13 @@ export const tasksMockData: TaskGroup[] = [
         workType: 'customer-old',
         description: 'Mở rộng hợp tác với khách hàng hiện tại',
         priority: 'normal',
-        dueDate: '30 Th9, 2023'
-      }
-    ]
+        dueDate: '30 Th9, 2023',
+      },
+    ],
   },
   {
     id: 'wont-do',
-    name: "Không thực hiện",
+    name: 'Không thực hiện',
     status: 'live',
     isExpanded: true,
     tasks: [
@@ -245,9 +248,9 @@ export const tasksMockData: TaskGroup[] = [
         description: 'Phát triển đối tác mới thông qua tái nhắm mục tiêu',
         priority: 'low',
         dueDate: '2023-11-12',
-        createdAt: '2023-10-31'
-      }
-    ]
+        createdAt: '2023-10-31',
+      },
+    ],
   },
   {
     id: 'done',
@@ -271,8 +274,8 @@ export const tasksMockData: TaskGroup[] = [
         description: 'Tối ưu hóa hiệu quả chiến dịch email marketing',
         priority: 'normal',
         dueDate: '2023-09-01',
-        createdAt: '2023-08-15'
-      }
-    ]
-  }
+        createdAt: '2023-08-15',
+      },
+    ],
+  },
 ];
