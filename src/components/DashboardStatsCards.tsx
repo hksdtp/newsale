@@ -16,7 +16,7 @@ interface StatCardProps {
   icon: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, newCount, oldCount, total, color, icon }) => (
+const StatCard: React.FC<StatCardProps> = ({ title, newCount, oldCount, total, color }) => (
   <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
     <div className="flex items-center justify-between mb-4">
       <h3 className="text-sm font-medium text-gray-300 uppercase tracking-wider">{title}</h3>

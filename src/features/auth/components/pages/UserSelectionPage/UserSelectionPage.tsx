@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getLocationColors } from '../../../../../constants/locationIcons';
 import { User, authService } from '../../../api/authService';
 
 export function UserSelectionPage() {
@@ -58,11 +57,6 @@ export function UserSelectionPage() {
 
   const handleBack = () => {
     navigate(`/auth/team-selection?location=${encodeURIComponent(location)}`);
-  };
-
-  const getLocationColor = (location: string) => {
-    const colors = getLocationColors(location as 'Hà Nội' | 'Hồ Chí Minh');
-    return { gradient: colors.gradient, hover: colors.hover };
   };
 
   const getRoleIcon = (role: string) => {

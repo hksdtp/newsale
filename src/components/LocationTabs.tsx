@@ -1,5 +1,5 @@
 import React from 'react';
-import { getLocationColors, getLocationIcon } from '../constants/locationIcons';
+import { getLocationIcon } from '../constants/locationIcons';
 
 interface LocationTabsProps {
   activeLocation: 'hanoi' | 'hcm';
@@ -12,13 +12,11 @@ const LOCATION_CONFIG = {
     label: 'Hà Nội',
     icon: getLocationIcon('hanoi'),
     description: 'Thống kê văn phòng Hà Nội',
-    color: `${getLocationColors('hanoi').text} ${getLocationColors('hanoi').border}`,
   },
   hcm: {
     label: 'Hồ Chí Minh',
     icon: getLocationIcon('hcm'),
     description: 'Thống kê văn phòng Hồ Chí Minh',
-    color: `${getLocationColors('hcm').text} ${getLocationColors('hcm').border}`,
   },
 };
 
@@ -40,7 +38,7 @@ export const LocationTabs: React.FC<LocationTabsProps> = ({
               onClick={() => onLocationChange(locationKey)}
               className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 isActive
-                  ? `${config.color}`
+                  ? 'text-blue-400 border-blue-500'
                   : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
               }`}
               aria-current={isActive ? 'page' : undefined}

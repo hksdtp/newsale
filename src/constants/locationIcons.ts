@@ -4,11 +4,11 @@
 
 export const LOCATION_ICONS = {
   'Hà Nội': '🏢',
-  'Hồ Chí Minh': '🌆',
+  'Hồ Chí Minh': '🏬',
   hanoi: '🏢',
-  hcm: '🌆',
+  hcm: '🏬',
   HN: '🏢',
-  HCM: '🌆',
+  HCM: '🏬',
 } as const;
 
 export const LOCATION_COLORS = {

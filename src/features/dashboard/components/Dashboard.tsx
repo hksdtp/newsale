@@ -609,7 +609,7 @@ export function Dashboard() {
                       <div className="text-sm text-rose-200">Doanh thu</div>
                     </div>
                     <div className="absolute bottom-4 right-4 w-16 h-16 bg-rose-500/20 rounded-full flex items-center justify-center">
-                      <span className="text-2xl">🌆</span>
+                      <span className="text-2xl">🏬</span>
                     </div>
                     <div className="absolute top-4 right-4 w-2 h-2 bg-rose-400 rounded-full"></div>
                   </div>

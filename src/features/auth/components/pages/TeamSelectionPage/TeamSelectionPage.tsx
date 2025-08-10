@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getLocationColors, getLocationIcon } from '../../../../../constants/locationIcons';
 import { authService } from '../../../api/authService';
 
 export function TeamSelectionPage() {
@@ -64,15 +63,6 @@ export function TeamSelectionPage() {
 
   const handleBack = () => {
     navigate('/');
-  };
-
-  const getTeamLocationIcon = (location: string) => {
-    return getLocationIcon(location as 'Hà Nội' | 'Hồ Chí Minh');
-  };
-
-  const getTeamLocationColor = (location: string) => {
-    const colors = getLocationColors(location as 'Hà Nội' | 'Hồ Chí Minh');
-    return { gradient: colors.gradient, hover: colors.hover };
   };
 
   if (isLoading) {
