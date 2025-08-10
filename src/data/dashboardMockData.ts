@@ -100,6 +100,7 @@ export interface Task {
   description?: string;
   priority: 'low' | 'normal' | 'high';
   dueDate?: string;
+  shareScope?: 'private' | 'team' | 'public'; // Add shareScope property
 }
 
 export interface TaskGroup {
@@ -135,6 +136,7 @@ export const tasksMockData: TaskGroup[] = [
           'Phát triển chiến lược nhắm mục tiêu cho sàn bất động sản mới trong quý 4, tập trung vào phân khúc khách hàng trẻ',
         priority: 'high',
         dueDate: '30 Th9, 2023',
+        shareScope: 'team', // Team task
       },
     ],
   },
@@ -162,6 +164,7 @@ export const tasksMockData: TaskGroup[] = [
         priority: 'normal',
         dueDate: '2023-10-30',
         createdAt: '2023-10-15',
+        shareScope: 'public', // Department-wide task
       },
     ],
   },
@@ -188,6 +191,7 @@ export const tasksMockData: TaskGroup[] = [
         priority: 'high',
         dueDate: '2023-09-20',
         createdAt: '2023-09-02',
+        shareScope: 'team', // Team task
       },
       {
         id: 'task-4',
@@ -206,6 +210,7 @@ export const tasksMockData: TaskGroup[] = [
         description: 'Tạo trò chơi tương tác cho kiến trúc sư hiện tại',
         priority: 'normal',
         dueDate: '2023-09-23',
+        shareScope: 'public', // Department-wide task
       },
       {
         id: 'task-5',
@@ -223,6 +228,44 @@ export const tasksMockData: TaskGroup[] = [
         description: 'Mở rộng hợp tác với khách hàng hiện tại',
         priority: 'normal',
         dueDate: '30 Th9, 2023',
+        shareScope: 'team', // Team task
+      },
+      // Additional tasks for testing shareScope
+      {
+        id: 'task-6',
+        name: 'Chiến dịch marketing toàn công ty',
+        campaignType: 'Thương hiệu',
+        platform: ['Facebook', 'Google ads'],
+        startDate: '2023-10-01',
+        endDate: '2023-10-31',
+        createdBy: 'Trần Văn L',
+        status: 'live',
+        assignedTo: 'Nguyễn Thị M',
+        group: 'Nhóm Brand HN',
+        department: 'HN',
+        workType: 'sbg-new',
+        description: 'Chiến dịch marketing lớn cho toàn công ty',
+        priority: 'high',
+        dueDate: '31 Th10, 2023',
+        shareScope: 'public', // Department-wide task
+      },
+      {
+        id: 'task-7',
+        name: 'Phát triển nội dung nhóm',
+        campaignType: 'Content',
+        platform: ['LinkedIn'],
+        startDate: '2023-09-15',
+        endDate: '2023-09-30',
+        createdBy: 'Phạm Văn N',
+        status: 'live',
+        assignedTo: 'Lê Thị O',
+        group: 'Nhóm Content HCM',
+        department: 'HCM',
+        workType: 'kts-new',
+        description: 'Tạo nội dung cho nhóm Content HCM',
+        priority: 'normal',
+        dueDate: '30 Th9, 2023',
+        shareScope: 'team', // Team task
       },
     ],
   },

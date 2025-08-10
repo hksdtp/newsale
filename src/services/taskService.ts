@@ -232,7 +232,11 @@ class TaskService {
         return [];
       }
 
+      console.log('🔍 Raw tasks from database:', tasks?.length || 0);
+      console.log('🔍 Sample tasks:', tasks?.slice(0, 3));
+
       if (!tasks || tasks.length === 0) {
+        console.log('⚠️ No tasks found in database');
         return [];
       }
 
@@ -449,22 +453,37 @@ class TaskService {
     const userTeamId = currentUser?.team_id;
     const userDepartment = currentUser?.location === 'Hà Nội' ? 'HN' : 'HCM';
 
+    console.log('🔍 filterTasksByScope debug:', {
+      scope,
+      currentUserId,
+      currentUser: currentUser?.name,
+      isUserDirector,
+      userTeamId,
+      userDepartment,
+      totalTasks: tasks.length,
+    });
+
     // Helper function to get effective shareScope (with fallback)
     const getEffectiveShareScope = (task: TaskWithUsers): string => {
-      if (task.shareScope) return task.shareScope;
-      
+      if (task.shareScope) {
+        console.log(`✅ Task ${task.id} has shareScope: ${task.shareScope}`);
+        return task.shareScope;
+      }
+
       // Fallback logic if shareScope is null/undefined
       if (task.createdBy?.id === currentUserId || task.assignedTo?.id === currentUserId) {
+        console.log(`🔄 Task ${task.id} fallback to private (own task)`);
         return 'private'; // Tasks created by or assigned to user are private
       }
-      
+
       // Default to team scope for other tasks
+      console.log(`🔄 Task ${task.id} fallback to team (default)`);
       return 'team';
     };
 
     return tasks.filter(task => {
       const effectiveShareScope = getEffectiveShareScope(task);
-      
+
       const result = (() => {
         switch (scope) {
           case 'my-tasks':
@@ -503,10 +522,7 @@ class TaskService {
               return effectiveShareScope === 'public';
             } else {
               // Regular users: public tasks in same department only
-              return (
-                effectiveShareScope === 'public' &&
-                task.department === userDepartment
-              );
+              return effectiveShareScope === 'public' && task.department === userDepartment;
             }
 
           default:
