@@ -449,29 +449,45 @@ class TaskService {
     const userTeamId = currentUser?.team_id;
     const userDepartment = currentUser?.location === 'Hà Nội' ? 'HN' : 'HCM';
 
+    // Helper function to get effective shareScope (with fallback)
+    const getEffectiveShareScope = (task: TaskWithUsers): string => {
+      if (task.shareScope) return task.shareScope;
+      
+      // Fallback logic if shareScope is null/undefined
+      if (task.createdBy?.id === currentUserId || task.assignedTo?.id === currentUserId) {
+        return 'private'; // Tasks created by or assigned to user are private
+      }
+      
+      // Default to team scope for other tasks
+      return 'team';
+    };
+
     return tasks.filter(task => {
+      const effectiveShareScope = getEffectiveShareScope(task);
+      
       const result = (() => {
         switch (scope) {
           case 'my-tasks':
             // "Của Tôi" - Private tasks OR tasks assigned to me OR tasks I created
             return (
-              task.shareScope === 'private' ||
+              effectiveShareScope === 'private' ||
               task.createdBy?.id === currentUserId ||
               task.assignedTo?.id === currentUserId
             );
 
           case 'team-tasks':
-            // "Của Nhóm" - ONLY team scope tasks within same team
-            if (task.shareScope !== 'team') {
-              return false; // Only show team scope tasks
-            }
-
+            // "Của Nhóm" - Team scope tasks OR tasks assigned to teams
             if (isUserDirector) {
               // Directors can see all team tasks across locations
-              return true;
-            } else {
-              // Regular users: same team_id and department
               return (
+                effectiveShareScope === 'team' ||
+                effectiveShareScope === 'public' ||
+                (effectiveShareScope === 'private' && task.createdBy?.id !== currentUserId) // Others' private tasks
+              );
+            } else {
+              // Regular users: team scope tasks within same team and department
+              return (
+                effectiveShareScope === 'team' &&
                 // Task belongs to same team
                 (task.createdBy?.team_id === userTeamId ||
                   task.assignedTo?.team_id === userTeamId) &&
@@ -481,17 +497,16 @@ class TaskService {
             }
 
           case 'department-tasks':
-            // "Công việc chung" - ONLY public scope tasks (department-wide)
-            if (task.shareScope !== 'public') {
-              return false; // Only show public scope tasks
-            }
-
+            // "Công việc chung" - Public scope tasks (department-wide)
             if (isUserDirector) {
-              // Directors can see all public tasks
-              return true;
+              // Directors can see all public tasks across locations
+              return effectiveShareScope === 'public';
             } else {
-              // Regular users: same department only
-              return task.department === userDepartment;
+              // Regular users: public tasks in same department only
+              return (
+                effectiveShareScope === 'public' &&
+                task.department === userDepartment
+              );
             }
 
           default:
