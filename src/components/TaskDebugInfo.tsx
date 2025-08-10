@@ -73,9 +73,21 @@ const TaskDebugInfo: React.FC = () => {
         {debugInfo.rawTasks?.length > 0 && (
           <details className="mt-2">
             <summary className="cursor-pointer font-medium">Sample Raw Tasks</summary>
-            <pre className="mt-1 text-xs bg-white p-2 rounded overflow-auto max-h-32">
-              {JSON.stringify(debugInfo.rawTasks, null, 2)}
-            </pre>
+            <div className="mt-1 text-xs bg-white p-2 rounded overflow-auto max-h-48">
+              {debugInfo.rawTasks.map((task: any, index: number) => (
+                <div key={index} className="mb-2 p-2 border border-gray-200 rounded">
+                  <div><strong>Task {index + 1}:</strong> {task.name}</div>
+                  <div><strong>ID:</strong> {task.id}</div>
+                  <div><strong>Created By ID:</strong> {task.created_by_id}</div>
+                  <div><strong>Assigned To ID:</strong> {task.assigned_to_id}</div>
+                  <div><strong>Share Scope:</strong> {task.share_scope || 'null'}</div>
+                  <div><strong>Department:</strong> {task.department || 'null'}</div>
+                  <div><strong>Current User ID:</strong> {debugInfo.currentUser?.id}</div>
+                  <div><strong>Match Created:</strong> {task.created_by_id === debugInfo.currentUser?.id ? '✅' : '❌'}</div>
+                  <div><strong>Match Assigned:</strong> {task.assigned_to_id === debugInfo.currentUser?.id ? '✅' : '❌'}</div>
+                </div>
+              ))}
+            </div>
           </details>
         )}
       </div>
