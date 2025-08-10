@@ -45,7 +45,14 @@ class TeamsService {
         return [];
       }
 
-      return teams || [];
+      // Fix leader type from array to object
+      const fixedTeams =
+        teams?.map(team => ({
+          ...team,
+          leader: Array.isArray(team.leader) ? team.leader[0] : team.leader,
+        })) || [];
+
+      return fixedTeams;
     } catch (error) {
       console.error('❌ Error in getAllTeams:', error);
       return [];
@@ -76,7 +83,14 @@ class TeamsService {
         return [];
       }
 
-      return teams || [];
+      // Fix leader type from array to object
+      const fixedTeams =
+        teams?.map(team => ({
+          ...team,
+          leader: Array.isArray(team.leader) ? team.leader[0] : team.leader,
+        })) || [];
+
+      return fixedTeams;
     } catch (error) {
       console.error('❌ Error in getTeamsByLocation:', error);
       return [];
@@ -140,7 +154,13 @@ class TeamsService {
         return null;
       }
 
-      return team;
+      // Fix leader type from array to object
+      const fixedTeam = {
+        ...team,
+        leader: Array.isArray(team.leader) ? team.leader[0] : team.leader,
+      };
+
+      return fixedTeam;
     } catch (error) {
       console.error('❌ Error in getTeamById:', error);
       return null;
@@ -194,7 +214,14 @@ class TeamsService {
         return [];
       }
 
-      return teams || [];
+      // Fix leader type from array to object
+      const fixedTeams =
+        teams?.map(team => ({
+          ...team,
+          leader: Array.isArray(team.leader) ? team.leader[0] : team.leader,
+        })) || [];
+
+      return fixedTeams;
     } catch (error) {
       console.error('❌ Error in getTeamsLedByUser:', error);
       return [];

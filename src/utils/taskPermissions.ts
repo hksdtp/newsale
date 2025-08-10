@@ -61,12 +61,12 @@ export function isTaskOwner(task: TaskWithUsers, currentUserId?: string): boolea
     }
 
     // Kiểm tra xem user hiện tại có phải là người tạo task không
-    const isOwner = task.created_by_id === userId;
+    const isOwner = task.createdBy?.id === userId;
 
     console.log('🔐 Task permission check:', {
       taskId: task.id,
       taskName: task.name,
-      createdBy: task.created_by_id,
+      createdBy: task.createdBy?.id,
       currentUser: userId,
       userRole: currentUser?.role,
       isOwner: isOwner,

@@ -123,7 +123,7 @@ export const getCurrentUser = (): MockUser => {
           : {
               id: 'director-team',
               name: 'Ban Giám Đốc',
-              location: authUser.location === 'Hà Nội' ? 'HN' : 'HCM',
+              location: (authUser.location === 'Hà Nội' ? 'HN' : 'HCM') as 'HN' | 'HCM',
             },
       };
 
