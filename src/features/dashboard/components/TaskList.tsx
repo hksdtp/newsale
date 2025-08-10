@@ -8,6 +8,7 @@ import PriorityBadge from '../../../components/PriorityBadge';
 import ShareScopeBadge from '../../../components/ShareScopeBadge';
 import StatusBadge from '../../../components/StatusBadge';
 import TaskActions from '../../../components/TaskActions';
+import TaskDebugInfo from '../../../components/TaskDebugInfo';
 import TaskDetailModal from '../../../components/TaskDetailModal';
 import TaskFilters, { FilterState } from '../../../components/TaskFilters';
 import { getCurrentUser } from '../../../data/usersMockData';
@@ -777,6 +778,9 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 opacity-50" />
 
       <div className="relative space-y-4 md:space-y-6 mobile-text-optimize">
+        {/* Debug Info */}
+        <TaskDebugInfo />
+        
         {/* Header with Tabs - Mobile Optimized */}
         <div className="mobile-header-container">
           {renderTabs()}
