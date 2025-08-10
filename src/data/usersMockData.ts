@@ -32,7 +32,10 @@ export const mockUsers: MockUser[] = [
 
 // Helper functions
 export const getUserById = (id: string): MockUser | undefined => {
-  return mockUsers.find(user => user.id === id);
+  console.log('🔍 getUserById:', { id, mockUsersLength: mockUsers.length });
+  const user = mockUsers.find(user => user.id === id);
+  console.log('🔍 getUserById result:', user?.name || 'NOT FOUND');
+  return user;
 };
 
 export const getUsersByTeam = (teamId: string): MockUser[] => {
@@ -40,7 +43,7 @@ export const getUsersByTeam = (teamId: string): MockUser[] => {
 };
 
 export const getUsersByLocation = (location: 'HN' | 'HCM'): MockUser[] => {
-  const locationMap = { 'HN': 'Hà Nội', 'HCM': 'Hồ Chí Minh' };
+  const locationMap = { HN: 'Hà Nội', HCM: 'Hồ Chí Minh' };
   return mockUsers.filter(user => user.location === locationMap[location]);
 };
 
@@ -49,8 +52,15 @@ export const getTeamsByLocation = (location: 'HN' | 'HCM'): MockTeam[] => {
 };
 
 export const isDirector = (userId: string): boolean => {
-  const user = getUserById(userId);
-  return user?.role === 'retail_director';
+  const user = getUserById(userId) || getCurrentUser();
+  const result = user?.role === 'retail_director';
+  console.log('🔍 isDirector check:', {
+    userId,
+    user: user?.name,
+    role: user?.role,
+    isDirector: result,
+  });
+  return result;
 };
 
 export const isTeamLeader = (userId: string): boolean => {
@@ -81,7 +91,8 @@ export const getCurrentUser = (): MockUser => {
       console.log('🔍 getCurrentUser - authUser.id:', authUser.id, 'Type:', typeof authUser.id);
 
       // Validate UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(authUser.id)) {
         console.error('❌ Invalid UUID format for user ID:', authUser.id);
         // Try to get from currentUserId as fallback
@@ -96,23 +107,28 @@ export const getCurrentUser = (): MockUser => {
 
       // Create a MockUser from auth data
       // The auth user already has all the necessary fields from the database
-      return {
+      const user = {
         id: authUser.id,
         name: authUser.name,
         email: authUser.email,
-        team_id: authUser.team_id || '0',
+        team_id: authUser.team_id || 'director-team',
         location: authUser.location as 'Hà Nội' | 'Hồ Chí Minh',
         role: authUser.role as 'employee' | 'team_leader' | 'retail_director',
-        team: authUser.team ? {
-          id: authUser.team.id,
-          name: authUser.team.name,
-          location: authUser.location === 'Hà Nội' ? 'HN' : 'HCM'
-        } : {
-          id: '0',
-          name: 'Ban Giám Đốc',
-          location: authUser.location === 'Hà Nội' ? 'HN' : 'HCM'
-        }
+        team: authUser.team
+          ? {
+              id: authUser.team.id,
+              name: authUser.team.name,
+              location: authUser.location === 'Hà Nội' ? 'HN' : 'HCM',
+            }
+          : {
+              id: 'director-team',
+              name: 'Ban Giám Đốc',
+              location: authUser.location === 'Hà Nội' ? 'HN' : 'HCM',
+            },
       };
+
+      console.log('🔍 getCurrentUser result:', user);
+      return user;
     } catch (error) {
       console.error('Error parsing saved user:', error);
     }

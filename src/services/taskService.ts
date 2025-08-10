@@ -457,11 +457,18 @@ class TaskService {
       scope,
       currentUserId,
       currentUser: currentUser?.name,
+      currentUserRole: currentUser?.role,
       isUserDirector,
       userTeamId,
       userDepartment,
       totalTasks: tasks.length,
     });
+
+    if (!isUserDirector) {
+      console.log('⚠️ User is NOT director, using regular filter logic');
+    } else {
+      console.log('✅ User IS director, using simplified logic');
+    }
 
     // Helper function to get effective shareScope (with fallback)
     const getEffectiveShareScope = (task: TaskWithUsers): string => {
@@ -488,21 +495,28 @@ class TaskService {
         switch (scope) {
           case 'my-tasks':
             // "Của Tôi" - Private tasks OR tasks assigned to me OR tasks I created
-            return (
-              effectiveShareScope === 'private' ||
-              task.createdBy?.id === currentUserId ||
-              task.assignedTo?.id === currentUserId
-            );
+            if (isUserDirector) {
+              // Directors can see tasks created by them or assigned to them
+              const result =
+                task.createdBy?.id === currentUserId || task.assignedTo?.id === currentUserId;
+              console.log(
+                `🔍 Director my-tasks: ${task.name} - ${result ? 'INCLUDED' : 'EXCLUDED'}`
+              );
+              return result;
+            } else {
+              return (
+                effectiveShareScope === 'private' ||
+                task.createdBy?.id === currentUserId ||
+                task.assignedTo?.id === currentUserId
+              );
+            }
 
           case 'team-tasks':
             // "Của Nhóm" - Team scope tasks OR tasks assigned to teams
             if (isUserDirector) {
-              // Directors can see all team tasks across locations
-              return (
-                effectiveShareScope === 'team' ||
-                effectiveShareScope === 'public' ||
-                (effectiveShareScope === 'private' && task.createdBy?.id !== currentUserId) // Others' private tasks
-              );
+              // Directors can see ALL tasks (simplified logic)
+              console.log(`🔍 Director sees all tasks: ${task.name}`);
+              return true;
             } else {
               // Regular users: team scope tasks within same team and department
               return (
@@ -518,8 +532,9 @@ class TaskService {
           case 'department-tasks':
             // "Công việc chung" - Public scope tasks (department-wide)
             if (isUserDirector) {
-              // Directors can see all public tasks across locations
-              return effectiveShareScope === 'public';
+              // Directors can see ALL tasks (simplified logic)
+              console.log(`🔍 Director sees all department tasks: ${task.name}`);
+              return true;
             } else {
               // Regular users: public tasks in same department only
               return effectiveShareScope === 'public' && task.department === userDepartment;
