@@ -118,7 +118,7 @@ export const getCurrentUser = (): MockUser => {
           ? {
               id: authUser.team.id,
               name: authUser.team.name,
-              location: authUser.location === 'Hà Nội' ? 'HN' : 'HCM',
+              location: (authUser.location === 'Hà Nội' ? 'HN' : 'HCM') as 'HN' | 'HCM',
             }
           : {
               id: 'director-team',

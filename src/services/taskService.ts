@@ -499,10 +499,10 @@ class TaskService {
               // Directors can see tasks created by them or assigned to them
               // Check by both ID and name (mock data uses names)
               const result =
-                task.createdBy?.id === currentUserId || 
+                task.createdBy?.id === currentUserId ||
                 task.assignedTo?.id === currentUserId ||
-                task.createdBy === currentUser?.name ||
-                task.assignedTo === currentUser?.name;
+                task.createdBy?.name === currentUser?.name ||
+                task.assignedTo?.name === currentUser?.name;
               console.log(
                 `🔍 Director my-tasks: ${task.name} - createdBy: ${task.createdBy}, assignedTo: ${task.assignedTo}, currentUser: ${currentUser?.name} - ${result ? 'INCLUDED' : 'EXCLUDED'}`
               );
@@ -512,8 +512,8 @@ class TaskService {
                 effectiveShareScope === 'private' ||
                 task.createdBy?.id === currentUserId ||
                 task.assignedTo?.id === currentUserId ||
-                task.createdBy === currentUser?.name ||
-                task.assignedTo === currentUser?.name
+                task.createdBy?.name === currentUser?.name ||
+                task.assignedTo?.name === currentUser?.name
               );
             }
 
