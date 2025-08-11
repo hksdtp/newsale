@@ -40,7 +40,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({ currentU
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'employee' as const,
+    role: 'employee' as 'employee' | 'team_leader' | 'retail_director',
     team_id: '',
     location: 'Hà Nội',
     department_type: 'Kinh doanh',
