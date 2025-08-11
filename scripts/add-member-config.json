@@ -1,0 +1,23 @@
+{
+  "action": "create_team_with_leader",
+  "timestamp": "2025-08-11T14:52:55.777Z",
+  "team": {
+    "name": "NHÓM 5 - Mai Tiến Đạt",
+    "location": "HN",
+    "description": "Nhóm kinh doanh Hà Nội 5"
+  },
+  "leader": {
+    "name": "Mai Tiến Đạt",
+    "email": "dat.mai@company.com",
+    "password": "123456",
+    "team": "NHÓM 5 - Mai Tiến Đạt",
+    "location": "Hà Nội",
+    "role": "team_leader",
+    "department_type": "Kinh doanh"
+  },
+  "instructions": [
+    "Chạy SQL script: scripts/add-mai-tien-dat-team5.sql",
+    "Hoặc khởi động Docker và chạy: node scripts/create-team5-with-mai-tien-dat.js",
+    "Hoặc thêm trực tiếp qua web interface"
+  ]
+}
