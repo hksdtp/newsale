@@ -11,14 +11,11 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 1
+      "actualWorkers": 5
     },
     "preserveOutput": "always",
     "reporter": [
-      [
-        "html",
-        null
-      ],
+      ["html", null],
       [
         "json",
         {
@@ -43,15 +40,13 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "chromium",
         "name": "chromium",
         "testDir": "/Users/ninh/Webapp/newsale/tests",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 30000
       },
       {
@@ -59,15 +54,13 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "firefox",
         "name": "firefox",
         "testDir": "/Users/ninh/Webapp/newsale/tests",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 30000
       },
       {
@@ -75,15 +68,13 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "webkit",
         "name": "webkit",
         "testDir": "/Users/ninh/Webapp/newsale/tests",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 30000
       },
       {
@@ -91,15 +82,13 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "Mobile Chrome",
         "name": "Mobile Chrome",
         "testDir": "/Users/ninh/Webapp/newsale/tests",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 30000
       },
       {
@@ -107,15 +96,13 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 1
+          "actualWorkers": 5
         },
         "id": "Mobile Safari",
         "name": "Mobile Safari",
         "testDir": "/Users/ninh/Webapp/newsale/tests",
         "testIgnore": [],
-        "testMatch": [
-          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
-        ],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
         "timeout": 30000
       }
     ],
@@ -133,20 +120,20 @@
   },
   "suites": [
     {
-      "title": "e2e/badge-debug.spec.ts",
-      "file": "e2e/badge-debug.spec.ts",
+      "title": "e2e/routing.spec.ts",
+      "file": "e2e/routing.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Badge Debug Tests",
-          "file": "e2e/badge-debug.spec.ts",
+          "title": "SPA Routing",
+          "file": "e2e/routing.spec.ts",
           "line": 3,
           "column": 6,
           "specs": [
             {
-              "title": "Debug page state",
+              "title": "should handle page refresh without 404",
               "ok": true,
               "tags": [],
               "tests": [
@@ -161,76 +148,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4724,
+                      "duration": 1161,
                       "errors": [],
-                      "stdout": [
-                        {
-                          "text": "📸 Screenshot saved: debug-page-state.png\n"
-                        },
-                        {
-                          "text": "📄 Page title: Phòng Kinh Doanh\n"
-                        },
-                        {
-                          "text": "🔗 Page URL: http://localhost:3000/auth/region-selection\n"
-                        },
-                        {
-                          "text": "🔐 Login button exists: false\n"
-                        },
-                        {
-                          "text": "🌍 On region selection page, need to select region...\n"
-                        },
-                        {
-                          "text": "🔘 Found 3 buttons on region page\n"
-                        },
-                        {
-                          "text": "🔘 Button 0: Trưởng PhòngKhổng Đức Mạnh\n"
-                        },
-                        {
-                          "text": "🔘 Button 1: Hà NộiKhu vực miền Bắc\n"
-                        },
-                        {
-                          "text": "🔘 Button 2: Hồ Chí MinhKhu vực miền Nam\n"
-                        },
-                        {
-                          "text": "🔘 Clicking Hà Nội button\n"
-                        },
-                        {
-                          "text": "🔗 New URL after region selection: http://localhost:3000/auth/region-selection\n"
-                        },
-                        {
-                          "text": "🧪 Debugging page state...\n"
-                        },
-                        {
-                          "text": "📊 Total elements on page: 49\n"
-                        },
-                        {
-                          "text": "🏷️ Task items found: 0\n"
-                        },
-                        {
-                          "text": "🏷️ Badges found: 0\n"
-                        },
-                        {
-                          "text": "🔘 Buttons found: 3\n"
-                        },
-                        {
-                          "text": "📦 Divs found: 17\n"
-                        },
-                        {
-                          "text": "📝 Page contains \"task\": false\n"
-                        },
-                        {
-                          "text": "📝 Page contains \"công việc\": false\n"
-                        },
-                        {
-                          "text": "📝 Page contains \"Đăng nhập\": false\n"
-                        },
-                        {
-                          "text": "🏷️ Task items after wait: 0\n"
-                        }
-                      ],
+                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-08-08T09:25:55.952Z",
+                      "startTime": "2025-08-11T06:28:13.770Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -238,9 +161,655 @@
                   "status": "expected"
                 }
               ],
-              "id": "c086f4359f2b5bd91693-b777deedc185aa73f130",
-              "file": "e2e/badge-debug.spec.ts",
-              "line": 77,
+              "id": "08eedc4567ed29713812-9d569eb0e92f1df1c7ed",
+              "file": "e2e/routing.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should handle direct URL access",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 849,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:13.777Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-2f48041d91bc4a65bd61",
+              "file": "e2e/routing.spec.ts",
+              "line": 25,
+              "column": 7
+            },
+            {
+              "title": "should handle unknown routes with 404 page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 1123,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:13.761Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-c834ee19e5cb02afbac0",
+              "file": "e2e/routing.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "should handle nested routes correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 979,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:13.763Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-bb0f52ec5e7ae91d124b",
+              "file": "e2e/routing.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "should handle page refresh without 404",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 3295,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:13.759Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-a0b2a0cfd3cba3fee0a1",
+              "file": "e2e/routing.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should handle direct URL access",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2456,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:15.563Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-b46dfc1dc5361535c76d",
+              "file": "e2e/routing.spec.ts",
+              "line": 25,
+              "column": 7
+            },
+            {
+              "title": "should handle unknown routes with 404 page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 3115,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:15.634Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-1c70cd70ea9ec8e5b93e",
+              "file": "e2e/routing.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "should handle nested routes correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3952,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:15.656Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-23d7c82de882525b2ad8",
+              "file": "e2e/routing.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "should handle page refresh without 404",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2111,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:15.765Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-92d742f455368ec0c37c",
+              "file": "e2e/routing.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should handle direct URL access",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 578,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:18.199Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-5a36b0986684c9e41ea5",
+              "file": "e2e/routing.spec.ts",
+              "line": 25,
+              "column": 7
+            },
+            {
+              "title": "should handle unknown routes with 404 page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 849,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:18.791Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-225b47f1d489014bcb9e",
+              "file": "e2e/routing.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "should handle nested routes correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 1134,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:20.102Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-1159fd21869966062444",
+              "file": "e2e/routing.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "should handle page refresh without 404",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 552,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:21.041Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-62356ceda9913411a317",
+              "file": "e2e/routing.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should handle direct URL access",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 580,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:20.139Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-521c7465e115fdbe1ca5",
+              "file": "e2e/routing.spec.ts",
+              "line": 25,
+              "column": 7
+            },
+            {
+              "title": "should handle unknown routes with 404 page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 998,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:22.173Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-14fe7aa15bbef6174842",
+              "file": "e2e/routing.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "should handle nested routes correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 493,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:20.975Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-08e3d730f48c37ebe1dd",
+              "file": "e2e/routing.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "should handle page refresh without 404",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 2112,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:22.313Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-c50b360036054ea58874",
+              "file": "e2e/routing.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should handle direct URL access",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1814,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:22.281Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-47af6f0d2dbc682eabca",
+              "file": "e2e/routing.spec.ts",
+              "line": 25,
+              "column": 7
+            },
+            {
+              "title": "should handle unknown routes with 404 page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 2284,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:22.068Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-6875dcd889f91d987f00",
+              "file": "e2e/routing.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "should handle nested routes correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 1869,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-11T06:28:22.397Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "08eedc4567ed29713812-94ec1748779ce0c7ae61",
+              "file": "e2e/routing.spec.ts",
+              "line": 54,
               "column": 7
             }
           ]
@@ -250,9 +819,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-08-08T09:25:55.437Z",
-    "duration": 5763.957,
-    "expected": 1,
+    "startTime": "2025-08-11T06:28:12.954Z",
+    "duration": 11984.102,
+    "expected": 20,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

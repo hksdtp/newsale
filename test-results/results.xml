@@ -1,30 +1,52 @@
-<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="5.763957">
-<testsuite name="e2e/badge-debug.spec.ts" timestamp="2025-08-08T09:25:55.635Z" hostname="chromium" tests="1" failures="0" skipped="0" time="4.724" errors="0">
-<testcase name="Badge Debug Tests › Debug page state" classname="e2e/badge-debug.spec.ts" time="4.724">
-<system-out>
-<![CDATA[📸 Screenshot saved: debug-page-state.png
-📄 Page title: Phòng Kinh Doanh
-🔗 Page URL: http://localhost:3000/auth/region-selection
-🔐 Login button exists: false
-🌍 On region selection page, need to select region...
-🔘 Found 3 buttons on region page
-🔘 Button 0: Trưởng PhòngKhổng Đức Mạnh
-🔘 Button 1: Hà NộiKhu vực miền Bắc
-🔘 Button 2: Hồ Chí MinhKhu vực miền Nam
-🔘 Clicking Hà Nội button
-🔗 New URL after region selection: http://localhost:3000/auth/region-selection
-🧪 Debugging page state...
-📊 Total elements on page: 49
-🏷️ Task items found: 0
-🏷️ Badges found: 0
-🔘 Buttons found: 3
-📦 Divs found: 17
-📝 Page contains "task": false
-📝 Page contains "công việc": false
-📝 Page contains "Đăng nhập": false
-🏷️ Task items after wait: 0
-]]>
-</system-out>
+<testsuites id="" name="" tests="20" failures="0" skipped="0" errors="0" time="11.984102">
+<testsuite name="e2e/routing.spec.ts" timestamp="2025-08-11T06:28:13.244Z" hostname="chromium" tests="4" failures="0" skipped="0" time="4.112" errors="0">
+<testcase name="SPA Routing › should handle page refresh without 404" classname="e2e/routing.spec.ts" time="1.161">
+</testcase>
+<testcase name="SPA Routing › should handle direct URL access" classname="e2e/routing.spec.ts" time="0.849">
+</testcase>
+<testcase name="SPA Routing › should handle unknown routes with 404 page" classname="e2e/routing.spec.ts" time="1.123">
+</testcase>
+<testcase name="SPA Routing › should handle nested routes correctly" classname="e2e/routing.spec.ts" time="0.979">
+</testcase>
+</testsuite>
+<testsuite name="e2e/routing.spec.ts" timestamp="2025-08-11T06:28:13.244Z" hostname="firefox" tests="4" failures="0" skipped="0" time="12.818" errors="0">
+<testcase name="SPA Routing › should handle page refresh without 404" classname="e2e/routing.spec.ts" time="3.295">
+</testcase>
+<testcase name="SPA Routing › should handle direct URL access" classname="e2e/routing.spec.ts" time="2.456">
+</testcase>
+<testcase name="SPA Routing › should handle unknown routes with 404 page" classname="e2e/routing.spec.ts" time="3.115">
+</testcase>
+<testcase name="SPA Routing › should handle nested routes correctly" classname="e2e/routing.spec.ts" time="3.952">
+</testcase>
+</testsuite>
+<testsuite name="e2e/routing.spec.ts" timestamp="2025-08-11T06:28:13.244Z" hostname="webkit" tests="4" failures="0" skipped="0" time="4.672" errors="0">
+<testcase name="SPA Routing › should handle page refresh without 404" classname="e2e/routing.spec.ts" time="2.111">
+</testcase>
+<testcase name="SPA Routing › should handle direct URL access" classname="e2e/routing.spec.ts" time="0.578">
+</testcase>
+<testcase name="SPA Routing › should handle unknown routes with 404 page" classname="e2e/routing.spec.ts" time="0.849">
+</testcase>
+<testcase name="SPA Routing › should handle nested routes correctly" classname="e2e/routing.spec.ts" time="1.134">
+</testcase>
+</testsuite>
+<testsuite name="e2e/routing.spec.ts" timestamp="2025-08-11T06:28:13.244Z" hostname="Mobile Chrome" tests="4" failures="0" skipped="0" time="2.623" errors="0">
+<testcase name="SPA Routing › should handle page refresh without 404" classname="e2e/routing.spec.ts" time="0.552">
+</testcase>
+<testcase name="SPA Routing › should handle direct URL access" classname="e2e/routing.spec.ts" time="0.58">
+</testcase>
+<testcase name="SPA Routing › should handle unknown routes with 404 page" classname="e2e/routing.spec.ts" time="0.998">
+</testcase>
+<testcase name="SPA Routing › should handle nested routes correctly" classname="e2e/routing.spec.ts" time="0.493">
+</testcase>
+</testsuite>
+<testsuite name="e2e/routing.spec.ts" timestamp="2025-08-11T06:28:13.244Z" hostname="Mobile Safari" tests="4" failures="0" skipped="0" time="8.079" errors="0">
+<testcase name="SPA Routing › should handle page refresh without 404" classname="e2e/routing.spec.ts" time="2.112">
+</testcase>
+<testcase name="SPA Routing › should handle direct URL access" classname="e2e/routing.spec.ts" time="1.814">
+</testcase>
+<testcase name="SPA Routing › should handle unknown routes with 404 page" classname="e2e/routing.spec.ts" time="2.284">
+</testcase>
+<testcase name="SPA Routing › should handle nested routes correctly" classname="e2e/routing.spec.ts" time="1.869">
 </testcase>
 </testsuite>
 </testsuites>
