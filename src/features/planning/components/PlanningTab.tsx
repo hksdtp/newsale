@@ -1,18 +1,18 @@
 import {
-    ArrowRight,
-    Calendar,
-    CalendarDays,
-    CheckCircle,
-    Clock,
-    Grid3X3,
-    MoreVertical,
-    Plus,
-    Target,
-    Trash2,
-    Users,
-    X,
+  ArrowRight,
+  Calendar,
+  CalendarDays,
+  CheckCircle,
+  Clock,
+  Grid3X3,
+  MoreVertical,
+  Plus,
+  Target,
+  Trash2,
+  Users,
+  X,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, type ReactNode } from 'react';
 import PlanDetailModal from '../../../components/PlanDetailModal';
 import { getCurrentUser } from '../../../data/usersMockData';
 import { ScheduledTask, schedulingService } from '../../../services/schedulingService';
@@ -284,19 +284,11 @@ export function PlanningTab() {
 
       // Cập nhật state local
       setScheduledTasks(prev =>
-        prev.map(task =>
-          task.id === updates.id
-            ? { ...task, ...updates }
-            : task
-        )
+        prev.map(task => (task.id === updates.id ? { ...task, ...updates } : task))
       );
 
       setDailyTasks(prev =>
-        prev.map(task =>
-          task.id === updates.id
-            ? { ...task, ...updates }
-            : task
-        )
+        prev.map(task => (task.id === updates.id ? { ...task, ...updates } : task))
       );
 
       // Cập nhật selectedPlan nếu đang hiển thị
@@ -398,18 +390,18 @@ export function PlanningTab() {
       alert('❌ Vui lòng nhập tên kế hoạch!');
       return;
     }
-    
+
     if (!newPlanData.scheduledDate) {
       alert('❌ Vui lòng chọn ngày thực hiện!');
       return;
     }
-    
+
     // Validate selected date is not in the past
     const selectedDate = new Date(newPlanData.scheduledDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
-    
+
     if (selectedDate < today) {
       alert('❌ Không thể tạo kế hoạch cho ngày trong quá khứ!');
       return;
@@ -463,7 +455,9 @@ export function PlanningTab() {
       console.error('Error creating plan:', error);
       const errorMessage = (error as Error).message;
       if (errorMessage.includes('Scheduled date cannot be in the past')) {
-        alert('❌ Không thể tạo kế hoạch cho ngày trong quá khứ. Vui lòng chọn ngày hôm nay hoặc ngày trong tương lai.');
+        alert(
+          '❌ Không thể tạo kế hoạch cho ngày trong quá khứ. Vui lòng chọn ngày hôm nay hoặc ngày trong tương lai.'
+        );
       } else {
         alert('❌ Không thể tạo kế hoạch: ' + errorMessage);
       }
@@ -476,11 +470,11 @@ export function PlanningTab() {
   const openAddPlanModal = () => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
-    
+
     // Check if user has selected a different date from today
     const selectedDateStr = selectedDate.toISOString().split('T')[0];
     const useSelectedDate = selectedDateStr !== todayStr;
-    
+
     setNewPlanData(prev => ({
       ...prev,
       scheduledDate: useSelectedDate ? selectedDateStr : todayStr,
@@ -738,10 +732,10 @@ export function PlanningTab() {
                             {activeDropdown === task.id && (
                               <div
                                 className="absolute right-0 top-8 z-10 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1"
-                                onClick={(e) => e.stopPropagation()} // Ngăn chặn event bubbling
+                                onClick={e => e.stopPropagation()} // Ngăn chặn event bubbling
                               >
                                 <button
-                                  onClick={(e) => {
+                                  onClick={e => {
                                     e.stopPropagation();
                                     handlePlanClick(task);
                                   }}
@@ -753,7 +747,7 @@ export function PlanningTab() {
 
                                 {isToday(selectedDate) && task.source !== 'scheduled' && (
                                   <button
-                                    onClick={(e) => {
+                                    onClick={e => {
                                       e.stopPropagation();
                                       moveTaskToToday(task.id);
                                     }}
@@ -765,7 +759,7 @@ export function PlanningTab() {
                                 )}
 
                                 <button
-                                  onClick={(e) => {
+                                  onClick={e => {
                                     e.stopPropagation();
                                     deleteTask(task.id);
                                   }}
@@ -960,26 +954,36 @@ export function PlanningTab() {
                     }
                     className="w-full pl-10 pr-10 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none appearance-none cursor-pointer"
                   >
-                    <option value="low" className="bg-gray-700 text-green-400">🡇 Thấp</option>
-                    <option value="normal" className="bg-gray-700 text-blue-400">⸺ Bình thường</option>
-                    <option value="high" className="bg-gray-700 text-red-400">🡅 Cao</option>
+                    <option value="low" className="bg-gray-700 text-green-400">
+                      🡇 Thấp
+                    </option>
+                    <option value="normal" className="bg-gray-700 text-blue-400">
+                      ⸺ Bình thường
+                    </option>
+                    <option value="high" className="bg-gray-700 text-red-400">
+                      🡅 Cao
+                    </option>
                   </select>
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </div>
                   {/* Priority indicator */}
                   <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    {newPlanData.priority === 'high' && (
-                      <span className="text-red-400">🡅</span>
-                    )}
-                    {newPlanData.priority === 'normal' && (
-                      <span className="text-blue-400">⸺</span>
-                    )}
-                    {newPlanData.priority === 'low' && (
-                      <span className="text-green-400">🡇</span>
-                    )}
+                    {newPlanData.priority === 'high' && <span className="text-red-400">🡅</span>}
+                    {newPlanData.priority === 'normal' && <span className="text-blue-400">⸺</span>}
+                    {newPlanData.priority === 'low' && <span className="text-green-400">🡇</span>}
                   </div>
                 </div>
               </div>
@@ -1021,7 +1025,7 @@ export function PlanningTab() {
       {/* Plan Detail Modal */}
       {console.log('🔍 Rendering PlanDetailModal:', {
         isOpen: showPlanDetailModal,
-        plan: selectedPlan?.name || 'null'
+        plan: selectedPlan?.name || 'null',
       })}
       <PlanDetailModal
         isOpen={showPlanDetailModal}
