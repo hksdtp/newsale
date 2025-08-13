@@ -5,9 +5,11 @@ import DeleteConfirmModal from '../../../components/DeleteConfirmModal';
 import EditTaskModal from '../../../components/EditTaskModal';
 import MultiWorkTypeBadges from '../../../components/MultiWorkTypeBadges';
 import PriorityBadge from '../../../components/PriorityBadge';
+import QuickStatusFilters from '../../../components/QuickStatusFilters';
 import ShareScopeBadge from '../../../components/ShareScopeBadge';
 import StatusBadge from '../../../components/StatusBadge';
 import TaskActions from '../../../components/TaskActions';
+import TaskBadgeGrid from '../../../components/TaskBadgeGrid';
 import TaskDetailModal from '../../../components/TaskDetailModal';
 import TaskFilters, { FilterState } from '../../../components/TaskFilters';
 import { getCurrentUser } from '../../../data/usersMockData';
@@ -15,10 +17,10 @@ import { TaskWithUsers, taskService } from '../../../services/taskService';
 import { supabase } from '../../../shared/api/supabase';
 import { formatVietnameseDate, parseDate } from '../../../utils/dateUtils';
 import {
-  getCurrentUserPermissions,
-  getDefaultLocationFilter,
-  shouldShowLocationTabs,
-  shouldShowTeamSelectorButtons,
+    getCurrentUserPermissions,
+    getDefaultLocationFilter,
+    shouldShowLocationTabs,
+    shouldShowTeamSelectorButtons,
 } from '../../../utils/roleBasedPermissions';
 import { clearPermissionCache } from '../../../utils/taskPermissions';
 
@@ -88,6 +90,20 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
     priorityFilter: 'all',
   });
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+
+  // State cho Quick Status Filters
+  const [quickStatusFilter, setQuickStatusFilter] = useState<'all' | 'new-requests' | 'approved' | 'live'>('all');
+
+  // Helper function để kiểm tra công việc trong ngày hiện tại
+  const isTaskDueToday = (task: TaskWithUsers): boolean => {
+    const today = new Date();
+    const taskDueDate = task.dueDate ? new Date(task.dueDate) : new Date(task.startDate);
+
+    return (
+      taskDueDate.toDateString() === today.toDateString() &&
+      task.status !== 'live' // Chỉ highlight công việc chưa hoàn thành
+    );
+  };
 
   useEffect(() => {
     loadTasks();
@@ -309,9 +325,14 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
     }
   };
 
-  // Filter tasks based on current filters
+  // Filter tasks based on current filters và quick status filter
   const filterTasks = (tasks: TaskWithUsers[], filters: FilterState): TaskWithUsers[] => {
-    return tasks.filter(task => {
+    let filteredTasks = tasks.filter(task => {
+      // Quick Status Filter - ưu tiên cao nhất
+      if (quickStatusFilter !== 'all' && task.status !== quickStatusFilter) {
+        return false;
+      }
+
       // Search filter
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
@@ -355,6 +376,26 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       }
 
       return true;
+    });
+
+    // Cải tiến logic sắp xếp: Mới nhất → Đang thực hiện → Chưa thực hiện
+    // Ẩn công việc hoàn thành khỏi view mặc định (trừ khi filter "Hoàn thành")
+    if (quickStatusFilter === 'all') {
+      // Ẩn công việc hoàn thành khỏi view mặc định
+      filteredTasks = filteredTasks.filter(task => task.status !== 'live');
+    }
+
+    // Sắp xếp theo ưu tiên: Mới nhất (theo thời gian tạo) → Đang thực hiện → Chưa thực hiện
+    return filteredTasks.sort((a, b) => {
+      // Ưu tiên 1: Sắp xếp theo trạng thái
+      const statusOrder = { 'approved': 0, 'new-requests': 1, 'live': 2 };
+      const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+      if (statusDiff !== 0) return statusDiff;
+
+      // Ưu tiên 2: Trong cùng trạng thái, sắp xếp theo thời gian tạo (mới nhất trước)
+      const dateA = new Date(a.createdAt || a.startDate).getTime();
+      const dateB = new Date(b.createdAt || b.startDate).getTime();
+      return dateB - dateA;
     });
   };
 
@@ -788,6 +829,14 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
           <TaskFilters onFilterChange={setFilters} />
         </div>
 
+        {/* Quick Status Filters - Mới thêm */}
+        <QuickStatusFilters
+          tasks={tasks}
+          activeFilter={quickStatusFilter}
+          onFilterChange={setQuickStatusFilter}
+          compact={false}
+        />
+
         {/* Team Selector Buttons for team-tasks tab - Only for directors */}
         {activeTab === 'team-tasks' &&
           teamGroups.length > 0 &&
@@ -947,45 +996,43 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
                               {/* Gmail-Style Team Tasks List - Mobile Optimized */}
                               <div>
                                 {allTeamTasks.map(task => {
+                                  // Kiểm tra xem có phải công việc trong ngày không
+                                  const isDueToday = isTaskDueToday(task);
+
                                   return (
                                     <div
                                       key={task.id}
-                                      className="mobile-task-item group hover:bg-gray-700/30 transition-all duration-200 cursor-pointer relative"
+                                      className={`mobile-task-item group hover:bg-gray-700/30 transition-all duration-200 cursor-pointer relative ${
+                                        isDueToday
+                                          ? 'border-l-4 border-red-500 bg-red-500/5 hover:bg-red-500/10'
+                                          : ''
+                                      }`}
                                       onClick={() => handleTaskClick(task)}
                                     >
-                                      {/* Icons - Hidden on mobile only */}
-                                      <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-                                        {/* Work Type Badges - Multiple Labels */}
-                                        <MultiWorkTypeBadges
-                                          workTypes={task.workTypes || [task.workType]}
-                                          onChange={newWorkTypes => {
-                                            console.log('WorkTypes changed:', newWorkTypes);
-                                            handleUpdateTask({
-                                              id: task.id,
-                                              workTypes: newWorkTypes as any,
-                                            });
-                                          }}
-                                          maxDisplay={2}
+                                      {/* Indicator cho công việc trong ngày */}
+                                      {isDueToday && (
+                                        <div className="absolute top-2 right-2 flex items-center gap-1">
+                                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                          <span className="text-xs text-red-400 font-medium">Hôm nay</span>
+                                        </div>
+                                      )}
+                                      {/* Badges Grid - Cải tiến UI/UX với alignment tốt hơn */}
+                                      <div className="hidden md:block w-full mb-3">
+                                        <TaskBadgeGrid
+                                          task={task}
+                                          onUpdateTask={handleUpdateTask}
+                                          compact={false}
+                                          maxWorkTypes={2}
                                         />
+                                      </div>
 
-                                        {/* Editable Status & Priority Badges */}
-                                        <StatusBadge
-                                          value={task.status}
-                                          onChange={(
-                                            newStatus: 'new-requests' | 'approved' | 'live'
-                                          ) => handleUpdateTask({ id: task.id, status: newStatus })}
-                                        />
-                                        <PriorityBadge
-                                          value={task.priority}
-                                          onChange={(newPriority: 'low' | 'normal' | 'high') =>
-                                            handleUpdateTask({ id: task.id, priority: newPriority })
-                                          }
-                                        />
-                                        <ShareScopeBadge
-                                          value={task.shareScope || 'team'}
-                                          onChange={(newScope: 'private' | 'team' | 'public') =>
-                                            handleUpdateTask({ id: task.id, shareScope: newScope })
-                                          }
+                                      {/* Mobile Badges - Compact layout */}
+                                      <div className="md:hidden w-full mb-3">
+                                        <TaskBadgeGrid
+                                          task={task}
+                                          onUpdateTask={handleUpdateTask}
+                                          compact={true}
+                                          maxWorkTypes={1}
                                         />
                                       </div>
 
@@ -1189,46 +1236,44 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
               {/* Gmail-Style Tasks List - Mobile Optimized */}
               <div>
                 {filteredTasks.map(task => {
+                  // Kiểm tra xem có phải công việc trong ngày không
+                  const isDueToday = isTaskDueToday(task);
+
                   return (
                     <div
                       key={task.id}
                       data-testid="task-item"
-                      className="mobile-task-item mobile-touch-feedback mobile-optimized group hover:bg-gray-700/30 transition-all duration-200 cursor-pointer relative"
+                      className={`mobile-task-item mobile-touch-feedback mobile-optimized group hover:bg-gray-700/30 transition-all duration-200 cursor-pointer relative ${
+                        isDueToday
+                          ? 'border-l-4 border-red-500 bg-red-500/5 hover:bg-red-500/10'
+                          : ''
+                      }`}
                       onClick={() => handleTaskClick(task)}
                     >
-                      {/* Icons - Hidden on mobile only */}
-                      <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-                        {/* Work Type Badges - Multiple Labels */}
-                        <MultiWorkTypeBadges
-                          workTypes={task.workTypes || [task.workType]}
-                          onChange={newWorkTypes => {
-                            console.log('WorkTypes changed:', newWorkTypes);
-                            handleUpdateTask({
-                              id: task.id,
-                              workTypes: newWorkTypes as any,
-                            });
-                          }}
-                          maxDisplay={2}
+                      {/* Indicator cho công việc trong ngày */}
+                      {isDueToday && (
+                        <div className="absolute top-2 right-2 flex items-center gap-1">
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                          <span className="text-xs text-red-400 font-medium">Hôm nay</span>
+                        </div>
+                      )}
+                      {/* Badges Grid - Cải tiến UI/UX với alignment tốt hơn */}
+                      <div className="hidden md:block w-full mb-3">
+                        <TaskBadgeGrid
+                          task={task}
+                          onUpdateTask={handleUpdateTask}
+                          compact={false}
+                          maxWorkTypes={2}
                         />
+                      </div>
 
-                        {/* Editable Status & Priority Badges */}
-                        <StatusBadge
-                          value={task.status}
-                          onChange={(newStatus: 'new-requests' | 'approved' | 'live') =>
-                            handleUpdateTask({ id: task.id, status: newStatus })
-                          }
-                        />
-                        <PriorityBadge
-                          value={task.priority}
-                          onChange={(newPriority: 'low' | 'normal' | 'high') =>
-                            handleUpdateTask({ id: task.id, priority: newPriority })
-                          }
-                        />
-                        <ShareScopeBadge
-                          value={task.shareScope || 'team'}
-                          onChange={(newScope: 'private' | 'team' | 'public') =>
-                            handleUpdateTask({ id: task.id, shareScope: newScope })
-                          }
+                      {/* Mobile Badges - Compact layout */}
+                      <div className="md:hidden w-full mb-3">
+                        <TaskBadgeGrid
+                          task={task}
+                          onUpdateTask={handleUpdateTask}
+                          compact={true}
+                          maxWorkTypes={1}
                         />
                       </div>
 

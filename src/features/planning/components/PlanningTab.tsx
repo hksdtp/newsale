@@ -1,18 +1,19 @@
 import {
-  ArrowRight,
-  Calendar,
-  CalendarDays,
-  CheckCircle,
-  Clock,
-  Grid3X3,
-  MoreVertical,
-  Plus,
-  Target,
-  Trash2,
-  Users,
-  X,
+    ArrowRight,
+    Calendar,
+    CalendarDays,
+    CheckCircle,
+    Clock,
+    Grid3X3,
+    MoreVertical,
+    Plus,
+    Target,
+    Trash2,
+    Users,
+    X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import PlanDetailModal from '../../../components/PlanDetailModal';
 import { getCurrentUser } from '../../../data/usersMockData';
 import { ScheduledTask, schedulingService } from '../../../services/schedulingService';
 import { CreateTaskData, taskService } from '../../../services/taskService';
@@ -49,6 +50,10 @@ export function PlanningTab() {
     scheduledTime: '',
     priority: 'normal' as 'low' | 'normal' | 'high',
   });
+
+  // Plan detail modal state
+  const [showPlanDetailModal, setShowPlanDetailModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<ScheduledTask | null>(null);
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
 
   // Debug: Log initial state
@@ -244,6 +249,76 @@ export function PlanningTab() {
     console.log('🎯 Found matching tasks:', matchingTasks.length);
 
     return matchingTasks;
+  };
+
+  // Xử lý mở modal chi tiết kế hoạch
+  const handlePlanClick = (plan: ScheduledTask) => {
+    console.log('🎯 handlePlanClick called with plan:', plan);
+    setSelectedPlan(plan);
+    setShowPlanDetailModal(true);
+    setActiveDropdown(null); // Đóng dropdown nếu đang mở
+    console.log('📋 Modal state updated - showPlanDetailModal: true');
+  };
+
+  // Xử lý đóng modal chi tiết
+  const handleClosePlanDetail = () => {
+    setShowPlanDetailModal(false);
+    setSelectedPlan(null);
+  };
+
+  // Xử lý cập nhật kế hoạch từ modal
+  const handleUpdatePlan = async (updates: any) => {
+    try {
+      // Cập nhật trong database
+      const { error } = await supabase
+        .from('scheduled_tasks')
+        .update({
+          name: updates.name,
+          description: updates.description,
+          priority: updates.priority,
+          scheduled_time: updates.scheduled_time,
+        })
+        .eq('id', updates.id);
+
+      if (error) throw error;
+
+      // Cập nhật state local
+      setScheduledTasks(prev =>
+        prev.map(task =>
+          task.id === updates.id
+            ? { ...task, ...updates }
+            : task
+        )
+      );
+
+      setDailyTasks(prev =>
+        prev.map(task =>
+          task.id === updates.id
+            ? { ...task, ...updates }
+            : task
+        )
+      );
+
+      // Cập nhật selectedPlan nếu đang hiển thị
+      if (selectedPlan && selectedPlan.id === updates.id) {
+        setSelectedPlan({ ...selectedPlan, ...updates });
+      }
+
+      console.log('✅ Kế hoạch đã được cập nhật thành công');
+    } catch (error) {
+      console.error('❌ Lỗi khi cập nhật kế hoạch:', error);
+      alert('Không thể cập nhật kế hoạch. Vui lòng thử lại.');
+    }
+  };
+
+  // Xử lý xóa kế hoạch từ modal
+  const handleDeletePlanFromModal = async () => {
+    if (!selectedPlan) return;
+
+    if (confirm(`Bạn có chắc chắn muốn xóa kế hoạch "${selectedPlan.name}"?`)) {
+      await deleteTask(selectedPlan.id);
+      handleClosePlanDetail();
+    }
   };
 
   const formatTime = (timeStr?: string) => {
@@ -633,13 +708,14 @@ export function PlanningTab() {
                   <div
                     key={task.id}
                     className={`
-                      relative p-3 sm:p-4 rounded-xl border transition-all group
+                      relative p-3 sm:p-4 rounded-xl border transition-all group cursor-pointer
                       ${
                         isPastDate(selectedDate)
-                          ? 'bg-gray-800/40 border-gray-600/50'
+                          ? 'bg-gray-800/40 border-gray-600/50 hover:bg-gray-800/60'
                           : 'bg-white/5 border-gray-700/50 hover:bg-white/10 hover:border-gray-600'
                       }
                     `}
+                    onClick={() => handlePlanClick(task)}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
@@ -660,11 +736,28 @@ export function PlanningTab() {
 
                             {/* Dropdown menu */}
                             {activeDropdown === task.id && (
-                              <div className="absolute right-0 top-8 z-10 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1">
+                              <div
+                                className="absolute right-0 top-8 z-10 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1"
+                                onClick={(e) => e.stopPropagation()} // Ngăn chặn event bubbling
+                              >
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePlanClick(task);
+                                  }}
+                                  className="w-full px-3 py-2 text-left text-sm text-blue-400 hover:bg-gray-700/50 flex items-center gap-2"
+                                >
+                                  <Target className="w-4 h-4" />
+                                  Xem chi tiết
+                                </button>
+
                                 {isToday(selectedDate) && task.source !== 'scheduled' && (
                                   <button
-                                    onClick={() => moveTaskToToday(task.id)}
-                                    className="w-full px-3 py-2 text-left text-sm text-blue-400 hover:bg-gray-700/50 flex items-center gap-2"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      moveTaskToToday(task.id);
+                                    }}
+                                    className="w-full px-3 py-2 text-left text-sm text-green-400 hover:bg-gray-700/50 flex items-center gap-2"
                                   >
                                     <ArrowRight className="w-4 h-4" />
                                     Chuyển về hôm nay
@@ -672,12 +765,15 @@ export function PlanningTab() {
                                 )}
 
                                 <button
-                                  onClick={() => deleteTask(task.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteTask(task.id);
+                                  }}
                                   disabled={deletingTaskId === task.id}
                                   className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-gray-700/50 flex items-center gap-2 disabled:opacity-50"
                                 >
                                   <Trash2 className="w-4 h-4" />
-                                  {deletingTaskId === task.id ? 'Đang xóa...' : 'Xóa công việc'}
+                                  {deletingTaskId === task.id ? 'Đang xóa...' : 'Xóa kế hoạch'}
                                 </button>
                               </div>
                             )}
@@ -921,6 +1017,19 @@ export function PlanningTab() {
 
       {/* Weekly Schedule Manager Modal */}
       {showWeeklySchedule && <WeeklyScheduleManager onClose={() => setShowWeeklySchedule(false)} />}
+
+      {/* Plan Detail Modal */}
+      {console.log('🔍 Rendering PlanDetailModal:', {
+        isOpen: showPlanDetailModal,
+        plan: selectedPlan?.name || 'null'
+      })}
+      <PlanDetailModal
+        isOpen={showPlanDetailModal}
+        onClose={handleClosePlanDetail}
+        plan={selectedPlan}
+        onUpdate={handleUpdatePlan}
+        onDelete={handleDeletePlanFromModal}
+      />
     </div>
   );
 }

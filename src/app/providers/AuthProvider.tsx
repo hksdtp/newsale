@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useReducer } from 'react';
 import { authService, User } from '../../features/auth/api/authService';
 
 // Types - Use the User interface from authService
@@ -138,9 +138,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('auth_user');
-    dispatch({ type: 'LOGOUT' });
+  const logout = async () => {
+    try {
+      await authService.logout();
+      dispatch({ type: 'LOGOUT' });
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Still dispatch logout even if there's an error
+      dispatch({ type: 'LOGOUT' });
+    }
   };
 
   const clearError = () => {

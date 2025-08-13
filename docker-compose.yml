@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Development environment
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    profiles:
+      - dev
+
+  # Production environment
+  app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    profiles:
+      - prod
+
+  # Supabase local development (optional)
+  supabase:
+    image: supabase/supabase:latest
+    ports:
+      - "54321:8000"  # Supabase Studio
+      - "54322:5432"  # PostgreSQL
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - supabase_data:/var/lib/postgresql/data
+    profiles:
+      - dev
+      - supabase
+
+volumes:
+  supabase_data:

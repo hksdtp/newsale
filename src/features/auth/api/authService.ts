@@ -1,3 +1,4 @@
+import { authContextService } from '../../../services/authContextService';
 import { supabase } from '../../../shared/api/supabase';
 
 export interface User {
@@ -218,7 +219,10 @@ class AuthService {
     localStorage.setItem('currentUserId', user.id);
     localStorage.setItem('currentUserEmail', user.email);
     localStorage.setItem('currentUserName', user.name);
-    
+
+    // Set user context for RLS policies
+    await authContextService.setUserContext(user.id);
+
     // Also update auth_user to ensure consistency
     const authUser = {
       ...user,
@@ -274,6 +278,24 @@ class AuthService {
 
     if (updateError) {
       throw new Error(`Failed to update password: ${updateError.message}`);
+    }
+  }
+
+  // Logout user
+  async logout(): Promise<void> {
+    try {
+      // Clear user context
+      await authContextService.clearUserContext();
+
+      // Clear localStorage
+      localStorage.removeItem('currentUserId');
+      localStorage.removeItem('currentUserEmail');
+      localStorage.removeItem('currentUserName');
+      localStorage.removeItem('auth_user');
+
+      console.log('✅ User logged out successfully');
+    } catch (error) {
+      console.error('❌ Error during logout:', error);
     }
   }
 

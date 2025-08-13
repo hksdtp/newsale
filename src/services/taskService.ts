@@ -2,6 +2,7 @@ import { Task, WorkType } from '../data/dashboardMockData';
 import { getCurrentUser, getUserById, isDirector } from '../data/usersMockData';
 import { supabase } from '../shared/api/supabase';
 import { getCurrentUserPermissions } from '../utils/roleBasedPermissions';
+import { withUserContext } from './authContextService';
 
 export interface CreateTaskData {
   name: string;
@@ -221,11 +222,12 @@ class TaskService {
 
   // Lấy tất cả tasks
   async getTasks(): Promise<TaskWithUsers[]> {
-    try {
-      const { data: tasks, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .order('created_at', { ascending: false });
+    return await withUserContext(async () => {
+      try {
+        const { data: tasks, error } = await supabase
+          .from('tasks')
+          .select('*')
+          .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching tasks:', error);
@@ -266,18 +268,19 @@ class TaskService {
       const userMap = new Map();
       users?.forEach(user => userMap.set(user.id, user));
 
-      // Map filtered tasks with user info
-      return filteredTasks.map(task =>
-        this.mapDbTaskToTask(
-          task,
-          userMap.get(task.created_by_id),
-          userMap.get(task.assigned_to_id)
-        )
-      );
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-      return [];
-    }
+        // Map filtered tasks with user info
+        return filteredTasks.map(task =>
+          this.mapDbTaskToTask(
+            task,
+            userMap.get(task.created_by_id),
+            userMap.get(task.assigned_to_id)
+          )
+        );
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        return [];
+      }
+    });
   }
 
   // Lấy tasks theo user
