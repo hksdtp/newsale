@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { X, Calendar, Users, Edit, Trash2, Building, Target, User, CheckSquare, Save, Edit3 } from 'lucide-react';
+import { Building, Calendar, Edit3, Save, Target, Trash2, User, Users, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { TaskAttachment } from '../services/attachmentService';
+import { ChecklistProgress } from '../services/checklistService';
 import { TaskWithUsers } from '../services/taskService';
-import TaskStatusPriority from './TaskStatusPriority';
 import StatusPriorityEditor from './StatusPriorityEditor';
 import TaskAttachments from './TaskAttachments';
 import TaskChecklist from './TaskChecklist';
-import TaskScheduling from './TaskScheduling';
-import { TaskAttachment } from '../services/attachmentService';
-import { ChecklistProgress } from '../services/checklistService';
 
 interface TaskDetailModalProps {
   isOpen: boolean;
@@ -214,17 +212,17 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const WorkTypeIcon = workTypeInfo.icon;
 
   return (
-    <div className="fixed inset-0 modal-backdrop-enhanced modal-container-responsive z-50">
-      <div className="create-task-modal task-detail-modal-mobile bg-[#1a1f2e] rounded-2xl w-full max-w-2xl md:max-w-3xl lg:max-w-4xl overflow-hidden shadow-2xl border border-gray-700/50 modal-animate-in">
-        <div className="create-task-modal-content flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-[#1a1f2e] rounded-lg sm:rounded-2xl w-full max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl border border-gray-700/50 flex flex-col">
+        <div className="flex flex-col h-full">
           {/* Header - Mobile Optimized */}
-          <div className={`task-detail-header-mobile border-b border-gray-700 flex-shrink-0 ${
+          <div className={`border-b border-gray-700 flex-shrink-0 ${
             isEditMode
               ? 'bg-gradient-to-r from-orange-600/20 to-yellow-600/20'
               : 'bg-gradient-to-r from-blue-600/10 to-purple-600/10'
           }`}>
             {/* Mobile Header Layout */}
-            <div className="p-3 md:p-4">
+            <div className="p-3 sm:p-4 md:p-6">
               {/* Mobile: Stack vertically, Desktop: Horizontal */}
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
                 {/* Top Row on Mobile: Title + Close Button */}
