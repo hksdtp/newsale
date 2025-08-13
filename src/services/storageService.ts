@@ -16,21 +16,29 @@ if (!supabaseUrl || !serviceKey) {
 const storageClient = createClient(supabaseUrl, serviceKey, {
   auth: {
     autoRefreshToken: false,
-    persistSession: false
-  }
+    persistSession: false,
+  },
 });
 
 export class StorageService {
   private readonly BUCKET_NAME = 'task-attachments';
 
+  // Expose storage client for direct access (compatibility)
+  get storage() {
+    return storageClient.storage;
+  }
+
   // Upload file using service key
-  async uploadFile(filePath: string, file: File): Promise<{ success: boolean; data?: any; error?: string }> {
+  async uploadFile(
+    filePath: string,
+    file: File
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       const { data, error } = await storageClient.storage
         .from(this.BUCKET_NAME)
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
         });
 
       if (error) {
@@ -67,9 +75,7 @@ export class StorageService {
   // Delete file
   async deleteFile(filePath: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const { error } = await storageClient.storage
-        .from(this.BUCKET_NAME)
-        .remove([filePath]);
+      const { error } = await storageClient.storage.from(this.BUCKET_NAME).remove([filePath]);
 
       if (error) {
         console.error('Delete error:', error);

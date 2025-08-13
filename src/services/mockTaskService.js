@@ -1,4 +1,3 @@
-
 // Temporary mock task service to bypass database issues
 export class MockTaskService {
   constructor() {
@@ -29,16 +28,18 @@ export class MockTaskService {
         name: currentUser.name,
         email: currentUser.email,
         team_id: currentUser.team_id,
-        location: currentUser.location
+        location: currentUser.location,
       },
-      assignedTo: taskData.assignedToId ? {
-        id: taskData.assignedToId,
-        name: taskData.assignedToId === createdById ? currentUser.name : 'Assigned User',
-        email: taskData.assignedToId === createdById ? currentUser.email : '',
-        team_id: currentUser.team_id,
-        location: currentUser.location
-      } : null,
-      createdAt: new Date().toISOString()
+      assignedTo: taskData.assignedToId
+        ? {
+            id: taskData.assignedToId,
+            name: taskData.assignedToId === createdById ? currentUser.name : 'Assigned User',
+            email: taskData.assignedToId === createdById ? currentUser.email : '',
+            team_id: currentUser.team_id,
+            location: currentUser.location,
+          }
+        : null,
+      createdAt: new Date().toISOString(),
     };
 
     tasks.push(newTask);
@@ -74,23 +75,45 @@ export class MockTaskService {
     try {
       const savedUser = localStorage.getItem('auth_user');
       if (savedUser) {
-        return JSON.parse(savedUser);
-      }
-    } catch (error) {
-      console.error('Error getting current user:', error);
-    }
+        const authUser = JSON.parse(savedUser);
 
-    // Fallback
-    return {
-      id: localStorage.getItem('currentUserId') || 'unknown',
-      name: localStorage.getItem('currentUserName') || 'Unknown User',
-      email: localStorage.getItem('currentUserEmail') || 'unknown@email.com',
-      team_id: 'unknown',
-      location: 'Hà Nội',
-      team: { name: 'Unknown Team' }
-    };
+        // Validate required fields
+        if (!authUser.id || !authUser.name || !authUser.email) {
+          throw new Error('Invalid user data');
+        }
+
+        return {
+          id: authUser.id,
+          name: authUser.name,
+          email: authUser.email,
+          team_id: authUser.team_id || 'director-team',
+          location: authUser.location || 'Hà Nội',
+          team: authUser.team || { name: 'Ban Giám Đốc' },
+        };
+      }
+
+      // Fallback to localStorage values
+      const fallbackId = localStorage.getItem('currentUserId');
+      const fallbackName = localStorage.getItem('currentUserName');
+      const fallbackEmail = localStorage.getItem('currentUserEmail');
+
+      if (fallbackId && fallbackName && fallbackEmail) {
+        return {
+          id: fallbackId,
+          name: fallbackName,
+          email: fallbackEmail,
+          team_id: 'director-team',
+          location: 'Hà Nội',
+          team: { name: 'Ban Giám Đốc' },
+        };
+      }
+
+      throw new Error('No authenticated user found');
+    } catch (error) {
+      console.error('❌ Error getting current user:', error);
+      throw new Error('User authentication failed. Please login again.');
+    }
   }
 }
 
 export const mockTaskService = new MockTaskService();
-  

@@ -224,49 +224,58 @@ class TaskService {
   async getTasks(): Promise<TaskWithUsers[]> {
     return await withUserContext(async () => {
       try {
+        console.log('🔄 About to query Supabase tasks table...');
         const { data: tasks, error } = await supabase
           .from('tasks')
           .select('*')
           .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching tasks:', error);
-        return [];
-      }
+        console.log('🔍 Supabase response:', {
+          data: tasks,
+          error: error,
+          dataLength: tasks?.length || 0,
+        });
 
-      console.log('🔍 Raw tasks from database:', tasks?.length || 0);
-      console.log('🔍 Sample tasks:', tasks?.slice(0, 3));
+        if (error) {
+          console.error('❌ Error fetching tasks:', error);
+          console.error('❌ Error details:', JSON.stringify(error, null, 2));
+          return [];
+        }
 
-      if (!tasks || tasks.length === 0) {
-        console.log('⚠️ No tasks found in database');
-        return [];
-      }
+        console.log('🔍 Raw tasks from database:', tasks?.length || 0);
+        console.log('🔍 Sample tasks:', tasks?.slice(0, 3));
 
-      // Filter out scheduled tasks that haven't reached their scheduled date
-      const filteredTasks = this.filterScheduledTasks(tasks);
+        if (!tasks || tasks.length === 0) {
+          console.log('⚠️ No tasks found in database');
+          return [];
+        }
 
-      console.log('📅 Task filtering in getTasks:', {
-        totalTasks: tasks.length,
-        filteredTasks: filteredTasks.length,
-        today: new Date().toISOString().split('T')[0],
-        hiddenScheduledTasks: tasks.length - filteredTasks.length,
-      });
+        // TEMPORARILY BYPASS SCHEDULED FILTER - columns don't exist in current schema
+        // const filteredTasks = this.filterScheduledTasks(tasks);
+        const filteredTasks = tasks; // Show all tasks for now
 
-      // Get unique user IDs from filtered tasks
-      const userIds = new Set<string>();
-      filteredTasks.forEach(task => {
-        if (task.created_by_id) userIds.add(task.created_by_id);
-        if (task.assigned_to_id) userIds.add(task.assigned_to_id);
-      });
+        console.log('📅 Task filtering in getTasks:', {
+          totalTasks: tasks.length,
+          filteredTasks: filteredTasks.length,
+          today: new Date().toISOString().split('T')[0],
+          hiddenScheduledTasks: tasks.length - filteredTasks.length,
+        });
 
-      // Fetch all users at once
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, name, email, team_id, location')
-        .in('id', Array.from(userIds));
+        // Get unique user IDs from filtered tasks
+        const userIds = new Set<string>();
+        filteredTasks.forEach(task => {
+          if (task.created_by_id) userIds.add(task.created_by_id);
+          if (task.assigned_to_id) userIds.add(task.assigned_to_id);
+        });
 
-      const userMap = new Map();
-      users?.forEach(user => userMap.set(user.id, user));
+        // Fetch all users at once
+        const { data: users } = await supabase
+          .from('users')
+          .select('id, name, email, team_id, location')
+          .in('id', Array.from(userIds));
+
+        const userMap = new Map();
+        users?.forEach(user => userMap.set(user.id, user));
 
         // Map filtered tasks with user info
         return filteredTasks.map(task =>
@@ -410,15 +419,19 @@ class TaskService {
   // Xóa task
   async deleteTask(taskId: string): Promise<void> {
     try {
+      console.log('🗑️ TaskService: Deleting task with ID:', taskId);
+
       const { error } = await supabase.from('tasks').delete().eq('id', taskId);
 
       if (error) {
-        console.error('Error deleting task:', error);
-        throw new Error('Không thể xóa công việc');
+        console.error('❌ Supabase delete error:', error);
+        throw new Error(`Không thể xóa công việc: ${error.message}`);
       }
+
+      console.log('✅ TaskService: Task deleted successfully from database');
     } catch (error) {
-      console.error('Error deleting task:', error);
-      throw new Error('Không thể xóa công việc');
+      console.error('❌ TaskService: Error deleting task:', error);
+      throw error;
     }
   }
 
@@ -498,27 +511,35 @@ class TaskService {
         switch (scope) {
           case 'my-tasks':
             // "Của Tôi" - Private tasks OR tasks assigned to me OR tasks I created
-            if (isUserDirector) {
-              // Directors can see tasks created by them or assigned to them
-              // Check by both ID and name (mock data uses names)
-              const result =
-                task.createdBy?.id === currentUserId ||
-                task.assignedTo?.id === currentUserId ||
-                task.createdBy?.name === currentUser?.name ||
-                task.assignedTo?.name === currentUser?.name;
-              console.log(
-                `🔍 Director my-tasks: ${task.name} - createdBy: ${task.createdBy}, assignedTo: ${task.assignedTo}, currentUser: ${currentUser?.name} - ${result ? 'INCLUDED' : 'EXCLUDED'}`
-              );
-              return result;
-            } else {
-              return (
-                effectiveShareScope === 'private' ||
-                task.createdBy?.id === currentUserId ||
-                task.assignedTo?.id === currentUserId ||
-                task.createdBy?.name === currentUser?.name ||
-                task.assignedTo?.name === currentUser?.name
-              );
-            }
+            const createdByMatch = task.createdBy?.id === currentUserId;
+            const assignedToMatch = task.assignedTo?.id === currentUserId;
+            const createdByNameMatch = task.createdBy?.name === currentUser?.name;
+            const assignedToNameMatch = task.assignedTo?.name === currentUser?.name;
+
+            console.log(`🔍 my-tasks filter for "${task.name}":`, {
+              currentUserId,
+              currentUserName: currentUser?.name,
+              taskCreatedById: task.createdBy?.id,
+              taskCreatedByName: task.createdBy?.name,
+              taskAssignedToId: task.assignedTo?.id,
+              taskAssignedToName: task.assignedTo?.name,
+              createdByMatch,
+              assignedToMatch,
+              createdByNameMatch,
+              assignedToNameMatch,
+              effectiveShareScope,
+              isUserDirector,
+            });
+
+            // Apply same logic for both Directors and Regular users for "my-tasks"
+            // Only show tasks created by or assigned to the current user
+            const result =
+              createdByMatch || assignedToMatch || createdByNameMatch || assignedToNameMatch;
+
+            console.log(
+              `🔍 my-tasks result (${isUserDirector ? 'Director' : 'Regular'}): ${result ? 'INCLUDED' : 'EXCLUDED'}`
+            );
+            return result;
 
           case 'team-tasks':
             // "Của Nhóm" - Team scope tasks OR tasks assigned to teams
@@ -716,6 +737,13 @@ class TaskService {
 
       // Get all tasks first
       const allTasks = await this.getTasks();
+
+      console.log('📅 getMyTasks - Filtering tasks for user:', {
+        totalTasks: allTasks.length,
+        userId: currentUser.id,
+        userName: currentUser.name,
+        userRole: currentUser.role,
+      });
 
       // Filter by shareScope using filterTasksByScope
       const filteredTasks = this.filterTasksByScope(allTasks, currentUser.id, 'my-tasks');

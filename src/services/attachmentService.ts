@@ -1,12 +1,5 @@
-import { supabase } from '../shared/api/supabase';
 import { getCurrentUser } from '../data/usersMockData';
-import { createClient } from '@supabase/supabase-js';
-
-// Create service client for storage operations (workaround for RLS)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const serviceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
-const storageClient = serviceKey ? createClient(supabaseUrl, serviceKey) : supabase;
-import { storageService } from './storageService';
+import { supabase } from '../shared/api/supabase';
 
 export interface TaskAttachment {
   id: string;
@@ -36,7 +29,7 @@ class AttachmentService {
   private readonly MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
   private readonly ALLOWED_TYPES = [
     'image/jpeg',
-    'image/png', 
+    'image/png',
     'image/gif',
     'image/webp',
     'application/pdf',
@@ -45,7 +38,7 @@ class AttachmentService {
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'text/plain',
-    'text/csv'
+    'text/csv',
   ];
 
   // Validate file before upload
@@ -85,12 +78,12 @@ class AttachmentService {
       // Generate file path
       const filePath = this.generateFilePath(data.taskId, data.file.name, currentUser.id);
 
-      // Upload to Supabase Storage (using service client to bypass RLS)
-      const { data: uploadData, error: uploadError } = await storageClient.storage
+      // Upload to Supabase Storage (using storage service)
+      const { data: uploadData, error: uploadError } = await storageService.storage
         .from(this.BUCKET_NAME)
         .upload(filePath, data.file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
         });
 
       if (uploadError) {
@@ -107,7 +100,7 @@ class AttachmentService {
           file_path: filePath,
           file_size: data.file.size,
           file_type: data.file.type,
-          uploaded_by: currentUser.id
+          uploaded_by: currentUser.id,
         })
         .select()
         .single();
@@ -115,7 +108,7 @@ class AttachmentService {
       if (dbError) {
         console.error('Database insert error:', dbError);
         // Clean up uploaded file if database insert fails
-        await storageClient.storage.from(this.BUCKET_NAME).remove([filePath]);
+        await storageService.storage.from(this.BUCKET_NAME).remove([filePath]);
         return { success: false, error: 'Failed to save attachment record' };
       }
 
@@ -150,7 +143,7 @@ class AttachmentService {
   // Get signed URL for file download
   async getAttachmentUrl(filePath: string, expiresIn: number = 3600): Promise<string | null> {
     try {
-      const { data, error } = await storageClient.storage
+      const { data, error } = await storageService.storage
         .from(this.BUCKET_NAME)
         .createSignedUrl(filePath, expiresIn);
 
@@ -191,7 +184,7 @@ class AttachmentService {
       }
 
       // Delete from storage
-      const { error: storageError } = await storageClient.storage
+      const { error: storageError } = await storageService.storage
         .from(this.BUCKET_NAME)
         .remove([attachment.file_path]);
 

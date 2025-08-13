@@ -17,10 +17,10 @@ import { TaskWithUsers, taskService } from '../../../services/taskService';
 import { supabase } from '../../../shared/api/supabase';
 import { formatVietnameseDate, parseDate } from '../../../utils/dateUtils';
 import {
-    getCurrentUserPermissions,
-    getDefaultLocationFilter,
-    shouldShowLocationTabs,
-    shouldShowTeamSelectorButtons,
+  getCurrentUserPermissions,
+  getDefaultLocationFilter,
+  shouldShowLocationTabs,
+  shouldShowTeamSelectorButtons,
 } from '../../../utils/roleBasedPermissions';
 import { clearPermissionCache } from '../../../utils/taskPermissions';
 
@@ -37,6 +37,15 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       return getCurrentUser();
     } catch (error) {
       console.error('❌ TaskList: Error getting current user:', error);
+      // Check if we have auth_user in localStorage
+      const authUser = localStorage.getItem('auth_user');
+      if (!authUser) {
+        console.error('❌ No auth_user found in localStorage - user needs to login');
+        // Redirect to login or show error
+        window.location.href = '/login';
+        return null;
+      }
+
       // Return fallback user data
       return {
         id: 'unknown',
@@ -53,6 +62,16 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       };
     }
   })();
+
+  // Early return if user is null (redirecting to login)
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-400">Đang chuyển hướng đến trang đăng nhập...</div>
+      </div>
+    );
+  }
+
   const permissions = getCurrentUserPermissions();
 
   const [activeTab, setActiveTab] = useState('my-tasks');
@@ -92,7 +111,9 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   // State cho Quick Status Filters
-  const [quickStatusFilter, setQuickStatusFilter] = useState<'all' | 'new-requests' | 'approved' | 'live'>('all');
+  const [quickStatusFilter, setQuickStatusFilter] = useState<
+    'all' | 'new-requests' | 'approved' | 'live'
+  >('all');
 
   // Helper function để kiểm tra công việc trong ngày hiện tại
   const isTaskDueToday = (task: TaskWithUsers): boolean => {
@@ -100,23 +121,30 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
     const taskDueDate = task.dueDate ? new Date(task.dueDate) : new Date(task.startDate);
 
     return (
-      taskDueDate.toDateString() === today.toDateString() &&
-      task.status !== 'live' // Chỉ highlight công việc chưa hoàn thành
+      taskDueDate.toDateString() === today.toDateString() && task.status !== 'live' // Chỉ highlight công việc chưa hoàn thành
     );
   };
 
   useEffect(() => {
-    loadTasks();
-    loadTeamsAndUsers();
-  }, [activeTab, departmentTab, selectedTeamId]);
+    // Only load tasks if user is properly authenticated
+    if (user && user.id && user.id !== 'unknown') {
+      loadTasks();
+      loadTeamsAndUsers();
+    } else {
+      console.warn('⚠️ TaskList: User not authenticated, skipping task load');
+      setTasks([]);
+      setLoading(false);
+    }
+  }, [activeTab, departmentTab, selectedTeamId, user.id]);
 
   const loadTasks = async () => {
     try {
       setLoading(true);
 
       console.log('🔄 Loading tasks for tab:', activeTab);
-      console.log('🔄 Current user:', user);
+      console.log('🔄 Current user:', user?.name, user?.id);
       console.log('🔄 Department tab:', departmentTab);
+      console.log('🔄 Selected team ID:', selectedTeamId);
 
       let tasksFromDb: TaskWithUsers[] = [];
 
@@ -125,7 +153,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
         case 'my-tasks':
           console.log('📋 Loading my tasks for user ID:', user?.id);
           if (!user?.id) {
-            console.error('No user ID found');
+            console.error('❌ No user ID found');
             tasksFromDb = [];
           } else {
             tasksFromDb = await taskService.getMyTasks(user.id);
@@ -153,9 +181,13 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
           console.log('📋 All tasks loaded:', tasksFromDb.length, 'tasks');
       }
 
+      console.log('🔄 Setting tasks state with:', tasksFromDb.length, 'tasks');
+      console.log('🔍 Task IDs:', tasksFromDb.map(t => t.id).slice(0, 5));
       setTasks(tasksFromDb);
+      console.log('✅ Tasks state updated successfully');
     } catch (error) {
-      console.error('Error loading tasks:', error);
+      console.error('❌ Error loading tasks:', error);
+      console.error('❌ Error details:', error);
       setTasks([]);
     } finally {
       setLoading(false);
@@ -308,20 +340,26 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
 
     try {
       setLoading(true);
+      console.log('🗑️ Deleting task:', taskToDelete.id, taskToDelete.name);
 
       // Database is now working - delete directly from Supabase
       await taskService.deleteTask(taskToDelete.id);
+      console.log('✅ Task deleted successfully from database');
 
       // Xóa cache permissions khi task bị xóa (real-time updates)
       clearPermissionCache(taskToDelete.id);
 
+      // Reload tasks
+      console.log('🔄 Reloading tasks after delete...');
       await loadTasks();
+      console.log('✅ Tasks reloaded after delete');
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error('❌ Error deleting task:', error);
       alert('Không thể xóa công việc. Vui lòng thử lại.');
     } finally {
       setLoading(false);
       setTaskToDelete(null);
+      setIsDeleteModalOpen(false);
     }
   };
 
@@ -380,15 +418,16 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
 
     // Cải tiến logic sắp xếp: Mới nhất → Đang thực hiện → Chưa thực hiện
     // Ẩn công việc hoàn thành khỏi view mặc định (trừ khi filter "Hoàn thành")
-    if (quickStatusFilter === 'all') {
-      // Ẩn công việc hoàn thành khỏi view mặc định
-      filteredTasks = filteredTasks.filter(task => task.status !== 'live');
-    }
+    // TEMPORARILY DISABLED FOR DEBUGGING
+    // if (quickStatusFilter === 'all') {
+    //   // Ẩn công việc hoàn thành khỏi view mặc định
+    //   filteredTasks = filteredTasks.filter(task => task.status !== 'live');
+    // }
 
     // Sắp xếp theo ưu tiên: Mới nhất (theo thời gian tạo) → Đang thực hiện → Chưa thực hiện
     return filteredTasks.sort((a, b) => {
       // Ưu tiên 1: Sắp xếp theo trạng thái
-      const statusOrder = { 'approved': 0, 'new-requests': 1, 'live': 2 };
+      const statusOrder = { approved: 0, 'new-requests': 1, live: 2 };
       const statusDiff = statusOrder[a.status] - statusOrder[b.status];
       if (statusDiff !== 0) return statusDiff;
 
@@ -482,13 +521,32 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       // Filter by selected member if any
       if (selectedMemberId) {
         const selectedMember = users.find(u => u.id === selectedMemberId);
+        console.log('🔍 Member filter debug:', {
+          selectedMemberId,
+          selectedMember: selectedMember?.name,
+          totalTeamTasks: teamTasks.length,
+        });
+
         if (selectedMember) {
+          const beforeFilter = teamTasks.length;
           teamTasks = teamTasks.filter(task => {
-            return (
-              task.assignedTo?.name === selectedMember.name ||
-              task.createdBy?.name === selectedMember.name
-            );
+            const assignedMatch = task.assignedTo?.name === selectedMember.name;
+            const createdMatch = task.createdBy?.name === selectedMember.name;
+            const result = assignedMatch || createdMatch;
+
+            console.log(`🔍 Task "${task.name}":`, {
+              assignedTo: task.assignedTo?.name,
+              createdBy: task.createdBy?.name,
+              selectedMember: selectedMember.name,
+              assignedMatch,
+              createdMatch,
+              result: result ? 'INCLUDED' : 'EXCLUDED',
+            });
+
+            return result;
           });
+
+          console.log(`🔍 Member filter result: ${beforeFilter} -> ${teamTasks.length} tasks`);
         }
       }
 
@@ -1013,7 +1071,9 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
                                       {isDueToday && (
                                         <div className="absolute top-2 right-2 flex items-center gap-1">
                                           <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                                          <span className="text-xs text-red-400 font-medium">Hôm nay</span>
+                                          <span className="text-xs text-red-400 font-medium">
+                                            Hôm nay
+                                          </span>
                                         </div>
                                       )}
                                       {/* Badges Grid - Cải tiến UI/UX với alignment tốt hơn */}

@@ -53,11 +53,20 @@ export const getTeamsByLocation = (location: 'HN' | 'HCM'): MockTeam[] => {
 
 export const isDirector = (userId: string): boolean => {
   const user = getUserById(userId) || getCurrentUser();
-  const result = user?.role === 'retail_director';
+
+  // Only KHỔNG ĐỨC MẠNH is considered Director
+  const isDirectorByName = user?.name === 'Khổng Đức Mạnh';
+  const isDirectorByRole = user?.role === 'retail_director';
+
+  // Must have both correct name AND role
+  const result = isDirectorByName && isDirectorByRole;
+
   console.log('🔍 isDirector check:', {
     userId,
     user: user?.name,
     role: user?.role,
+    isDirectorByName,
+    isDirectorByRole,
     isDirector: result,
   });
   return result;
@@ -80,34 +89,20 @@ export type User = MockUser;
 
 // Get current logged in user from auth context
 export const getCurrentUser = (): MockUser => {
-  // Get user from localStorage (set by AuthProvider when logging in)
-  const savedUser = localStorage.getItem('auth_user');
-  if (savedUser) {
-    try {
+  try {
+    // Get user from localStorage (set by AuthProvider when logging in)
+    const savedUser = localStorage.getItem('auth_user');
+    if (savedUser) {
       const authUser = JSON.parse(savedUser);
 
-      // Debug logging
-      console.log('🔍 getCurrentUser - authUser:', authUser);
-      console.log('🔍 getCurrentUser - authUser.id:', authUser.id, 'Type:', typeof authUser.id);
-
-      // Validate UUID format
-      const uuidRegex =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(authUser.id)) {
-        console.error('❌ Invalid UUID format for user ID:', authUser.id);
-        // Try to get from currentUserId as fallback
-        const fallbackId = localStorage.getItem('currentUserId');
-        if (fallbackId && uuidRegex.test(fallbackId)) {
-          console.log('✅ Using fallback UUID from currentUserId:', fallbackId);
-          authUser.id = fallbackId;
-        } else {
-          throw new Error('Invalid user ID format');
-        }
+      // Validate that we have required fields
+      if (!authUser.id || !authUser.name || !authUser.email) {
+        console.error('❌ Missing required user fields:', authUser);
+        throw new Error('Invalid user data');
       }
 
       // Create a MockUser from auth data
-      // The auth user already has all the necessary fields from the database
-      const user = {
+      const user: MockUser = {
         id: authUser.id,
         name: authUser.name,
         email: authUser.email,
@@ -127,11 +122,11 @@ export const getCurrentUser = (): MockUser => {
             },
       };
 
-      console.log('🔍 getCurrentUser result:', user);
+      console.log('✅ getCurrentUser success:', user.name);
       return user;
-    } catch (error) {
-      console.error('Error parsing saved user:', error);
     }
+  } catch (error) {
+    console.error('❌ Error in getCurrentUser:', error);
   }
 
   // No logged in user - this should not happen in a protected route
