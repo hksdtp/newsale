@@ -20,7 +20,7 @@ import { CreateTaskData, taskService } from '../../../services/taskService';
 import { supabase } from '../../../shared/api/supabase';
 import { WeeklyScheduleManager } from './WeeklyScheduleManager';
 
-export function PlanningTab() {
+export function PlanningTab(): React.ReactElement {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [scheduledTasks, setScheduledTasks] = useState<ScheduledTask[]>([]);
   const [dailyTasks, setDailyTasks] = useState<ScheduledTask[]>([]);
@@ -863,160 +863,168 @@ export function PlanningTab() {
       </div>
 
       {/* Add Plan Modal */}
-      {showAddPlanModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-green-400" />
-                Thêm Kế Hoạch Mới
-              </h2>
-              <button
-                onClick={() => setShowAddPlanModal(false)}
-                className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-4 space-y-4">
-              {/* Task Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Tên kế hoạch *
-                </label>
-                <input
-                  type="text"
-                  value={newPlanData.name}
-                  onChange={e => setNewPlanData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Nhập tên kế hoạch..."
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-green-400 focus:outline-none"
-                />
+      {Boolean(showAddPlanModal) && (
+        <React.Fragment>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-green-400" />
+                  Thêm Kế Hoạch Mới
+                </h2>
+                <button
+                  onClick={() => setShowAddPlanModal(false)}
+                  className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Mô tả</label>
-                <textarea
-                  value={newPlanData.description}
-                  onChange={e => setNewPlanData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Mô tả chi tiết kế hoạch..."
-                  rows={3}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-green-400 focus:outline-none resize-none"
-                />
-              </div>
+              {/* Modal Body */}
+              <div className="p-4 space-y-4">
+                {/* Task Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Tên kế hoạch *
+                  </label>
+                  <input
+                    type="text"
+                    value={newPlanData.name}
+                    onChange={e => setNewPlanData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Nhập tên kế hoạch..."
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-green-400 focus:outline-none"
+                  />
+                </div>
 
-              {/* Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Ngày thực hiện *
-                </label>
-                <input
-                  type="date"
-                  value={newPlanData.scheduledDate}
-                  onChange={e =>
-                    setNewPlanData(prev => ({ ...prev, scheduledDate: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none"
-                />
-              </div>
-
-              {/* Time */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Thời gian (tùy chọn)
-                </label>
-                <input
-                  type="time"
-                  value={newPlanData.scheduledTime}
-                  onChange={e =>
-                    setNewPlanData(prev => ({ ...prev, scheduledTime: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none"
-                />
-              </div>
-
-              {/* Priority */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Mức độ ưu tiên
-                </label>
-                <div className="relative">
-                  <select
-                    value={newPlanData.priority}
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Mô tả</label>
+                  <textarea
+                    value={newPlanData.description}
                     onChange={e =>
-                      setNewPlanData(prev => ({
-                        ...prev,
-                        priority: e.target.value as 'low' | 'normal' | 'high',
-                      }))
+                      setNewPlanData(prev => ({ ...prev, description: e.target.value }))
                     }
-                    className="w-full pl-10 pr-10 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none appearance-none cursor-pointer"
-                  >
-                    <option value="low" className="bg-gray-700 text-green-400">
-                      🡇 Thấp
-                    </option>
-                    <option value="normal" className="bg-gray-700 text-blue-400">
-                      ⸺ Bình thường
-                    </option>
-                    <option value="high" className="bg-gray-700 text-red-400">
-                      🡅 Cao
-                    </option>
-                  </select>
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    placeholder="Mô tả chi tiết kế hoạch..."
+                    rows={3}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-green-400 focus:outline-none resize-none"
+                  />
+                </div>
+
+                {/* Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Ngày thực hiện *
+                  </label>
+                  <input
+                    type="date"
+                    value={newPlanData.scheduledDate}
+                    onChange={e =>
+                      setNewPlanData(prev => ({ ...prev, scheduledDate: e.target.value }))
+                    }
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none"
+                  />
+                </div>
+
+                {/* Time */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Thời gian (tùy chọn)
+                  </label>
+                  <input
+                    type="time"
+                    value={newPlanData.scheduledTime}
+                    onChange={e =>
+                      setNewPlanData(prev => ({ ...prev, scheduledTime: e.target.value }))
+                    }
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none"
+                  />
+                </div>
+
+                {/* Priority */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Mức độ ưu tiên
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={newPlanData.priority}
+                      onChange={e =>
+                        setNewPlanData(prev => ({
+                          ...prev,
+                          priority: e.target.value as 'low' | 'normal' | 'high',
+                        }))
+                      }
+                      className="w-full pl-10 pr-10 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-green-400 focus:outline-none appearance-none cursor-pointer"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                  {/* Priority indicator */}
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    {newPlanData.priority === 'high' && <span className="text-red-400">🡅</span>}
-                    {newPlanData.priority === 'normal' && <span className="text-blue-400">⸺</span>}
-                    {newPlanData.priority === 'low' && <span className="text-green-400">🡇</span>}
+                      <option value="low" className="bg-gray-700 text-green-400">
+                        🡇 Thấp
+                      </option>
+                      <option value="normal" className="bg-gray-700 text-blue-400">
+                        ⸺ Bình thường
+                      </option>
+                      <option value="high" className="bg-gray-700 text-red-400">
+                        🡅 Cao
+                      </option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      <svg
+                        className="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
+                    {/* Priority indicator */}
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      {newPlanData.priority === 'high' && <span className="text-red-400">🡅</span>}
+                      {newPlanData.priority === 'normal' && (
+                        <span className="text-blue-400">⸺</span>
+                      )}
+                      {newPlanData.priority === 'low' && <span className="text-green-400">🡇</span>}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Modal Footer */}
-            <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
-              <button
-                onClick={() => setShowAddPlanModal(false)}
-                className="px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={createNewPlan}
-                disabled={isCreatingPlan || !newPlanData.name.trim() || !newPlanData.scheduledDate}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isCreatingPlan ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Đang tạo...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4" />
-                    Tạo Kế Hoạch
-                  </>
-                )}
-              </button>
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-700">
+                <button
+                  onClick={() => setShowAddPlanModal(false)}
+                  className="px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={() => createNewPlan()}
+                  disabled={
+                    isCreatingPlan || !newPlanData.name.trim() || !newPlanData.scheduledDate
+                  }
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isCreatingPlan ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Đang tạo...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      Tạo Kế Hoạch
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </React.Fragment>
       )}
 
       {/* Weekly Schedule Manager Modal */}
