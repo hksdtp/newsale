@@ -279,13 +279,13 @@ const PlanDetailModal: React.FC<PlanDetailModalProps> = ({
                 </div>
 
                 {/* Người tạo */}
-                {plan.createdBy && (
+                {plan.created_by_name && (
                   <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-700/30 rounded-lg">
                     <User className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm text-gray-400">Người tạo</p>
                       <p className="text-sm sm:text-base text-white font-medium truncate">
-                        {plan.createdBy}
+                        {plan.created_by_name}
                       </p>
                     </div>
                   </div>

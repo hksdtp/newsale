@@ -482,19 +482,6 @@ export function PlanningTab() {
     setShowAddPlanModal(true);
   };
 
-  // Render modal content
-  const renderAddPlanModal = () => {
-    if (!showAddPlanModal) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-gray-800 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-          {/* Modal content will be moved here */}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="h-full bg-gray-900 text-white">
       {/* Header - Responsive */}
@@ -876,7 +863,22 @@ export function PlanningTab() {
       </div>
 
       {/* Add Plan Modal */}
-      {renderAddPlanModal()}
+      {showAddPlanModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Plus className="w-5 h-5 text-green-400" />
+                Thêm Kế Hoạch Mới
+              </h2>
+              <button
+                onClick={() => setShowAddPlanModal(false)}
+                className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             {/* Modal Body */}
             <div className="p-4 space-y-4">
@@ -996,7 +998,7 @@ export function PlanningTab() {
                 Hủy
               </button>
               <button
-                onClick={() => createNewPlan()}
+                onClick={createNewPlan}
                 disabled={isCreatingPlan || !newPlanData.name.trim() || !newPlanData.scheduledDate}
                 className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >

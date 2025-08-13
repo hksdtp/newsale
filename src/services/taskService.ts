@@ -149,7 +149,7 @@ class TaskService {
     try {
       const { data: user, error } = await supabase
         .from('users')
-        .select('id, name, email, team_id, location, role')
+        .select('id, name, email, team_id, location')
         .eq('id', userId)
         .single();
 

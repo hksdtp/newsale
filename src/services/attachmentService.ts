@@ -1,6 +1,5 @@
 import { getCurrentUser } from '../data/usersMockData';
 import { supabase } from '../shared/api/supabase';
-import { storageService } from './storageService';
 
 export interface TaskAttachment {
   id: string;
