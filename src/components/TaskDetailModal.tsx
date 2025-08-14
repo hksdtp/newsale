@@ -119,22 +119,29 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
       // Đảm bảo format ngày đúng cho date picker
       const formatDateForPicker = (dateString: string) => {
         if (!dateString) return '';
-        try {
-          const date = new Date(dateString);
-          if (isNaN(date.getTime())) return '';
-          return date.toISOString().split('T')[0];
-        } catch (e) {
+
+        const date = parseVietnameseDate(dateString);
+        if (!date) {
+          console.warn('Could not parse date for picker:', dateString);
           return '';
         }
+
+        return date.toISOString().split('T')[0];
       };
+
+      // Logic ngày mặc định:
+      // - Ngày bắt đầu = ngày tạo công việc (task.createdAt hoặc task.startDate)
+      // - Hạn chót = do user tự chọn (task.dueDate)
+      const defaultStartDate = task.startDate || task.createdAt || new Date().toISOString();
+      const defaultDueDate = task.dueDate || '';
 
       setEditData({
         name: task.name || '',
         description: task.description || '',
         priority: task.priority || 'normal',
         status: task.status || 'new-requests',
-        startDate: formatDateForPicker(task.startDate || task.createdAt || ''),
-        dueDate: formatDateForPicker(task.dueDate || ''),
+        startDate: formatDateForPicker(defaultStartDate),
+        dueDate: formatDateForPicker(defaultDueDate),
         assignedUsers: [task.assignedTo?.id || task.createdBy?.id || ''], // Default to current assignee or creator
       });
 
@@ -297,20 +304,70 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     }));
   };
 
-  // Helper function for date formatting
+  // Helper function for smart date parsing and formatting
+  const parseVietnameseDate = (dateString: string): Date | null => {
+    if (!dateString) return null;
+
+    // Try ISO format first (2023-09-10, 2023-09-10T00:00:00Z)
+    let date = new Date(dateString);
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+
+    // Try Vietnamese format: "30 Th9, 2023" or "30 thg 9, 2023"
+    const vietnamesePattern = /(\d{1,2})\s+(Th|thg)\s*(\d{1,2}),?\s*(\d{4})/i;
+    const match = dateString.match(vietnamesePattern);
+
+    if (match) {
+      const day = parseInt(match[1]);
+      const month = parseInt(match[3]) - 1; // JavaScript months are 0-indexed
+      const year = parseInt(match[4]);
+
+      date = new Date(year, month, day);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    }
+
+    // Try other common formats
+    const formats = [
+      /(\d{1,2})\/(\d{1,2})\/(\d{4})/, // dd/mm/yyyy
+      /(\d{4})-(\d{1,2})-(\d{1,2})/, // yyyy-mm-dd
+    ];
+
+    for (const format of formats) {
+      const match = dateString.match(format);
+      if (match) {
+        if (format === formats[0]) {
+          // dd/mm/yyyy
+          date = new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+        } else {
+          // yyyy-mm-dd
+          date = new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+        }
+
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+    }
+
+    return null;
+  };
+
   const formatDateForDisplay = (dateString: string) => {
     if (!dateString) return 'Chưa đặt';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Ngày không hợp lệ';
 
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    } catch (e) {
+    const date = parseVietnameseDate(dateString);
+    if (!date) {
+      console.warn('Could not parse date:', dateString);
       return 'Ngày không hợp lệ';
     }
+
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   if (!isOpen || !task) return null;

@@ -32,7 +32,9 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null);
+  const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
   const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Color variants
   const colorVariants = {
@@ -67,6 +69,22 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
       setCurrentMonth(date);
     }
   }, [value]);
+
+  // Auto-adjust dropdown position to prevent clipping
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const dropdownHeight = 500; // Estimated dropdown height
+
+      // Check if dropdown would be clipped at bottom
+      if (rect.bottom + dropdownHeight > viewportHeight) {
+        setDropdownPosition('top');
+      } else {
+        setDropdownPosition('bottom');
+      }
+    }
+  }, [isOpen]);
 
   // Close on click outside
   useEffect(() => {
@@ -202,9 +220,15 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
         </div>
       </button>
 
-      {/* iOS-style Calendar Dropdown - Mở rộng và đẹp hơn */}
+      {/* iOS-style Calendar Dropdown - Smart positioning */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800/95 backdrop-blur-xl border border-gray-600/50 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in slide-in-from-top-2 duration-300 min-w-[320px] md:min-w-[380px]">
+        <div
+          ref={dropdownRef}
+          className={`absolute left-0 right-0 bg-gray-800/95 backdrop-blur-xl border border-gray-600/50 rounded-2xl shadow-2xl z-[9999] overflow-hidden animate-in duration-300 min-w-[320px] md:min-w-[380px] ${
+            dropdownPosition === 'bottom'
+              ? 'top-full mt-2 slide-in-from-top-2'
+              : 'bottom-full mb-2 slide-in-from-bottom-2'
+          }`}
           {/* Header - Cải thiện spacing và typography */}
           <div className="flex items-center justify-between p-5 border-b border-gray-700/50 bg-gray-800/80">
             <button

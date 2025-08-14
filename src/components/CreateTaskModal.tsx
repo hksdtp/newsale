@@ -19,33 +19,39 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
   const [loading, setLoading] = React.useState(true);
 
   // All hooks must be declared before any conditional returns
+  // Helper function để tạo ngày mặc định
+  const getDefaultStartDate = () => {
+    // Logic ngày mặc định:
+    // - Công việc mới: Ngày bắt đầu = ngày hôm nay
+    // - Công việc con (từ checklist): Ngày tạo = ngày hôm đó (được set trong TaskList.tsx)
+    return new Date().toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     workTypes: [] as WorkType[],
     priority: 'normal' as 'low' | 'normal' | 'high',
     status: 'new-requests' as 'new-requests' | 'approved' | 'live',
-    startDate: new Date().toISOString().split('T')[0],
-    dueDate: '',
+    startDate: getDefaultStartDate(), // Ngày bắt đầu = hôm nay
+    dueDate: '', // Hạn chót để trống, user tự chọn
     taggedUsers: [] as any[], // For all users (unified functionality)
     department: 'HN' as 'HN' | 'HCM', // Default to HN, will be updated when user data loads
     platform: [] as string[],
     campaignType: '',
-    shareScope: 'team' as 'team' | 'private' | 'public'
+    shareScope: 'team' as 'team' | 'private' | 'public',
   });
-
-
 
   const statusOptions = [
     { value: 'new-requests', label: 'Chưa tiến hành', color: 'bg-yellow-500', icon: Clock },
     { value: 'approved', label: 'Đang tiến hành', color: 'bg-blue-500', icon: AlertTriangle },
-    { value: 'live', label: 'Đã hoàn thành', color: 'bg-green-500', icon: CheckCircle }
+    { value: 'live', label: 'Đã hoàn thành', color: 'bg-green-500', icon: CheckCircle },
   ];
 
   const priorityOptions = [
     { value: 'low', label: 'Thấp', color: 'bg-green-500' },
     { value: 'normal', label: 'Bình thường', color: 'bg-yellow-500' },
-    { value: 'high', label: 'Cao', color: 'bg-red-500' }
+    { value: 'high', label: 'Cao', color: 'bg-red-500' },
   ];
 
   // Load current user and assignable users
@@ -61,7 +67,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
           const defaultDept = user.location === 'Hà Nội' ? 'HN' : 'HCM';
           setFormData(prev => ({
             ...prev,
-            department: defaultDept
+            department: defaultDept,
           }));
         }
       } catch (error) {
@@ -100,7 +106,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
   const handleWorkTypeChange = (workTypes: string[]) => {
     setFormData(prev => ({
       ...prev,
-      workTypes: workTypes as WorkType[]
+      workTypes: workTypes as WorkType[],
     }));
   };
 
@@ -121,7 +127,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       id: `task-${Date.now()}`,
       createdBy: { id: currentUser.id, name: currentUser.name, email: currentUser.email },
       assignedTo: formData.taggedUsers.length > 0 ? formData.taggedUsers[0] : null,
-      endDate: formData.dueDate
+      endDate: formData.dueDate,
     });
 
     // Reset form after successful submission
@@ -139,13 +145,13 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       workTypes: [],
       priority: 'normal',
       status: 'new-requests',
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: getDefaultStartDate(), // Reset về ngày hôm nay
       dueDate: '',
       taggedUsers: [],
       department: defaultDept,
       platform: [],
       campaignType: '',
-      shareScope: 'team'
+      shareScope: 'team',
     });
   };
 
@@ -160,8 +166,12 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
                 <Plus className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg sm:text-xl font-semibold text-white truncate">Tạo công việc mới</h2>
-                <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1 hidden sm:block">Tạo và quản lý công việc hiệu quả</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-white truncate">
+                  Tạo công việc mới
+                </h2>
+                <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1 hidden sm:block">
+                  Tạo và quản lý công việc hiệu quả
+                </p>
               </div>
             </div>
             <button
@@ -176,131 +186,142 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
 
         {/* Form - Scrollable content */}
         <div className="flex-1 overflow-y-auto">
-          <form id="create-task-form" onSubmit={handleSubmit} className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
-          <WorkTypeDropdown
-            label="Danh mục công việc"
-            value={formData.workTypes}
-            onChange={handleWorkTypeChange}
-            placeholder="Chọn danh mục công việc"
-            required
-          />
-
-          <div>
-            <label className="block text-white font-medium mb-2">
-              Tiêu đề công việc <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Nhập tiêu đề công việc..."
-              className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+          <form
+            id="create-task-form"
+            onSubmit={handleSubmit}
+            className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6"
+          >
+            <WorkTypeDropdown
+              label="Danh mục công việc"
+              value={formData.workTypes}
+              onChange={handleWorkTypeChange}
+              placeholder="Chọn danh mục công việc"
               required
             />
-          </div>
 
-          <div>
-            <label className="block text-white font-medium mb-2">
-              Mô tả chi tiết <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Mô tả chi tiết về công việc, yêu cầu, mục tiêu..."
-              rows={4}
-              className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Dropdown
-              label="Trạng thái"
-              value={formData.status}
-              onChange={(value) => setFormData({ ...formData, status: value as any })}
-              options={statusOptions}
-              placeholder="Chọn trạng thái"
-            />
-            
-            <Dropdown
-              label="Mức độ ưu tiên"
-              value={formData.priority}
-              onChange={(value) => setFormData({ ...formData, priority: value as any })}
-              options={priorityOptions}
-              placeholder="Chọn mức độ ưu tiên"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <DatePicker
-              label="Ngày thực hiện"
-              value={formData.startDate}
-              onChange={(date) => setFormData({ ...formData, startDate: date })}
-              placeholder="Chọn ngày thực hiện"
-              required
-            />
-            
-            <DatePicker
-              label="Hạn chót"
-              value={formData.dueDate}
-              onChange={(date) => setFormData({ ...formData, dueDate: date })}
-              placeholder="Chọn hạn chót"
-              minDate={formData.startDate}
-            />
-          </div>
-
-          {/* Chi nhánh - Chỉ hiển thị cho Khổng Đức Mạnh (Giám đốc) */}
-          {isDirector && (
             <div>
-              <Dropdown
-                label="Chi nhánh"
-                value={formData.department}
-                onChange={(value) => setFormData({
-                  ...formData,
-                  department: value as 'HN' | 'HCM',
-                  taggedUsers: [] // Clear tagged users when changing department
-                })}
-                options={[
-                  { value: 'HN', label: 'Hà Nội', icon: Building },
-                  { value: 'HCM', label: 'Hồ Chí Minh', icon: Building }
-                ]}
-                placeholder="Chọn chi nhánh (tùy chọn)"
+              <label className="block text-white font-medium mb-2">
+                Tiêu đề công việc <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Nhập tiêu đề công việc..."
+                className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+                required
               />
-              <p className="text-gray-400 text-sm mt-1">
-                Tùy chọn - Chỉ chọn khi cần giao việc cho chi nhánh cụ thể
-              </p>
             </div>
-          )}
 
-          {/* Tag Users Section - Unified for all users */}
-          <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-600/50">
-            <TagUserInput
-              label="Thêm người cùng làm việc"
-              value={formData.taggedUsers}
-              onChange={(users) => setFormData({ ...formData, taggedUsers: users })}
-              placeholder="Nhập tên để thêm đồng nghiệp cùng làm việc..."
-              currentUserId={currentUser.id}
-              currentUserLocation={isDirector ? (formData.department ? (formData.department === 'HN' ? 'Hà Nội' : 'Hồ Chí Minh') : currentUser.location) : currentUser.location}
-            />
-            <div className="text-gray-400 text-xs mt-2">
-              {isDirector
-                ? (formData.department
+            <div>
+              <label className="block text-white font-medium mb-2">
+                Mô tả chi tiết <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Mô tả chi tiết về công việc, yêu cầu, mục tiêu..."
+                rows={4}
+                className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Dropdown
+                label="Trạng thái"
+                value={formData.status}
+                onChange={value => setFormData({ ...formData, status: value as any })}
+                options={statusOptions}
+                placeholder="Chọn trạng thái"
+              />
+
+              <Dropdown
+                label="Mức độ ưu tiên"
+                value={formData.priority}
+                onChange={value => setFormData({ ...formData, priority: value as any })}
+                options={priorityOptions}
+                placeholder="Chọn mức độ ưu tiên"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <DatePicker
+                label="Ngày thực hiện"
+                value={formData.startDate}
+                onChange={date => setFormData({ ...formData, startDate: date })}
+                placeholder="Chọn ngày thực hiện"
+                required
+              />
+
+              <DatePicker
+                label="Hạn chót"
+                value={formData.dueDate}
+                onChange={date => setFormData({ ...formData, dueDate: date })}
+                placeholder="Chọn hạn chót"
+                minDate={formData.startDate}
+              />
+            </div>
+
+            {/* Chi nhánh - Chỉ hiển thị cho Khổng Đức Mạnh (Giám đốc) */}
+            {isDirector && (
+              <div>
+                <Dropdown
+                  label="Chi nhánh"
+                  value={formData.department}
+                  onChange={value =>
+                    setFormData({
+                      ...formData,
+                      department: value as 'HN' | 'HCM',
+                      taggedUsers: [], // Clear tagged users when changing department
+                    })
+                  }
+                  options={[
+                    { value: 'HN', label: 'Hà Nội', icon: Building },
+                    { value: 'HCM', label: 'Hồ Chí Minh', icon: Building },
+                  ]}
+                  placeholder="Chọn chi nhánh (tùy chọn)"
+                />
+                <p className="text-gray-400 text-sm mt-1">
+                  Tùy chọn - Chỉ chọn khi cần giao việc cho chi nhánh cụ thể
+                </p>
+              </div>
+            )}
+
+            {/* Tag Users Section - Unified for all users */}
+            <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-600/50">
+              <TagUserInput
+                label="Thêm người cùng làm việc"
+                value={formData.taggedUsers}
+                onChange={users => setFormData({ ...formData, taggedUsers: users })}
+                placeholder="Nhập tên để thêm đồng nghiệp cùng làm việc..."
+                currentUserId={currentUser.id}
+                currentUserLocation={
+                  isDirector
+                    ? formData.department
+                      ? formData.department === 'HN'
+                        ? 'Hà Nội'
+                        : 'Hồ Chí Minh'
+                      : currentUser.location
+                    : currentUser.location
+                }
+              />
+              <div className="text-gray-400 text-xs mt-2">
+                {isDirector
+                  ? formData.department
                     ? `Chỉ hiển thị nhân viên tại ${formData.department === 'HN' ? 'Hà Nội' : 'Hồ Chí Minh'}`
                     : `Chỉ hiển thị nhân viên tại ${currentUser.location} (chưa chọn chi nhánh)`
-                  )
-                : `Chỉ hiển thị nhân viên tại ${currentUser.location}`
-              }
+                  : `Chỉ hiển thị nhân viên tại ${currentUser.location}`}
+              </div>
             </div>
-          </div>
 
-          {/* Facebook-style Share Scope */}
-          <ShareScopeSelector
-            value={formData.shareScope}
-            onChange={(value) => setFormData({ ...formData, shareScope: value })}
-            label="Phạm vi chia sẻ"
-            required
-          />
-
+            {/* Facebook-style Share Scope */}
+            <ShareScopeSelector
+              value={formData.shareScope}
+              onChange={value => setFormData({ ...formData, shareScope: value })}
+              label="Phạm vi chia sẻ"
+              required
+            />
           </form>
         </div>
 

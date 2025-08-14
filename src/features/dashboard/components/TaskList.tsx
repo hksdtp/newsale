@@ -3,15 +3,14 @@ import React, { useEffect, useState } from 'react';
 import CreateTaskModal from '../../../components/CreateTaskModal';
 import DeleteConfirmModal from '../../../components/DeleteConfirmModal';
 import EditTaskModal from '../../../components/EditTaskModal';
+import { FilterState } from '../../../components/ModernTaskFilters';
 import MultiWorkTypeBadges from '../../../components/MultiWorkTypeBadges';
 import PriorityBadge from '../../../components/PriorityBadge';
-import QuickStatusFilters from '../../../components/QuickStatusFilters';
 import ShareScopeBadge from '../../../components/ShareScopeBadge';
 import StatusBadge from '../../../components/StatusBadge';
 import TaskActions from '../../../components/TaskActions';
 import TaskBadgeGrid from '../../../components/TaskBadgeGrid';
 import TaskDetailModal from '../../../components/TaskDetailModal';
-import TaskFilters, { FilterState } from '../../../components/TaskFilters';
 import { getCurrentUser } from '../../../data/usersMockData';
 import { TaskWithUsers, taskService } from '../../../services/taskService';
 import { supabase } from '../../../shared/api/supabase';
@@ -383,10 +382,27 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
         if (!matchesSearch) return false;
       }
 
-      // Date filter
+      // Date range filter - Advanced
+      if (filters.customDateRange?.start || filters.customDateRange?.end) {
+        const taskDate = new Date(task.startDate || task.createdAt || '');
+
+        if (filters.customDateRange.start) {
+          const startDate = new Date(filters.customDateRange.start);
+          if (taskDate < startDate) return false;
+        }
+
+        if (filters.customDateRange.end) {
+          const endDate = new Date(filters.customDateRange.end);
+          // Set end date to end of day
+          endDate.setHours(23, 59, 59, 999);
+          if (taskDate > endDate) return false;
+        }
+      }
+
+      // Legacy date filter (for backward compatibility)
       if (filters.dateFilter !== 'all') {
         const today = new Date();
-        const taskDate = new Date(task.startDate);
+        const taskDate = new Date(task.startDate || task.createdAt || '');
 
         switch (filters.dateFilter) {
           case 'today':
@@ -882,17 +898,11 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
           {renderDepartmentTabs()}
         </div>
 
-        {/* Task Filters with Glass Effect - Mobile Optimized */}
-        <div className="mobile-task-container bg-gray-900/80 backdrop-blur-md rounded-lg shadow">
-          <TaskFilters onFilterChange={setFilters} />
-        </div>
-
-        {/* Quick Status Filters - Mới thêm */}
-        <QuickStatusFilters
-          tasks={tasks}
-          activeFilter={quickStatusFilter}
-          onFilterChange={setQuickStatusFilter}
-          compact={false}
+        {/* Modern Task Filters - Integrated with Quick Status */}
+        <ModernTaskFilters
+          onFilterChange={setFilters}
+          quickStatusFilter={quickStatusFilter}
+          onQuickStatusChange={setQuickStatusFilter}
         />
 
         {/* Team Selector Buttons for team-tasks tab - Only for directors */}
