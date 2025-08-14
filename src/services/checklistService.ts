@@ -1,5 +1,5 @@
-import { supabase } from '../shared/api/supabase';
 import { getCurrentUser } from '../data/usersMockData';
+import { supabase } from '../shared/api/supabase';
 
 export interface ChecklistItem {
   id: string;
@@ -70,7 +70,7 @@ class ChecklistService {
         .insert({
           task_id: data.taskId,
           title: data.title,
-          order_index: orderIndex
+          order_index: orderIndex,
         })
         .select()
         .single();
@@ -124,7 +124,9 @@ class ChecklistService {
       }
 
       // Prepare update data
-      const updateData: any = {};
+      const updateData: any = {
+        updated_at: new Date().toISOString(), // Luôn cập nhật updated_at
+      };
       if (data.title !== undefined) updateData.title = data.title;
       if (data.isCompleted !== undefined) updateData.is_completed = data.isCompleted;
       if (data.orderIndex !== undefined) updateData.order_index = data.orderIndex;
@@ -165,10 +167,7 @@ class ChecklistService {
       }
 
       // Delete checklist item
-      const { error } = await supabase
-        .from('task_checklist_items')
-        .delete()
-        .eq('id', itemId);
+      const { error } = await supabase.from('task_checklist_items').delete().eq('id', itemId);
 
       if (error) {
         console.error('Error deleting checklist item:', error);
@@ -196,7 +195,7 @@ class ChecklistService {
       }
 
       // Update order_index for each item
-      const updates = itemIds.map((itemId, index) => 
+      const updates = itemIds.map((itemId, index) =>
         supabase
           .from('task_checklist_items')
           .update({ order_index: index })
@@ -214,8 +213,9 @@ class ChecklistService {
   // Get checklist progress for a task
   async getChecklistProgress(taskId: string): Promise<ChecklistProgress> {
     try {
-      const { data, error } = await supabase
-        .rpc('get_task_checklist_progress', { task_uuid: taskId });
+      const { data, error } = await supabase.rpc('get_task_checklist_progress', {
+        task_uuid: taskId,
+      });
 
       if (error) {
         console.error('Error getting checklist progress:', error);
@@ -231,7 +231,7 @@ class ChecklistService {
         const total = items.length;
         const completed = items.filter(item => item.is_completed).length;
         const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-        
+
         return { total, completed, percentage };
       } catch (fallbackError) {
         console.error('Fallback progress calculation error:', fallbackError);
@@ -257,7 +257,7 @@ class ChecklistService {
       // Toggle completion state
       return await this.updateChecklistItem({
         id: itemId,
-        isCompleted: !currentItem.is_completed
+        isCompleted: !currentItem.is_completed,
       });
     } catch (error) {
       console.error('Toggle checklist item error:', error);
@@ -268,9 +268,7 @@ class ChecklistService {
   // Bulk update checklist items
   async bulkUpdateChecklistItems(updates: UpdateChecklistItemData[]): Promise<ChecklistItem[]> {
     try {
-      const results = await Promise.all(
-        updates.map(update => this.updateChecklistItem(update))
-      );
+      const results = await Promise.all(updates.map(update => this.updateChecklistItem(update)));
       return results;
     } catch (error) {
       console.error('Bulk update checklist items error:', error);

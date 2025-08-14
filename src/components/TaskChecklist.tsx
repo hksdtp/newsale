@@ -391,7 +391,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
                           <span className="text-gray-600">📅</span>
                           Tạo: {formatVietnameseDateTime(item.created_at)}
                         </span>
-                        {item.is_completed && item.updated_at !== item.created_at && (
+                        {item.is_completed && (
                           <span className="text-green-500 flex items-center gap-1">
                             <span>✅</span>
                             Hoàn thành: {formatVietnameseDateTime(item.updated_at)}

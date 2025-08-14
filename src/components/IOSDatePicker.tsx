@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface IOSDatePickerProps {
   value: string;
@@ -19,7 +19,7 @@ interface IOSDatePickerProps {
 const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
   value,
   onChange,
-  placeholder = "Chọn ngày",
+  placeholder = 'Chọn ngày',
   label,
   required = false,
   minDate,
@@ -27,13 +27,11 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
   isOpen,
   onToggle,
   onClose,
-  buttonClassName = "",
-  color = 'blue'
+  buttonClassName = '',
+  color = 'blue',
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    value ? new Date(value) : null
-  );
+  const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Color variants
@@ -41,23 +39,23 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
     green: {
       button: 'hover:border-green-500 focus:border-green-500',
       accent: 'bg-green-500 text-white',
-      hover: 'hover:bg-green-500/10'
+      hover: 'hover:bg-green-500/10',
     },
     red: {
       button: 'hover:border-red-500 focus:border-red-500',
       accent: 'bg-red-500 text-white',
-      hover: 'hover:bg-red-500/10'
+      hover: 'hover:bg-red-500/10',
     },
     blue: {
       button: 'hover:border-blue-500 focus:border-blue-500',
       accent: 'bg-blue-500 text-white',
-      hover: 'hover:bg-blue-500/10'
+      hover: 'hover:bg-blue-500/10',
     },
     purple: {
       button: 'hover:border-purple-500 focus:border-purple-500',
       accent: 'bg-purple-500 text-white',
-      hover: 'hover:bg-purple-500/10'
-    }
+      hover: 'hover:bg-purple-500/10',
+    },
   };
 
   const colors = colorVariants[color];
@@ -104,7 +102,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
       weekday: 'short',
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -121,17 +119,17 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-    
+
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-    
+
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }
-    
+
     return days;
   };
 
@@ -155,17 +153,17 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
 
   const isDateDisabled = (date: Date) => {
     const dateTime = date.getTime();
-    
+
     if (minDate) {
       const minDateTime = new Date(minDate).getTime();
       if (dateTime < minDateTime) return true;
     }
-    
+
     if (maxDate) {
       const maxDateTime = new Date(maxDate).getTime();
       if (dateTime > maxDateTime) return true;
     }
-    
+
     return false;
   };
 
@@ -189,7 +187,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
           {label} {required && <span className="text-red-400">*</span>}
         </label>
       )}
-      
+
       {/* Input Button */}
       <button
         type="button"
@@ -204,41 +202,41 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
         </div>
       </button>
 
-      {/* iOS-style Calendar Dropdown */}
+      {/* iOS-style Calendar Dropdown - Mở rộng và đẹp hơn */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800/95 backdrop-blur-xl border border-gray-600/50 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in slide-in-from-top-2 duration-300">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-gray-800/80">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800/95 backdrop-blur-xl border border-gray-600/50 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in slide-in-from-top-2 duration-300 min-w-[320px] md:min-w-[380px]">
+          {/* Header - Cải thiện spacing và typography */}
+          <div className="flex items-center justify-between p-5 border-b border-gray-700/50 bg-gray-800/80">
             <button
               onClick={() => navigateMonth('prev')}
-              className="p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-200"
+              className="p-3 hover:bg-gray-700/50 rounded-xl transition-all duration-200 hover:scale-105"
             >
               <ChevronLeft className="w-5 h-5 text-gray-300" />
             </button>
-            
-            <h3 className="text-white font-semibold text-lg">
+
+            <h3 className="text-white font-semibold text-xl tracking-wide">
               {currentMonth.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
             </h3>
-            
+
             <button
               onClick={() => navigateMonth('next')}
-              className="p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-200"
+              className="p-3 hover:bg-gray-700/50 rounded-xl transition-all duration-200 hover:scale-105"
             >
               <ChevronRight className="w-5 h-5 text-gray-300" />
             </button>
           </div>
 
-          {/* Week Days */}
+          {/* Week Days - Cải thiện spacing */}
           <div className="grid grid-cols-7 border-b border-gray-700/30 bg-gray-800/60">
             {weekDays.map(day => (
-              <div key={day} className="p-3 text-center text-gray-400 text-sm font-medium">
+              <div key={day} className="p-4 text-center text-gray-400 text-sm font-semibold">
                 {day}
               </div>
             ))}
           </div>
 
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 p-3 gap-1">
+          {/* Calendar Grid - Tăng kích thước và spacing */}
+          <div className="grid grid-cols-7 p-4 gap-2">
             {days.map((date, index) => (
               <div key={index} className="aspect-square">
                 {date && (
@@ -246,14 +244,15 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
                     onClick={() => handleDateSelect(date)}
                     disabled={isDateDisabled(date)}
                     className={`
-                      w-full h-full rounded-xl text-sm font-medium transition-all duration-200 transform
-                      ${isSelected(date)
-                        ? `${colors.accent} shadow-lg scale-105 ring-2 ring-white/20`
-                        : isToday(date)
-                        ? `${colors.hover} text-${color}-400 border border-${color}-500/30 scale-105`
-                        : isDateDisabled(date)
-                        ? 'text-gray-600 cursor-not-allowed'
-                        : 'text-gray-300 hover:bg-gray-700/50 hover:text-white hover:scale-105'
+                      w-full h-full rounded-xl text-base font-semibold transition-all duration-200 transform min-h-[44px]
+                      ${
+                        isSelected(date)
+                          ? `${colors.accent} shadow-lg scale-105 ring-2 ring-white/20`
+                          : isToday(date)
+                            ? `${colors.hover} text-${color}-400 border border-${color}-500/30 scale-105`
+                            : isDateDisabled(date)
+                              ? 'text-gray-600 cursor-not-allowed'
+                              : 'text-gray-300 hover:bg-gray-700/50 hover:text-white hover:scale-105'
                       }
                     `}
                   >
@@ -264,11 +263,11 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
             ))}
           </div>
 
-          {/* Quick Actions */}
-          <div className="p-3 border-t border-gray-700/30 flex gap-2 bg-gray-800/60">
+          {/* Quick Actions - Cải thiện spacing và style */}
+          <div className="p-4 border-t border-gray-700/30 flex gap-3 bg-gray-800/60">
             <button
               onClick={() => handleDateSelect(new Date())}
-              className="px-4 py-2 text-sm bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 rounded-xl transition-all duration-200"
+              className="px-5 py-3 text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white rounded-xl transition-all duration-200 hover:scale-105"
             >
               Hôm nay
             </button>
@@ -278,17 +277,17 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 handleDateSelect(tomorrow);
               }}
-              className="px-4 py-2 text-sm bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 rounded-xl transition-all duration-200"
+              className="px-5 py-3 text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white rounded-xl transition-all duration-200 hover:scale-105"
             >
               Ngày mai
             </button>
             <div className="flex-1"></div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-200"
+              className="p-3 hover:bg-gray-700/50 rounded-xl transition-all duration-200 hover:scale-105"
               title="Đóng"
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-5 h-5 text-gray-400 hover:text-white" />
             </button>
           </div>
         </div>

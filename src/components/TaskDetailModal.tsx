@@ -13,7 +13,8 @@ import {
 import React, { useEffect, useState } from 'react';
 import { TaskAttachment } from '../services/attachmentService';
 import { ChecklistProgress } from '../services/checklistService';
-// import { Employee } from '../services/employeeService';
+import { employeeService, Employee } from '../services/employeeService';
+import { getCurrentUser } from '../data/usersMockData';
 import { TaskWithUsers } from '../services/taskService';
 import IOSDatePicker from './IOSDatePicker';
 import StatusPriorityEditor from './StatusPriorityEditor';
@@ -63,48 +64,49 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
   // State for user tagging - Sử dụng dữ liệu thực từ database
   const [showUserPicker, setShowUserPicker] = useState(false);
-  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<Employee[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
-  // Load available users từ database - Tạm thời comment để tránh lỗi build
+  // Load available users từ database - Sử dụng API thật
   const loadAvailableUsers = async () => {
     try {
       setLoadingUsers(true);
-      // const currentUser = getCurrentUser();
-      // if (!currentUser) return;
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        console.warn('No current user found');
+        return;
+      }
 
-      // // Lấy users theo team và location của current user
-      // const users = await employeeService.getEmployeesByLocation(currentUser.location);
+      console.log('🔍 Loading users for current user:', currentUser.name, currentUser.role);
 
-      // // Filter để chỉ hiển thị users trong cùng team hoặc department
-      // const filteredUsers = users.filter(user => {
-      //   // Luôn bao gồm current user
-      //   if (user.id === currentUser.id) return true;
+      // Lấy tất cả users từ database
+      const allUsers = await employeeService.getAllEmployees();
+      console.log('📋 All users from database:', allUsers.length);
 
-      //   // Nếu là director, có thể thấy tất cả users trong location
-      //   if (currentUser.role === 'retail_director') return true;
+      // Filter để chỉ hiển thị users phù hợp theo role
+      const filteredUsers = allUsers.filter(user => {
+        // Luôn bao gồm current user
+        if (user.id === currentUser.id) return true;
 
-      //   // Team leader có thể thấy members trong team
-      //   if (currentUser.role === 'team_leader' && user.team_id === currentUser.team_id) return true;
+        // Nếu là director, có thể thấy tất cả users trong location
+        if (currentUser.role === 'retail_director') {
+          return user.location === currentUser.location;
+        }
 
-      //   // Employee chỉ thấy members trong cùng team
-      //   if (user.team_id === currentUser.team_id) return true;
+        // Team leader có thể thấy members trong team
+        if (currentUser.role === 'team_leader') {
+          return user.team_id === currentUser.team_id && user.location === currentUser.location;
+        }
 
-      //   return false;
-      // });
+        // Employee chỉ thấy members trong cùng team
+        return user.team_id === currentUser.team_id && user.location === currentUser.location;
+      });
 
-      // setAvailableUsers(filteredUsers);
-
-      // Tạm thời sử dụng mock data
-      setAvailableUsers([
-        { id: '1', name: 'Phạm Thị Hương', email: 'pham.thi.huong@company.com' },
-        { id: '2', name: 'Nguyễn Văn An', email: 'nguyen.van.an@company.com' },
-        { id: '3', name: 'Trần Thị Bình', email: 'tran.thi.binh@company.com' },
-        { id: '4', name: 'Lê Văn Cường', email: 'le.van.cuong@company.com' },
-        { id: '5', name: 'Hoàng Thị Dung', email: 'hoang.thi.dung@company.com' },
-      ]);
+      console.log('✅ Filtered users for assignment:', filteredUsers.length);
+      setAvailableUsers(filteredUsers);
     } catch (error) {
-      console.error('Error loading available users:', error);
+      console.error('❌ Error loading available users:', error);
+      // Fallback to empty array instead of mock data
       setAvailableUsers([]);
     } finally {
       setLoadingUsers(false);
@@ -492,8 +494,10 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Enhanced Meta Info - Mobile Optimized */}
-            <div className="task-detail-meta-mobile mt-2 md:mt-3 space-y-3">
+            {/* Enhanced Meta Info - Mobile Optimized với Grid Layout */}
+            <div className="task-detail-meta-mobile mt-2 md:mt-3">
+              {/* Grid layout cho edit mode để đồng đều */}
+              <div className={`${isEditMode ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}`}>
               {/* Start Date - iOS Style */}
               <div className="flex items-start gap-2">
                 <Calendar className="w-4 h-4 text-green-400 mt-1" />
@@ -579,8 +583,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                             ) : (
                               <div className="max-h-64 overflow-y-auto">
                                 {availableUsers
-                                  .filter((user: any) => !editData.assignedUsers.includes(user.id))
-                                  .map((user: any) => (
+                                  .filter((user: Employee) => !editData.assignedUsers.includes(user.id))
+                                  .map((user: Employee) => (
                                     <button
                                       key={user.id}
                                       onClick={() => handleAddUser(user.id)}
@@ -605,7 +609,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                                     </button>
                                   ))}
                                 {availableUsers.filter(
-                                  (user: any) => !editData.assignedUsers.includes(user.id)
+                                  (user: Employee) => !editData.assignedUsers.includes(user.id)
                                 ).length === 0 && (
                                   <div className="px-3 py-4 text-center text-gray-400 text-sm">
                                     Tất cả người dùng đã được gán
