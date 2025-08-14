@@ -1,5 +1,16 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X, Download, Eye, Trash2, Paperclip, Image, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Eye,
+  FileText,
+  Image,
+  Paperclip,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { attachmentService, TaskAttachment } from '../services/attachmentService';
 
 interface TaskAttachmentsProps {
@@ -20,7 +31,22 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
   // Load attachments on mount
   useEffect(() => {
     loadAttachments();
-  }, [taskId]);
+  }, [taskId, loadAttachments]);
+
+  // Keyboard support cho preview modal
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && previewUrl) {
+        setPreviewUrl(null);
+        setPreviewFile(null);
+      }
+    };
+
+    if (previewUrl) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [previewUrl]);
 
   const loadAttachments = async () => {
     try {
@@ -37,7 +63,7 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files) return;
-    
+
     Array.from(files).forEach(file => {
       uploadFile(file);
     });
@@ -47,7 +73,7 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
     try {
       setUploading(true);
       const result = await attachmentService.uploadAttachment({ taskId, file });
-      
+
       if (result.success && result.attachment) {
         setAttachments(prev => [result.attachment!, ...prev]);
         onAttachmentsChange?.([result.attachment!, ...attachments]);
@@ -152,24 +178,26 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
 
   return (
     <>
-      <div className="bg-white/5 rounded-2xl border border-gray-700/30">
-        {/* Header - Collapsible */}
-        <div className="p-4 border-b border-gray-700/20">
+      <div className="bg-white/5 rounded-xl border border-gray-700/30">
+        {/* Header - Compact và Collapsible */}
+        <div className="p-3 border-b border-gray-700/20">
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="w-full flex items-center justify-between hover:bg-gray-800/30 rounded-lg p-2 transition-colors"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 bg-purple-500/20 rounded-full flex items-center justify-center">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-purple-500/20 rounded-full flex items-center justify-center">
                 <Paperclip className="w-3 h-3 text-purple-400" />
               </div>
-              <h3 className="text-base font-medium text-white">Tệp đính kèm</h3>
-              <span className="text-xs text-gray-400">({attachments.length})</span>
+              <h3 className="text-sm font-medium text-white">Tệp đính kèm</h3>
+              <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-0.5 rounded-full">
+                {attachments.length}
+              </span>
             </div>
 
             <div className="flex items-center gap-2">
-              {attachments.length > 0 && !isCollapsed && (
-                <span className="text-xs text-gray-500">Tùy chọn</span>
+              {uploading && (
+                <div className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
               )}
               {isCollapsed ? (
                 <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -193,124 +221,146 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
 
         {/* Content - Collapsible */}
         {!isCollapsed && (
-          <div className="p-6">
-          {/* Upload Area */}
-          <div
-            className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
-              dragOver
-                ? 'border-purple-400 bg-purple-500/10'
-                : 'border-gray-600 hover:border-gray-500'
-            }`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-300 mb-2">
-              Kéo thả file vào đây hoặc{' '}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="text-purple-400 hover:text-purple-300 underline"
-                disabled={uploading}
-              >
-                chọn file
-              </button>
-            </p>
-            <p className="text-xs text-gray-500">
-              Hỗ trợ: Ảnh, PDF, Word, Excel, Text (tối đa 50MB)
-            </p>
-            {uploading && (
-              <div className="mt-3">
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div className="bg-purple-500 h-2 rounded-full animate-pulse w-1/2"></div>
+          <div className="p-4">
+            {/* Upload Area - Compact */}
+            <div
+              className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                dragOver
+                  ? 'border-purple-400 bg-purple-500/10'
+                  : 'border-gray-600 hover:border-gray-500'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-300 mb-1">
+                Kéo thả file hoặc{' '}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-purple-400 hover:text-purple-300 underline"
+                  disabled={uploading}
+                >
+                  chọn file
+                </button>
+              </p>
+              <p className="text-xs text-gray-500">Ảnh, PDF, Word, Excel, Text (≤50MB)</p>
+              {uploading && (
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <div className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-xs text-gray-400">Đang tải lên...</span>
                 </div>
-                <p className="text-sm text-gray-400 mt-1">Đang tải lên...</p>
+              )}
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={e => handleFileSelect(e.target.files)}
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
+            />
+
+            {/* Attachments List - Compact */}
+            {attachments.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {attachments.map(attachment => (
+                  <div
+                    key={attachment.id}
+                    className="flex items-center gap-2 p-2 bg-gray-800/30 rounded-lg border border-gray-700/20 hover:bg-gray-800/50 transition-colors"
+                  >
+                    <div className="text-gray-400 flex-shrink-0">
+                      {getFileIcon(attachment.file_type)}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white font-medium truncate">
+                        {attachment.file_name}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {attachmentService.formatFileSize(attachment.file_size)} •{' '}
+                        {new Date(attachment.created_at).toLocaleDateString('vi-VN')}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => handlePreview(attachment)}
+                        className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
+                        title={
+                          attachmentService.isImageFile(attachment.file_type)
+                            ? 'Xem trước'
+                            : 'Tải xuống'
+                        }
+                      >
+                        {attachmentService.isImageFile(attachment.file_type) ? (
+                          <Eye className="w-3.5 h-3.5" />
+                        ) : (
+                          <Download className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(attachment.id)}
+                        className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                        title="Xóa"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-          </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            className="hidden"
-            onChange={(e) => handleFileSelect(e.target.files)}
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
-          />
-
-          {/* Attachments List */}
-          {attachments.length > 0 && (
-            <div className="mt-6 space-y-3">
-              {attachments.map((attachment) => (
-                <div
-                  key={attachment.id}
-                  className="flex items-center gap-3 p-3 bg-gray-800/30 rounded-lg border border-gray-700/20 hover:bg-gray-800/50 transition-colors"
-                >
-                  <div className="text-gray-400">
-                    {getFileIcon(attachment.file_type)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium truncate">
-                      {attachment.file_name}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {attachmentService.formatFileSize(attachment.file_size)} • {' '}
-                      {new Date(attachment.created_at).toLocaleDateString('vi-VN')}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => handlePreview(attachment)}
-                      className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                      title={attachmentService.isImageFile(attachment.file_type) ? "Xem trước" : "Tải xuống"}
-                    >
-                      {attachmentService.isImageFile(attachment.file_type) ? (
-                        <Eye className="w-4 h-4" />
-                      ) : (
-                        <Download className="w-4 h-4" />
-                      )}
-                    </button>
-                    
-                    <button
-                      onClick={() => handleDelete(attachment.id)}
-                      className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Xóa"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
           </div>
         )}
       </div>
 
-      {/* Image Preview Modal */}
+      {/* Image Preview Modal - Cải thiện với nút đóng rõ ràng */}
       {previewUrl && previewFile && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-4xl max-h-full">
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            setPreviewUrl(null);
+            setPreviewFile(null);
+          }}
+        >
+          <div className="relative max-w-4xl max-h-full" onClick={e => e.stopPropagation()}>
+            {/* Nút đóng cải thiện - dễ nhìn và click hơn */}
             <button
               onClick={() => {
                 setPreviewUrl(null);
                 setPreviewFile(null);
               }}
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+              className="absolute -top-12 right-0 bg-black/50 hover:bg-black/70 text-white hover:text-gray-300 rounded-full p-2 transition-all duration-200 backdrop-blur-sm border border-gray-600"
+              title="Đóng (ESC)"
             >
-              <X className="w-8 h-8" />
+              <X className="w-6 h-6" />
             </button>
+
+            {/* Nút đóng phụ ở góc trên phải của ảnh */}
+            <button
+              onClick={() => {
+                setPreviewUrl(null);
+                setPreviewFile(null);
+              }}
+              className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 text-white rounded-full p-1.5 transition-all duration-200 z-10"
+              title="Đóng"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
             <img
               src={previewUrl}
               alt={previewFile.file_name}
-              className="max-w-full max-h-full object-contain rounded-lg"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
             />
-            <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-4 rounded-b-lg">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-4 rounded-b-lg">
               <p className="font-medium">{previewFile.file_name}</p>
               <p className="text-sm text-gray-300">
-                {attachmentService.formatFileSize(previewFile.file_size)}
+                {attachmentService.formatFileSize(previewFile.file_size)} •{' '}
+                {new Date(previewFile.created_at).toLocaleDateString('vi-VN')}
               </p>
             </div>
           </div>

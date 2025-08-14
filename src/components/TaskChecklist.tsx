@@ -1,6 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Check, X, Edit3, Trash2, CheckSquare, Square, GripVertical, Calendar } from 'lucide-react';
-import { checklistService, ChecklistItem, ChecklistProgress } from '../services/checklistService';
+import {
+  Calendar,
+  Check,
+  CheckSquare,
+  Edit3,
+  GripVertical,
+  Plus,
+  Square,
+  Trash2,
+  X,
+} from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChecklistItem, ChecklistProgress, checklistService } from '../services/checklistService';
 import { taskService } from '../services/taskService';
 
 interface TaskChecklistProps {
@@ -10,7 +20,11 @@ interface TaskChecklistProps {
 
 const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange }) => {
   const [items, setItems] = useState<ChecklistItem[]>([]);
-  const [progress, setProgress] = useState<ChecklistProgress>({ total: 0, completed: 0, percentage: 0 });
+  const [progress, setProgress] = useState<ChecklistProgress>({
+    total: 0,
+    completed: 0,
+    percentage: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [newItemTitle, setNewItemTitle] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -22,9 +36,25 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
   const newItemInputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
 
+  // Helper function để format ngày tháng theo chuẩn Việt Nam
+  const formatVietnameseDateTime = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return 'N/A';
+    }
+  };
+
   useEffect(() => {
     loadChecklistItems();
-  }, [taskId]);
+  }, [taskId, loadChecklistItems]);
 
   useEffect(() => {
     if (addingNew && newItemInputRef.current) {
@@ -50,9 +80,9 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
       setLoading(true);
       const [itemsData, progressData] = await Promise.all([
         checklistService.getTaskChecklistItems(taskId),
-        checklistService.getChecklistProgress(taskId)
+        checklistService.getChecklistProgress(taskId),
       ]);
-      
+
       setItems(itemsData);
       setProgress(progressData);
       onProgressChange?.(progressData);
@@ -79,9 +109,9 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
     try {
       const newItem = await checklistService.createChecklistItem({
         taskId,
-        title: newItemTitle.trim()
+        title: newItemTitle.trim(),
       });
-      
+
       setItems(prev => [...prev, newItem]);
       setNewItemTitle('');
       setAddingNew(false);
@@ -95,9 +125,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
   const handleToggleItem = async (itemId: string) => {
     try {
       const updatedItem = await checklistService.toggleChecklistItem(itemId);
-      setItems(prev => prev.map(item => 
-        item.id === itemId ? updatedItem : item
-      ));
+      setItems(prev => prev.map(item => (item.id === itemId ? updatedItem : item)));
       updateProgress();
     } catch (error) {
       console.error('Error toggling item:', error);
@@ -111,12 +139,10 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
     try {
       const updatedItem = await checklistService.updateChecklistItem({
         id: itemId,
-        title: editingTitle.trim()
+        title: editingTitle.trim(),
       });
-      
-      setItems(prev => prev.map(item => 
-        item.id === itemId ? updatedItem : item
-      ));
+
+      setItems(prev => prev.map(item => (item.id === itemId ? updatedItem : item)));
       setEditingId(null);
       setEditingTitle('');
     } catch (error) {
@@ -174,7 +200,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
         itemId: schedulingItemId,
         itemTitle: item.title,
         scheduleDate,
-        scheduleTime
+        scheduleTime,
       });
 
       // Create a scheduled task for this checklist item
@@ -183,12 +209,11 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
         parentTaskId: taskId,
         checklistItemId: schedulingItemId,
         scheduledDate: scheduleDate,
-        scheduledTime: scheduleTime || undefined
+        scheduledTime: scheduleTime || undefined,
       });
 
       alert(`✅ Đã lên lịch "${item.title}" vào ${scheduleDate} ${scheduleTime || ''}`);
       cancelScheduling();
-
     } catch (error) {
       console.error('Error scheduling checklist item:', error);
       alert('❌ Không thể lên lịch. Vui lòng thử lại.');
@@ -236,9 +261,11 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
               <CheckSquare className="w-4 h-4 text-green-400" />
             </div>
             <h3 className="text-lg font-semibold text-white">Danh sách công việc con</h3>
-            <span className="text-sm text-gray-400">({progress.completed}/{progress.total})</span>
+            <span className="text-sm text-gray-400">
+              ({progress.completed}/{progress.total})
+            </span>
           </div>
-          
+
           <button
             onClick={() => setAddingNew(true)}
             className="flex items-center gap-2 px-3 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors"
@@ -256,7 +283,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
               <span>{progress.percentage}%</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
-              <div 
+              <div
                 className="bg-green-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress.percentage}%` }}
               ></div>
@@ -276,10 +303,10 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
                 ref={newItemInputRef}
                 type="text"
                 value={newItemTitle}
-                onChange={(e) => setNewItemTitle(e.target.value)}
+                onChange={e => setNewItemTitle(e.target.value)}
                 placeholder="Nhập nội dung công việc con..."
                 className="flex-1 bg-transparent text-white placeholder-gray-400 border-none outline-none"
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === 'Enter') handleAddItem();
                   if (e.key === 'Escape') cancelAdding();
                 }}
@@ -307,7 +334,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
         {/* Checklist Items */}
         {items.length > 0 ? (
           <div className="space-y-2">
-            {items.map((item) => (
+            {items.map(item => (
               <div
                 key={item.id}
                 className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
@@ -335,30 +362,43 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
                   )}
                 </button>
 
-                {/* Content */}
+                {/* Content với ngày tháng */}
                 <div className="flex-1 min-w-0">
                   {editingId === item.id ? (
                     <input
                       ref={editInputRef}
                       type="text"
                       value={editingTitle}
-                      onChange={(e) => setEditingTitle(e.target.value)}
+                      onChange={e => setEditingTitle(e.target.value)}
                       className="w-full bg-transparent text-white border-none outline-none"
-                      onKeyDown={(e) => {
+                      onKeyDown={e => {
                         if (e.key === 'Enter') handleEditItem(item.id);
                         if (e.key === 'Escape') cancelEditing();
                       }}
                     />
                   ) : (
-                    <span
-                      className={`${
-                        item.is_completed
-                          ? 'text-gray-400 line-through'
-                          : 'text-white'
-                      }`}
-                    >
-                      {item.title}
-                    </span>
+                    <div>
+                      <span
+                        className={`block ${
+                          item.is_completed ? 'text-gray-400 line-through' : 'text-white'
+                        }`}
+                      >
+                        {item.title}
+                      </span>
+                      {/* Hiển thị ngày tháng theo chuẩn Việt Nam */}
+                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <span className="text-gray-600">📅</span>
+                          Tạo: {formatVietnameseDateTime(item.created_at)}
+                        </span>
+                        {item.is_completed && item.updated_at !== item.created_at && (
+                          <span className="text-green-500 flex items-center gap-1">
+                            <span>✅</span>
+                            Hoàn thành: {formatVietnameseDateTime(item.updated_at)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -425,9 +465,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
             <div className="space-y-4">
               {/* Item Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Công việc
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Công việc</label>
                 <div className="p-3 bg-gray-700/50 rounded-lg text-white">
                   {items.find(i => i.id === schedulingItemId)?.title}
                 </div>
@@ -435,13 +473,11 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
 
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Chọn ngày *
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Chọn ngày *</label>
                 <input
                   type="date"
                   value={scheduleDate}
-                  onChange={(e) => setScheduleDate(e.target.value)}
+                  onChange={e => setScheduleDate(e.target.value)}
                   min={getMinDate()}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
                 />
@@ -455,7 +491,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
                 <input
                   type="time"
                   value={scheduleTime}
-                  onChange={(e) => setScheduleTime(e.target.value)}
+                  onChange={e => setScheduleTime(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
                 />
               </div>

@@ -13,7 +13,9 @@ import {
 import React, { useEffect, useState } from 'react';
 import { TaskAttachment } from '../services/attachmentService';
 import { ChecklistProgress } from '../services/checklistService';
+import { Employee } from '../services/employeeService';
 import { TaskWithUsers } from '../services/taskService';
+import IOSDatePicker from './IOSDatePicker';
 import StatusPriorityEditor from './StatusPriorityEditor';
 import TaskAttachments from './TaskAttachments';
 import TaskChecklist from './TaskChecklist';
@@ -24,14 +26,13 @@ interface TaskDetailModalProps {
   task: TaskWithUsers | null;
   onEdit: () => void;
   onDelete: () => void;
-  onUpdate?: (taskData: any) => void; // New prop for inline updates
+  onUpdate?: (taskData: TaskWithUsers) => void; // New prop for inline updates
 }
 
 const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   isOpen,
   onClose,
   task,
-  onEdit,
   onDelete,
   onUpdate,
 }) => {
@@ -60,15 +61,46 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showDueDatePicker, setShowDueDatePicker] = useState(false);
 
-  // State for user tagging
+  // State for user tagging - Sử dụng dữ liệu thực từ database
   const [showUserPicker, setShowUserPicker] = useState(false);
-  const [availableUsers] = useState([
-    { id: '1', name: 'Phạm Thị Hương', email: 'pham.thi.huong@company.com' },
-    { id: '2', name: 'Nguyễn Văn An', email: 'nguyen.van.an@company.com' },
-    { id: '3', name: 'Trần Thị Bình', email: 'tran.thi.binh@company.com' },
-    { id: '4', name: 'Lê Văn Cường', email: 'le.van.cuong@company.com' },
-    { id: '5', name: 'Hoàng Thị Dung', email: 'hoang.thi.dung@company.com' },
-  ]);
+  const [availableUsers, setAvailableUsers] = useState<Employee[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // Load available users từ database
+  const loadAvailableUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const currentUser = getCurrentUser();
+      if (!currentUser) return;
+
+      // Lấy users theo team và location của current user
+      const users = await employeeService.getEmployeesByLocation(currentUser.location);
+
+      // Filter để chỉ hiển thị users trong cùng team hoặc department
+      const filteredUsers = users.filter(user => {
+        // Luôn bao gồm current user
+        if (user.id === currentUser.id) return true;
+
+        // Nếu là director, có thể thấy tất cả users trong location
+        if (currentUser.role === 'retail_director') return true;
+
+        // Team leader có thể thấy members trong team
+        if (currentUser.role === 'team_leader' && user.team_id === currentUser.team_id) return true;
+
+        // Employee chỉ thấy members trong cùng team
+        if (user.team_id === currentUser.team_id) return true;
+
+        return false;
+      });
+
+      setAvailableUsers(filteredUsers);
+    } catch (error) {
+      console.error('Error loading available users:', error);
+      setAvailableUsers([]);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
   // Load task data when modal opens or task changes
   useEffect(() => {
@@ -80,10 +112,17 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         status: task.status || 'new-requests',
         startDate: task.startDate || task.createdAt || '',
         dueDate: task.dueDate || '',
-        assignedUsers: [task.assignedTo?.id || '1'], // Default to current assignee
+        assignedUsers: [task.assignedTo?.id || task.createdBy?.id || ''], // Default to current assignee or creator
       });
     }
   }, [task]);
+
+  // Load users when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadAvailableUsers();
+    }
+  }, [isOpen]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -123,45 +162,45 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     setChecklistProgress(progress);
   };
 
-  const handleScheduleChange = async (
-    scheduled: boolean,
-    scheduledDate?: string,
-    scheduledTime?: string
-  ) => {
-    setIsScheduled(scheduled);
+  // const handleScheduleChange = async (
+  //   scheduled: boolean,
+  //   scheduledDate?: string,
+  //   scheduledTime?: string
+  // ) => {
+  //   setIsScheduled(scheduled);
 
-    // Trigger task list reload to show updated scheduling info
-    if (onUpdate) {
-      try {
-        // Update the current task object with new scheduling info
-        const updatedTask = {
-          ...task,
-          scheduled_date: scheduled ? scheduledDate : null,
-          scheduled_time: scheduled ? scheduledTime : null,
-          source: scheduled ? 'manual' : task?.source || 'manual',
-        };
+  //   // Trigger task list reload to show updated scheduling info
+  //   if (onUpdate) {
+  //     try {
+  //       // Update the current task object with new scheduling info
+  //       const updatedTask = {
+  //         ...task,
+  //         scheduled_date: scheduled ? scheduledDate : null,
+  //         scheduled_time: scheduled ? scheduledTime : null,
+  //         source: scheduled ? 'manual' : task?.source || 'manual',
+  //       };
 
-        console.log('🔧 TaskDetailModal: Updating task with scheduling info:', {
-          taskId: task?.id,
-          scheduled_date: updatedTask.scheduled_date,
-          scheduled_time: updatedTask.scheduled_time,
-          allDates: {
-            startDate: updatedTask.startDate,
-            endDate: updatedTask.endDate,
-            dueDate: updatedTask.dueDate,
-            scheduled_date: updatedTask.scheduled_date,
-          },
-        });
+  //       console.log('🔧 TaskDetailModal: Updating task with scheduling info:', {
+  //         taskId: task?.id,
+  //         scheduled_date: updatedTask.scheduled_date,
+  //         scheduled_time: updatedTask.scheduled_time,
+  //         allDates: {
+  //           startDate: updatedTask.startDate,
+  //           endDate: updatedTask.endDate,
+  //           dueDate: updatedTask.dueDate,
+  //           scheduled_date: updatedTask.scheduled_date,
+  //         },
+  //       });
 
-        // This will trigger a reload in TaskList
-        await onUpdate(updatedTask);
+  //       // This will trigger a reload in TaskList
+  //       await onUpdate(updatedTask);
 
-        console.log('✅ Task scheduling updated and list reloaded');
-      } catch (error) {
-        console.error('❌ Error reloading tasks after scheduling:', error);
-      }
-    }
-  };
+  //       console.log('✅ Task scheduling updated and list reloaded');
+  //     } catch (error) {
+  //       console.error('❌ Error reloading tasks after scheduling:', error);
+  //     }
+  //   }
+  // };
 
   // Inline editing handlers
   const handleEditToggle = () => {
@@ -175,7 +214,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           status: task.status || 'new-requests',
           startDate: task.startDate || task.createdAt || '',
           dueDate: task.dueDate || '',
-          assignedUsers: [task.assignedTo?.id || '1'],
+          assignedUsers: [task.assignedTo?.id || task.createdBy?.id || ''],
         });
       }
     }
@@ -202,7 +241,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | string[]) => {
     setEditData(prev => ({
       ...prev,
       [field]: value,
@@ -270,29 +309,29 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     return workTypeOptions.find(option => option.value === workType) || workTypeOptions[0];
   };
 
-  const formatDate = (dateString: string) => {
-    // Debug: log the dateString to see what we're getting
-    console.log('TaskDetailModal formatDate input:', dateString);
+  // const formatDate = (dateString: string) => {
+  //   // Debug: log the dateString to see what we're getting
+  //   console.log('TaskDetailModal formatDate input:', dateString);
 
-    if (!dateString) return 'N/A';
+  //   if (!dateString) return 'N/A';
 
-    try {
-      const date = new Date(dateString);
+  //   try {
+  //     const date = new Date(dateString);
 
-      // Kiểm tra nếu date không hợp lệ
-      if (isNaN(date.getTime())) {
-        console.log('Invalid date:', dateString);
-        return 'N/A';
-      }
+  //     // Kiểm tra nếu date không hợp lệ
+  //     if (isNaN(date.getTime())) {
+  //       console.log('Invalid date:', dateString);
+  //       return 'N/A';
+  //     }
 
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      return `${day} thg ${month}`;
-    } catch (e) {
-      console.log('Date parsing error:', e, dateString);
-      return 'N/A';
-    }
-  };
+  //     const day = date.getDate().toString().padStart(2, '0');
+  //     const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  //     return `${day} thg ${month}`;
+  //   } catch (e) {
+  //     console.log('Date parsing error:', e, dateString);
+  //     return 'N/A';
+  //   }
+  // };
 
   const workTypeInfo = getWorkTypeInfo(task.workType);
   const WorkTypeIcon = workTypeInfo.icon;
@@ -446,40 +485,32 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
             {/* Enhanced Meta Info - Mobile Optimized */}
             <div className="task-detail-meta-mobile mt-2 md:mt-3 space-y-3">
-              {/* Start Date */}
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-green-400" />
-                <span className="text-gray-400 text-sm">Bắt đầu:</span>
-                {isEditMode ? (
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowStartDatePicker(!showStartDatePicker)}
-                      className="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white hover:border-green-500 transition-colors"
-                    >
-                      {formatDateForDisplay(editData.startDate)}
-                    </button>
-                    {showStartDatePicker && (
-                      <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-xl z-50">
-                        <input
-                          type="date"
-                          value={editData.startDate ? editData.startDate.split('T')[0] : ''}
-                          onChange={e => {
-                            handleInputChange(
-                              'startDate',
-                              e.target.value ? e.target.value + 'T00:00:00.000Z' : ''
-                            );
-                            setShowStartDatePicker(false);
-                          }}
-                          className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:border-green-500 focus:outline-none"
-                        />
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-white text-sm">
-                    {formatDateForDisplay(task.startDate || task.createdAt || '')}
-                  </span>
-                )}
+              {/* Start Date - iOS Style */}
+              <div className="flex items-start gap-2">
+                <Calendar className="w-4 h-4 text-green-400 mt-1" />
+                <div className="flex-1">
+                  <span className="text-gray-400 text-sm block mb-1">Bắt đầu:</span>
+                  {isEditMode ? (
+                    <IOSDatePicker
+                      value={editData.startDate ? editData.startDate.split('T')[0] : ''}
+                      onChange={date => handleInputChange('startDate', date)}
+                      placeholder="Chọn ngày bắt đầu"
+                      isOpen={showStartDatePicker}
+                      onToggle={() => {
+                        setShowStartDatePicker(!showStartDatePicker);
+                        setShowDueDatePicker(false); // Đóng due date picker
+                        setShowUserPicker(false); // Đóng user picker
+                      }}
+                      onClose={() => setShowStartDatePicker(false)}
+                      color="green"
+                      buttonClassName="text-sm"
+                    />
+                  ) : (
+                    <span className="text-white text-sm">
+                      {formatDateForDisplay(task.startDate || task.createdAt || '')}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Creator - Keep unchanged */}
@@ -526,19 +557,53 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                           <span>Thêm</span>
                         </button>
                         {showUserPicker && (
-                          <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 min-w-48">
-                            {availableUsers
-                              .filter(user => !editData.assignedUsers.includes(user.id))
-                              .map(user => (
-                                <button
-                                  key={user.id}
-                                  onClick={() => handleAddUser(user.id)}
-                                  className="w-full text-left px-3 py-2 hover:bg-gray-700 text-white text-sm first:rounded-t-lg last:rounded-b-lg"
-                                >
-                                  <div className="font-medium">{user.name}</div>
-                                  <div className="text-xs text-gray-400">{user.email}</div>
-                                </button>
-                              ))}
+                          <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 min-w-64 max-w-80">
+                            {loadingUsers ? (
+                              <div className="px-3 py-4 text-center text-gray-400 text-sm">
+                                <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                                Đang tải danh sách...
+                              </div>
+                            ) : availableUsers.length === 0 ? (
+                              <div className="px-3 py-4 text-center text-gray-400 text-sm">
+                                Không có người dùng khả dụng
+                              </div>
+                            ) : (
+                              <div className="max-h-64 overflow-y-auto">
+                                {availableUsers
+                                  .filter(user => !editData.assignedUsers.includes(user.id))
+                                  .map(user => (
+                                    <button
+                                      key={user.id}
+                                      onClick={() => handleAddUser(user.id)}
+                                      className="w-full text-left px-3 py-2 hover:bg-gray-700 text-white text-sm first:rounded-t-lg last:rounded-b-lg transition-colors"
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                          {user.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="font-medium truncate">{user.name}</div>
+                                          <div className="text-xs text-gray-400 truncate">
+                                            {user.email} • {user.location}
+                                            {user.team &&
+                                              typeof user.team === 'object' &&
+                                              !Array.isArray(user.team) && (
+                                                <span> • {user.team.name}</span>
+                                              )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </button>
+                                  ))}
+                                {availableUsers.filter(
+                                  user => !editData.assignedUsers.includes(user.id)
+                                ).length === 0 && (
+                                  <div className="px-3 py-4 text-center text-gray-400 text-sm">
+                                    Tất cả người dùng đã được gán
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -547,40 +612,33 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 </div>
               </div>
 
-              {/* Due Date */}
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-red-400" />
-                <span className="text-gray-400 text-sm">Hạn chót:</span>
-                {isEditMode ? (
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowDueDatePicker(!showDueDatePicker)}
-                      className="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white hover:border-red-500 transition-colors"
-                    >
-                      {formatDateForDisplay(editData.dueDate)}
-                    </button>
-                    {showDueDatePicker && (
-                      <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-xl z-50">
-                        <input
-                          type="date"
-                          value={editData.dueDate ? editData.dueDate.split('T')[0] : ''}
-                          onChange={e => {
-                            handleInputChange(
-                              'dueDate',
-                              e.target.value ? e.target.value + 'T00:00:00.000Z' : ''
-                            );
-                            setShowDueDatePicker(false);
-                          }}
-                          className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:border-red-500 focus:outline-none"
-                        />
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-white text-sm">
-                    {formatDateForDisplay(task.dueDate || '')}
-                  </span>
-                )}
+              {/* Due Date - iOS Style */}
+              <div className="flex items-start gap-2">
+                <Calendar className="w-4 h-4 text-red-400 mt-1" />
+                <div className="flex-1">
+                  <span className="text-gray-400 text-sm block mb-1">Hạn chót:</span>
+                  {isEditMode ? (
+                    <IOSDatePicker
+                      value={editData.dueDate ? editData.dueDate.split('T')[0] : ''}
+                      onChange={date => handleInputChange('dueDate', date)}
+                      placeholder="Chọn hạn chót"
+                      isOpen={showDueDatePicker}
+                      onToggle={() => {
+                        setShowDueDatePicker(!showDueDatePicker);
+                        setShowStartDatePicker(false); // Đóng start date picker
+                        setShowUserPicker(false); // Đóng user picker
+                      }}
+                      onClose={() => setShowDueDatePicker(false)}
+                      color="red"
+                      buttonClassName="text-sm"
+                      minDate={editData.startDate ? editData.startDate.split('T')[0] : undefined}
+                    />
+                  ) : (
+                    <span className="text-white text-sm">
+                      {formatDateForDisplay(task.dueDate || '')}
+                    </span>
+                  )}
+                </div>
               </div>
               {/* Checklist Progress - Compact on mobile */}
               {checklistProgress.total > 0 && (
