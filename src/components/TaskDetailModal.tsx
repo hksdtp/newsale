@@ -1,4 +1,15 @@
-import { Building, Calendar, Edit3, Save, Target, Trash2, User, Users, X } from 'lucide-react';
+import {
+  Building,
+  Calendar,
+  Edit3,
+  Plus,
+  Save,
+  Target,
+  Trash2,
+  User,
+  Users,
+  X,
+} from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { TaskAttachment } from '../services/attachmentService';
 import { ChecklistProgress } from '../services/checklistService';
@@ -40,8 +51,24 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     description: '',
     priority: 'normal' as 'low' | 'normal' | 'high',
     status: 'new-requests' as 'new-requests' | 'approved' | 'live',
+    startDate: '',
     dueDate: '',
+    assignedUsers: [] as string[],
   });
+
+  // State for date pickers
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showDueDatePicker, setShowDueDatePicker] = useState(false);
+
+  // State for user tagging
+  const [showUserPicker, setShowUserPicker] = useState(false);
+  const [availableUsers] = useState([
+    { id: '1', name: 'Phạm Thị Hương', email: 'pham.thi.huong@company.com' },
+    { id: '2', name: 'Nguyễn Văn An', email: 'nguyen.van.an@company.com' },
+    { id: '3', name: 'Trần Thị Bình', email: 'tran.thi.binh@company.com' },
+    { id: '4', name: 'Lê Văn Cường', email: 'le.van.cuong@company.com' },
+    { id: '5', name: 'Hoàng Thị Dung', email: 'hoang.thi.dung@company.com' },
+  ]);
 
   // Load task data when modal opens or task changes
   useEffect(() => {
@@ -51,7 +78,9 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         description: task.description || '',
         priority: task.priority || 'normal',
         status: task.status || 'new-requests',
+        startDate: task.startDate || task.createdAt || '',
         dueDate: task.dueDate || '',
+        assignedUsers: [task.assignedTo?.id || '1'], // Default to current assignee
       });
     }
   }, [task]);
@@ -144,11 +173,17 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           description: task.description || '',
           priority: task.priority || 'normal',
           status: task.status || 'new-requests',
+          startDate: task.startDate || task.createdAt || '',
           dueDate: task.dueDate || '',
+          assignedUsers: [task.assignedTo?.id || '1'],
         });
       }
     }
     setIsEditMode(!isEditMode);
+    // Close all pickers when toggling edit mode
+    setShowStartDatePicker(false);
+    setShowDueDatePicker(false);
+    setShowUserPicker(false);
   };
 
   const handleSave = async () => {
@@ -173,6 +208,41 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
       [field]: value,
     }));
   };
+
+  // Helper functions for user management
+  const handleAddUser = (userId: string) => {
+    if (!editData.assignedUsers.includes(userId)) {
+      setEditData(prev => ({
+        ...prev,
+        assignedUsers: [...prev.assignedUsers, userId],
+      }));
+    }
+    setShowUserPicker(false);
+  };
+
+  const handleRemoveUser = (userId: string) => {
+    setEditData(prev => ({
+      ...prev,
+      assignedUsers: prev.assignedUsers.filter(id => id !== userId),
+    }));
+  };
+
+  // Helper function for date formatting
+  const formatDateForDisplay = (dateString: string) => {
+    if (!dateString) return 'Chưa đặt';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Ngày không hợp lệ';
+
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return 'Ngày không hợp lệ';
+    }
+  };
+
   if (!isOpen || !task) return null;
 
   // Debug: log task data to see what dates we have
@@ -374,46 +444,144 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Compact Meta Info - Mobile Optimized */}
-            <div className="task-detail-meta-mobile mt-2 md:mt-3">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-green-400" />
-                <span className="hidden sm:inline">Bắt đầu: </span>
-                <span>
-                  {formatDate(task.startDate || task.createdAt || new Date().toISOString())}
+            {/* Enhanced Meta Info - Mobile Optimized */}
+            <div className="task-detail-meta-mobile mt-2 md:mt-3 space-y-3">
+              {/* Start Date */}
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-green-400" />
+                <span className="text-gray-400 text-sm">Bắt đầu:</span>
+                {isEditMode ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowStartDatePicker(!showStartDatePicker)}
+                      className="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white hover:border-green-500 transition-colors"
+                    >
+                      {formatDateForDisplay(editData.startDate)}
+                    </button>
+                    {showStartDatePicker && (
+                      <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-xl z-50">
+                        <input
+                          type="date"
+                          value={editData.startDate ? editData.startDate.split('T')[0] : ''}
+                          onChange={e => {
+                            handleInputChange(
+                              'startDate',
+                              e.target.value ? e.target.value + 'T00:00:00.000Z' : ''
+                            );
+                            setShowStartDatePicker(false);
+                          }}
+                          className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:border-green-500 focus:outline-none"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-white text-sm">
+                    {formatDateForDisplay(task.startDate || task.createdAt || '')}
+                  </span>
+                )}
+              </div>
+
+              {/* Creator - Keep unchanged */}
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-blue-400" />
+                <span className="text-gray-400 text-sm">Tạo bởi:</span>
+                <span className="text-white text-sm">
+                  {task.createdBy?.name || 'Phạm Thị Hương'}
                 </span>
               </div>
-              <div className="flex items-center gap-1">
-                <Users className="w-3 h-3 text-blue-400" />
-                <span className="hidden sm:inline">Tạo bởi: </span>
-                <span>{task.createdBy?.name || 'Không xác định'}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <User className="w-3 h-3 text-purple-400" />
-                <span className="hidden sm:inline">Thực hiện: </span>
-                <span>{task.assignedTo?.name || 'Chưa phân công'}</span>
-              </div>
-              {(task.dueDate || isEditMode) && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-red-400" />
-                  <span className="hidden sm:inline">Hạn chót: </span>
-                  {isEditMode ? (
-                    <input
-                      type="date"
-                      value={editData.dueDate ? editData.dueDate.split('T')[0] : ''}
-                      onChange={e =>
-                        handleInputChange(
-                          'dueDate',
-                          e.target.value ? e.target.value + 'T00:00:00.000Z' : ''
-                        )
-                      }
-                      className="bg-gray-800/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:border-blue-500 focus:outline-none"
-                    />
-                  ) : (
-                    <span>{formatDate(task.dueDate || '')}</span>
-                  )}
+
+              {/* Enhanced Assignees */}
+              <div className="flex items-start gap-2">
+                <User className="w-4 h-4 text-purple-400 mt-0.5" />
+                <div className="flex-1">
+                  <span className="text-gray-400 text-sm">Thực hiện:</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {editData.assignedUsers.map(userId => {
+                      const user = availableUsers.find(u => u.id === userId);
+                      return user ? (
+                        <div
+                          key={userId}
+                          className="flex items-center gap-1 bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full text-xs"
+                        >
+                          <span>{user.name}</span>
+                          {isEditMode && editData.assignedUsers.length > 1 && (
+                            <button
+                              onClick={() => handleRemoveUser(userId)}
+                              className="hover:text-red-400 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      ) : null;
+                    })}
+                    {isEditMode && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowUserPicker(!showUserPicker)}
+                          className="flex items-center gap-1 bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded-full text-xs transition-colors"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Thêm</span>
+                        </button>
+                        {showUserPicker && (
+                          <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 min-w-48">
+                            {availableUsers
+                              .filter(user => !editData.assignedUsers.includes(user.id))
+                              .map(user => (
+                                <button
+                                  key={user.id}
+                                  onClick={() => handleAddUser(user.id)}
+                                  className="w-full text-left px-3 py-2 hover:bg-gray-700 text-white text-sm first:rounded-t-lg last:rounded-b-lg"
+                                >
+                                  <div className="font-medium">{user.name}</div>
+                                  <div className="text-xs text-gray-400">{user.email}</div>
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* Due Date */}
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-red-400" />
+                <span className="text-gray-400 text-sm">Hạn chót:</span>
+                {isEditMode ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowDueDatePicker(!showDueDatePicker)}
+                      className="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white hover:border-red-500 transition-colors"
+                    >
+                      {formatDateForDisplay(editData.dueDate)}
+                    </button>
+                    {showDueDatePicker && (
+                      <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-xl z-50">
+                        <input
+                          type="date"
+                          value={editData.dueDate ? editData.dueDate.split('T')[0] : ''}
+                          onChange={e => {
+                            handleInputChange(
+                              'dueDate',
+                              e.target.value ? e.target.value + 'T00:00:00.000Z' : ''
+                            );
+                            setShowDueDatePicker(false);
+                          }}
+                          className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:border-red-500 focus:outline-none"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-white text-sm">
+                    {formatDateForDisplay(task.dueDate || '')}
+                  </span>
+                )}
+              </div>
               {/* Checklist Progress - Compact on mobile */}
               {checklistProgress.total > 0 && (
                 <div className="flex items-center gap-1">
@@ -518,19 +686,6 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
             {/* Attachments Section - Moved down and will be collapsed */}
             <TaskAttachments taskId={task.id} onAttachmentsChange={handleAttachmentsChange} />
-
-            {/* Test content để đảm bảo có đủ nội dung scroll */}
-            <div className="bg-white/5 rounded-xl border border-gray-700/30 p-4">
-              <h3 className="text-white font-medium mb-2">Test Scroll Content</h3>
-              <div className="space-y-2 text-gray-300 text-sm">
-                {Array.from({ length: 20 }, (_, i) => (
-                  <p key={i}>
-                    Dòng test {i + 1}: Đây là nội dung test để kiểm tra chức năng scroll trong
-                    modal. Nội dung này sẽ được xóa sau khi xác nhận scroll hoạt động đúng.
-                  </p>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </div>
