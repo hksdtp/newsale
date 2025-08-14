@@ -54,7 +54,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
 
   useEffect(() => {
     loadChecklistItems();
-  }, [taskId, loadChecklistItems]);
+  }, [taskId]);
 
   useEffect(() => {
     if (addingNew && newItemInputRef.current) {

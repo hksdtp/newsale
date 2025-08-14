@@ -31,7 +31,7 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
   // Load attachments on mount
   useEffect(() => {
     loadAttachments();
-  }, [taskId, loadAttachments]);
+  }, [taskId]);
 
   // Keyboard support cho preview modal
   useEffect(() => {
