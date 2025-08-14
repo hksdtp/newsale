@@ -22,11 +22,15 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   task,
   onEdit,
   onDelete,
-  onUpdate
+  onUpdate,
 }) => {
   // State for new features
   const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
-  const [checklistProgress, setChecklistProgress] = useState<ChecklistProgress>({ total: 0, completed: 0, percentage: 0 });
+  const [checklistProgress, setChecklistProgress] = useState<ChecklistProgress>({
+    total: 0,
+    completed: 0,
+    percentage: 0,
+  });
   const [isScheduled, setIsScheduled] = useState(false);
 
   // State for inline editing
@@ -36,7 +40,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     description: '',
     priority: 'normal' as 'low' | 'normal' | 'high',
     status: 'new-requests' as 'new-requests' | 'approved' | 'live',
-    dueDate: ''
+    dueDate: '',
   });
 
   // Load task data when modal opens or task changes
@@ -47,10 +51,20 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         description: task.description || '',
         priority: task.priority || 'normal',
         status: task.status || 'new-requests',
-        dueDate: task.dueDate || ''
+        dueDate: task.dueDate || '',
       });
     }
   }, [task]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+      return () => {
+        document.body.classList.remove('modal-open');
+      };
+    }
+  }, [isOpen]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -80,7 +94,11 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     setChecklistProgress(progress);
   };
 
-  const handleScheduleChange = async (scheduled: boolean, scheduledDate?: string, scheduledTime?: string) => {
+  const handleScheduleChange = async (
+    scheduled: boolean,
+    scheduledDate?: string,
+    scheduledTime?: string
+  ) => {
     setIsScheduled(scheduled);
 
     // Trigger task list reload to show updated scheduling info
@@ -91,7 +109,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           ...task,
           scheduled_date: scheduled ? scheduledDate : null,
           scheduled_time: scheduled ? scheduledTime : null,
-          source: scheduled ? 'manual' : (task?.source || 'manual')
+          source: scheduled ? 'manual' : task?.source || 'manual',
         };
 
         console.log('🔧 TaskDetailModal: Updating task with scheduling info:', {
@@ -102,8 +120,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             startDate: updatedTask.startDate,
             endDate: updatedTask.endDate,
             dueDate: updatedTask.dueDate,
-            scheduled_date: updatedTask.scheduled_date
-          }
+            scheduled_date: updatedTask.scheduled_date,
+          },
         });
 
         // This will trigger a reload in TaskList
@@ -126,7 +144,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           description: task.description || '',
           priority: task.priority || 'normal',
           status: task.status || 'new-requests',
-          dueDate: task.dueDate || ''
+          dueDate: task.dueDate || '',
         });
       }
     }
@@ -139,7 +157,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         await onUpdate({
           ...task,
           ...editData,
-          id: task.id
+          id: task.id,
         });
         setIsEditMode(false);
       } catch (error) {
@@ -152,7 +170,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const handleInputChange = (field: string, value: any) => {
     setEditData(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
   if (!isOpen || !task) return null;
@@ -163,7 +181,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     name: task.name,
     startDate: task.startDate,
     createdAt: task.createdAt,
-    dueDate: task.dueDate
+    dueDate: task.dueDate,
   });
 
   const workTypeOptions = [
@@ -175,7 +193,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     { value: 'kts-new', label: 'KTS mới', icon: Target, color: 'bg-purple-500' },
     { value: 'kts-old', label: 'KTS cũ', icon: Target, color: 'bg-purple-400' },
     { value: 'customer-new', label: 'Khách hàng mới', icon: User, color: 'bg-orange-500' },
-    { value: 'customer-old', label: 'Khách hàng cũ', icon: User, color: 'bg-orange-400' }
+    { value: 'customer-old', label: 'Khách hàng cũ', icon: User, color: 'bg-orange-400' },
   ];
 
   const getWorkTypeInfo = (workType: string) => {
@@ -206,8 +224,6 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     }
   };
 
-
-
   const workTypeInfo = getWorkTypeInfo(task.workType);
   const WorkTypeIcon = workTypeInfo.icon;
 
@@ -216,11 +232,13 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
       <div className="bg-[#1a1f2e] rounded-lg sm:rounded-2xl w-full max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl border border-gray-700/50 flex flex-col">
         <div className="flex flex-col h-full">
           {/* Header - Mobile Optimized */}
-          <div className={`border-b border-gray-700 flex-shrink-0 ${
-            isEditMode
-              ? 'bg-gradient-to-r from-orange-600/20 to-yellow-600/20'
-              : 'bg-gradient-to-r from-blue-600/10 to-purple-600/10'
-          }`}>
+          <div
+            className={`border-b border-gray-700 flex-shrink-0 ${
+              isEditMode
+                ? 'bg-gradient-to-r from-orange-600/20 to-yellow-600/20'
+                : 'bg-gradient-to-r from-blue-600/10 to-purple-600/10'
+            }`}
+          >
             {/* Mobile Header Layout */}
             <div className="p-3 sm:p-4 md:p-6">
               {/* Mobile: Stack vertically, Desktop: Horizontal */}
@@ -228,7 +246,9 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 {/* Top Row on Mobile: Title + Close Button */}
                 <div className="flex items-center justify-between gap-3 md:gap-4 flex-1 min-w-0">
                   {/* Work Type Badge - Smaller on mobile */}
-                  <div className={`inline-flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 rounded-full text-white text-xs font-medium ${workTypeInfo.color} flex-shrink-0`}>
+                  <div
+                    className={`inline-flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 rounded-full text-white text-xs font-medium ${workTypeInfo.color} flex-shrink-0`}
+                  >
                     <WorkTypeIcon className="w-3 h-3" />
                     <span className="hidden sm:inline">{workTypeInfo.label}</span>
                   </div>
@@ -238,19 +258,23 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     <input
                       type="text"
                       value={editData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      onChange={e => handleInputChange('name', e.target.value)}
                       className="text-base md:text-lg font-bold text-white bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-1 flex-1 min-w-0 focus:border-blue-500 focus:outline-none"
                       placeholder="Tên công việc..."
                     />
                   ) : (
-                    <h2 className="text-base md:text-lg font-bold text-white break-words leading-tight flex-1 min-w-0">{task.name}</h2>
+                    <h2 className="text-base md:text-lg font-bold text-white break-words leading-tight flex-1 min-w-0">
+                      {task.name}
+                    </h2>
                   )}
 
                   {/* Edit Mode Indicator */}
                   {isEditMode && (
                     <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 rounded-full border border-orange-500/30">
                       <Edit3 className="w-3 h-3 text-orange-400" />
-                      <span className="text-xs text-orange-300 hidden sm:inline">Đang chỉnh sửa</span>
+                      <span className="text-xs text-orange-300 hidden sm:inline">
+                        Đang chỉnh sửa
+                      </span>
                     </div>
                   )}
 
@@ -270,8 +294,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     <StatusPriorityEditor
                       status={isEditMode ? editData.status : task.status}
                       priority={isEditMode ? editData.priority : task.priority}
-                      onStatusChange={(status) => handleInputChange('status', status)}
-                      onPriorityChange={(priority) => handleInputChange('priority', priority)}
+                      onStatusChange={status => handleInputChange('status', status)}
+                      onPriorityChange={priority => handleInputChange('priority', priority)}
                       isEditMode={isEditMode}
                     />
                   </div>
@@ -358,7 +382,9 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3 text-green-400" />
                   <span className="hidden sm:inline">Bắt đầu: </span>
-                  <span>{formatDate(task.startDate || task.createdAt || new Date().toISOString())}</span>
+                  <span>
+                    {formatDate(task.startDate || task.createdAt || new Date().toISOString())}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Users className="w-3 h-3 text-blue-400" />
@@ -378,7 +404,12 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                       <input
                         type="date"
                         value={editData.dueDate ? editData.dueDate.split('T')[0] : ''}
-                        onChange={(e) => handleInputChange('dueDate', e.target.value ? e.target.value + 'T00:00:00.000Z' : '')}
+                        onChange={e =>
+                          handleInputChange(
+                            'dueDate',
+                            e.target.value ? e.target.value + 'T00:00:00.000Z' : ''
+                          )
+                        }
                         className="bg-gray-800/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:border-blue-500 focus:outline-none"
                       />
                     ) : (
@@ -391,7 +422,10 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   <div className="flex items-center gap-1">
                     <Target className="w-3 h-3 text-green-400" />
                     <span className="hidden sm:inline">Checklist: </span>
-                    <span>{checklistProgress.completed}/{checklistProgress.total} ({checklistProgress.percentage}%)</span>
+                    <span>
+                      {checklistProgress.completed}/{checklistProgress.total} (
+                      {checklistProgress.percentage}%)
+                    </span>
                   </div>
                 )}
                 {/* Attachments Count - Compact on mobile */}
@@ -414,8 +448,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           </div>
 
           {/* Content - Mobile Optimized - ONLY Scroll Area */}
-          <div className="task-detail-scroll-mobile bg-gray-900/50">
-            <div className="task-detail-content-mobile max-w-4xl mx-auto space-y-4 md:space-y-8">
+          <div className="task-detail-scroll-mobile bg-gray-900/50 p-4 md:p-6">
+            <div className="max-w-4xl mx-auto space-y-4 md:space-y-8">
               {/* Description Section - Mobile Optimized - Expandable */}
               <div className="task-detail-section-mobile bg-white/5 rounded-xl md:rounded-2xl border border-gray-700/30">
                 {/* Content Header - Compact on mobile */}
@@ -424,7 +458,9 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
                       <Target className="w-3 h-3 md:w-4 md:h-4 text-blue-400" />
                     </div>
-                    <h3 className="text-base md:text-lg font-semibold text-white">Thông tin công việc chi tiết</h3>
+                    <h3 className="text-base md:text-lg font-semibold text-white">
+                      Thông tin công việc chi tiết
+                    </h3>
                   </div>
                 </div>
 
@@ -432,12 +468,10 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 <div className="p-4 md:p-8 flex-1 flex flex-col">
                   {isEditMode ? (
                     <div className="flex-1 flex flex-col">
-                      <label className="block text-white font-medium mb-2">
-                        Mô tả công việc
-                      </label>
+                      <label className="block text-white font-medium mb-2">Mô tả công việc</label>
                       <textarea
                         value={editData.description}
-                        onChange={(e) => handleInputChange('description', e.target.value)}
+                        onChange={e => handleInputChange('description', e.target.value)}
                         className="flex-1 min-h-[200px] p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
                         placeholder="Nhập mô tả chi tiết về công việc..."
                       />
@@ -455,8 +489,12 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                           <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
                             <Target className="w-6 h-6 md:w-8 md:h-8 text-gray-500" />
                           </div>
-                          <p className="text-gray-500 text-base md:text-lg">Chưa có mô tả chi tiết</p>
-                          <p className="text-gray-600 text-xs md:text-sm mt-2">Thêm mô tả để cung cấp thông tin chi tiết về công việc này</p>
+                          <p className="text-gray-500 text-base md:text-lg">
+                            Chưa có mô tả chi tiết
+                          </p>
+                          <p className="text-gray-600 text-xs md:text-sm mt-2">
+                            Thêm mô tả để cung cấp thông tin chi tiết về công việc này
+                          </p>
                         </div>
                       )}
                     </>
@@ -465,10 +503,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               </div>
 
               {/* Checklist Section - Now Active! */}
-              <TaskChecklist
-                taskId={task.id}
-                onProgressChange={handleProgressChange}
-              />
+              <TaskChecklist taskId={task.id} onProgressChange={handleProgressChange} />
 
               {/* Scheduling Section - Hidden because individual checklist items can be scheduled */}
               {/*
@@ -480,10 +515,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               */}
 
               {/* Attachments Section - Moved down and will be collapsed */}
-              <TaskAttachments
-                taskId={task.id}
-                onAttachmentsChange={handleAttachmentsChange}
-              />
+              <TaskAttachments taskId={task.id} onAttachmentsChange={handleAttachmentsChange} />
             </div>
           </div>
         </div>

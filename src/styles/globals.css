@@ -1571,6 +1571,11 @@ select {
   /* Ensure it takes full height of flex container */
   flex: 1 !important;
   min-height: 0 !important; /* Important for flex scrolling */
+  /* Smooth scrolling */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  /* Prevent body scroll when modal is open */
+  overscroll-behavior: contain;
 }
 
 .task-detail-scroll-mobile::-webkit-scrollbar {
@@ -1598,6 +1603,19 @@ select {
   .task-detail-scroll-mobile::-webkit-scrollbar-thumb {
     border-radius: 3px;
   }
+}
+
+/* Prevent body scroll when modal is open */
+.modal-open {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+/* Ensure modal content can scroll */
+.modal-content-scrollable {
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Full height modal for mobile - Maximum space utilization */
