@@ -112,6 +112,7 @@
     "style-dictionary": "^5.0.1",
     "supabase": "^2.31.8",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.1",
     "typescript": "^5",
     "vite": "^7.0.5",
     "vitest": "^3.2.4"
