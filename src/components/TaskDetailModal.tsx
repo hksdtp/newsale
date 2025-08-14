@@ -116,14 +116,34 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   // Load task data when modal opens or task changes
   useEffect(() => {
     if (task) {
+      // Đảm bảo format ngày đúng cho date picker
+      const formatDateForPicker = (dateString: string) => {
+        if (!dateString) return '';
+        try {
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return '';
+          return date.toISOString().split('T')[0];
+        } catch (e) {
+          return '';
+        }
+      };
+
       setEditData({
         name: task.name || '',
         description: task.description || '',
         priority: task.priority || 'normal',
         status: task.status || 'new-requests',
-        startDate: task.startDate || task.createdAt || '',
-        dueDate: task.dueDate || '',
+        startDate: formatDateForPicker(task.startDate || task.createdAt || ''),
+        dueDate: formatDateForPicker(task.dueDate || ''),
         assignedUsers: [task.assignedTo?.id || task.createdBy?.id || ''], // Default to current assignee or creator
+      });
+
+      console.log('TaskDetailModal: Loaded task data:', {
+        taskId: task.id,
+        startDate: task.startDate,
+        dueDate: task.dueDate,
+        formattedStartDate: formatDateForPicker(task.startDate || task.createdAt || ''),
+        formattedDueDate: formatDateForPicker(task.dueDate || ''),
       });
     }
   }, [task]);
@@ -348,8 +368,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const WorkTypeIcon = workTypeInfo.icon;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-[#1a1f2e] rounded-lg sm:rounded-2xl w-full max-w-2xl md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] shadow-2xl border border-gray-700/50 flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-1 xs:p-2 sm:p-4">
+      <div className="bg-[#1a1f2e] rounded-lg sm:rounded-2xl w-full max-w-sm xs:max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-4xl h-[98vh] xs:h-[96vh] sm:h-[90vh] shadow-2xl border border-gray-700/50 flex flex-col overflow-hidden">
         {/* Header - Mobile Optimized */}
         <div
           className={`border-b border-gray-700 flex-shrink-0 ${
@@ -359,7 +379,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           }`}
         >
           {/* Mobile Header Layout */}
-          <div className="p-3 sm:p-4 md:p-6">
+          <div className="p-2 xs:p-3 sm:p-4 md:p-6">
             {/* Mobile: Stack vertically, Desktop: Horizontal */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
               {/* Top Row on Mobile: Title + Close Button */}
@@ -494,21 +514,22 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Enhanced Meta Info - Mobile Optimized với Grid Layout */}
+            {/* Enhanced Meta Info - Horizontal Layout */}
             <div className="task-detail-meta-mobile mt-2 md:mt-3">
-              {/* Grid layout cho edit mode để đồng đều */}
-              <div
-                className={`${isEditMode ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}`}
-              >
-                {/* Start Date - iOS Style */}
-                <div className="flex items-start gap-2">
-                  <Calendar className="w-4 h-4 text-green-400 mt-1" />
-                  <div className="flex-1">
-                    <span className="text-gray-400 text-sm block mb-1">Bắt đầu:</span>
+              {/* Horizontal grid layout để tiết kiệm không gian */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                {/* Start Date - iOS Style - Compact */}
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-green-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-400 text-xs block">Bắt đầu:</span>
                     {isEditMode ? (
                       <IOSDatePicker
                         value={editData.startDate ? editData.startDate.split('T')[0] : ''}
-                        onChange={(date: string) => handleInputChange('startDate', date)}
+                        onChange={(date: string) => {
+                          console.log('Start date changed:', date);
+                          handleInputChange('startDate', date);
+                        }}
                         placeholder="Chọn ngày bắt đầu"
                         isOpen={showStartDatePicker}
                         onToggle={() => {
@@ -518,30 +539,32 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         }}
                         onClose={() => setShowStartDatePicker(false)}
                         color="green"
-                        buttonClassName="text-sm"
+                        buttonClassName="text-xs"
                       />
                     ) : (
-                      <span className="text-white text-sm">
+                      <span className="text-white text-xs truncate">
                         {formatDateForDisplay(task.startDate || task.createdAt || '')}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Creator - Keep unchanged */}
+                {/* Creator - Compact */}
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-blue-400" />
-                  <span className="text-gray-400 text-sm">Tạo bởi:</span>
-                  <span className="text-white text-sm">
-                    {task.createdBy?.name || 'Phạm Thị Hương'}
-                  </span>
+                  <Users className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-400 text-xs block">Tạo bởi:</span>
+                    <span className="text-white text-xs truncate block">
+                      {task.createdBy?.name || 'Phạm Thị Hương'}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Enhanced Assignees */}
-                <div className="flex items-start gap-2">
-                  <User className="w-4 h-4 text-purple-400 mt-0.5" />
-                  <div className="flex-1">
-                    <span className="text-gray-400 text-sm">Thực hiện:</span>
+                {/* Enhanced Assignees - Compact */}
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-400 text-xs block">Thực hiện:</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {editData.assignedUsers.map(userId => {
                         const user = availableUsers.find(u => u.id === userId);
@@ -629,15 +652,18 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   </div>
                 </div>
 
-                {/* Due Date - iOS Style */}
-                <div className="flex items-start gap-2">
-                  <Calendar className="w-4 h-4 text-red-400 mt-1" />
-                  <div className="flex-1">
-                    <span className="text-gray-400 text-sm block mb-1">Hạn chót:</span>
+                {/* Due Date - iOS Style - Compact */}
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-red-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-400 text-xs block">Hạn chót:</span>
                     {isEditMode ? (
                       <IOSDatePicker
                         value={editData.dueDate ? editData.dueDate.split('T')[0] : ''}
-                        onChange={(date: string) => handleInputChange('dueDate', date)}
+                        onChange={(date: string) => {
+                          console.log('Due date changed:', date);
+                          handleInputChange('dueDate', date);
+                        }}
                         placeholder="Chọn hạn chót"
                         isOpen={showDueDatePicker}
                         onToggle={() => {
@@ -647,113 +673,87 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         }}
                         onClose={() => setShowDueDatePicker(false)}
                         color="red"
-                        buttonClassName="text-sm"
+                        buttonClassName="text-xs"
                         minDate={editData.startDate ? editData.startDate.split('T')[0] : undefined}
                       />
                     ) : (
-                      <span className="text-white text-sm">
+                      <span className="text-white text-xs truncate">
                         {formatDateForDisplay(task.dueDate || '')}
                       </span>
                     )}
                   </div>
                 </div>
-                {/* Checklist Progress - Compact on mobile */}
-                {checklistProgress.total > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Target className="w-3 h-3 text-green-400" />
-                    <span className="hidden sm:inline">Checklist: </span>
-                    <span>
-                      {checklistProgress.completed}/{checklistProgress.total} (
-                      {checklistProgress.percentage}%)
-                    </span>
-                  </div>
-                )}
-                {/* Attachments Count - Compact on mobile */}
-                {attachments.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Building className="w-3 h-3 text-purple-400" />
-                    <span className="hidden sm:inline">Tệp đính kèm: </span>
-                    <span>{attachments.length}</span>
-                  </div>
-                )}
-                {/* Scheduled Status - Compact on mobile */}
-                {isScheduled && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-blue-400" />
-                    <span>Đã lên lịch</span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Content - Scrollable Area */}
-          <div
-            className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-900/50 p-4 md:p-6"
-            style={{
-              WebkitOverflowScrolling: 'touch',
-              scrollBehavior: 'smooth',
-              overscrollBehavior: 'contain',
-            }}
-          >
-            <div className="max-w-4xl mx-auto space-y-4 md:space-y-8">
-              {/* Description Section - Mobile Optimized - Expandable */}
-              <div className="task-detail-section-mobile bg-white/5 rounded-xl md:rounded-2xl border border-gray-700/30">
-                {/* Content Header - Compact on mobile */}
-                <div className="p-4 md:p-6 border-b border-gray-700/20">
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                      <Target className="w-3 h-3 md:w-4 md:h-4 text-blue-400" />
-                    </div>
-                    <h3 className="text-base md:text-lg font-semibold text-white">
-                      Thông tin công việc chi tiết
-                    </h3>
+        {/* Content - Scrollable Area - Fixed */}
+        <div
+          className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-900/50 p-2 xs:p-3 sm:p-4 md:p-6"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            scrollBehavior: 'smooth',
+            overscrollBehavior: 'contain',
+            maxHeight: 'calc(100vh - 150px)', // Giảm chiều cao cho mobile
+          }}
+        >
+          <div className="max-w-4xl mx-auto space-y-4 md:space-y-8">
+            {/* Description Section - Mobile Optimized - Expandable */}
+            <div className="task-detail-section-mobile bg-white/5 rounded-xl md:rounded-2xl border border-gray-700/30">
+              {/* Content Header - Compact on mobile */}
+              <div className="p-4 md:p-6 border-b border-gray-700/20">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                    <Target className="w-3 h-3 md:w-4 md:h-4 text-blue-400" />
                   </div>
-                </div>
-
-                {/* Content Body - Expandable on mobile - Editable */}
-                <div className="p-4 md:p-8 flex-1 flex flex-col">
-                  {isEditMode ? (
-                    <div className="flex-1 flex flex-col">
-                      <label className="block text-white font-medium mb-2">Mô tả công việc</label>
-                      <textarea
-                        value={editData.description}
-                        onChange={e => handleInputChange('description', e.target.value)}
-                        className="flex-1 min-h-[200px] p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
-                        placeholder="Nhập mô tả chi tiết về công việc..."
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      {task.description ? (
-                        <div className="prose prose-invert prose-sm md:prose-lg max-w-none flex-1">
-                          <div className="task-detail-text-mobile text-gray-200 leading-relaxed whitespace-pre-wrap font-normal h-full">
-                            {task.description}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 md:py-16 flex-1 flex flex-col justify-center">
-                          <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                            <Target className="w-6 h-6 md:w-8 md:h-8 text-gray-500" />
-                          </div>
-                          <p className="text-gray-500 text-base md:text-lg">
-                            Chưa có mô tả chi tiết
-                          </p>
-                          <p className="text-gray-600 text-xs md:text-sm mt-2">
-                            Thêm mô tả để cung cấp thông tin chi tiết về công việc này
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
+                  <h3 className="text-base md:text-lg font-semibold text-white">
+                    Thông tin công việc chi tiết
+                  </h3>
                 </div>
               </div>
 
-              {/* Checklist Section - Now Active! */}
-              <TaskChecklist taskId={task.id} onProgressChange={handleProgressChange} />
+              {/* Content Body - Expandable on mobile - Editable */}
+              <div className="p-4 md:p-8 flex-1 flex flex-col">
+                {isEditMode ? (
+                  <div className="flex-1 flex flex-col">
+                    <label className="block text-white font-medium mb-2">Mô tả công việc</label>
+                    <textarea
+                      value={editData.description}
+                      onChange={e => handleInputChange('description', e.target.value)}
+                      className="flex-1 min-h-[200px] p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
+                      placeholder="Nhập mô tả chi tiết về công việc..."
+                    />
+                  </div>
+                ) : (
+                  <>
+                    {task.description ? (
+                      <div className="prose prose-invert prose-sm md:prose-lg max-w-none flex-1">
+                        <div className="task-detail-text-mobile text-gray-200 leading-relaxed whitespace-pre-wrap font-normal h-full">
+                          {task.description}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 md:py-16 flex-1 flex flex-col justify-center">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                          <Target className="w-6 h-6 md:w-8 md:h-8 text-gray-500" />
+                        </div>
+                        <p className="text-gray-500 text-base md:text-lg">Chưa có mô tả chi tiết</p>
+                        <p className="text-gray-600 text-xs md:text-sm mt-2">
+                          Thêm mô tả để cung cấp thông tin chi tiết về công việc này
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
 
-              {/* Scheduling Section - Hidden because individual checklist items can be scheduled */}
-              {/*
+            {/* Checklist Section - Now Active! */}
+            <TaskChecklist taskId={task.id} onProgressChange={handleProgressChange} />
+
+            {/* Scheduling Section - Hidden because individual checklist items can be scheduled */}
+            {/*
               <TaskScheduling
                 taskId={task.id}
                 currentTask={task}
@@ -761,9 +761,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               />
               */}
 
-              {/* Attachments Section - Moved down and will be collapsed */}
-              <TaskAttachments taskId={task.id} onAttachmentsChange={handleAttachmentsChange} />
-            </div>
+            {/* Attachments Section - Moved down and will be collapsed */}
+            <TaskAttachments taskId={task.id} onAttachmentsChange={handleAttachmentsChange} />
           </div>
         </div>
       </div>
