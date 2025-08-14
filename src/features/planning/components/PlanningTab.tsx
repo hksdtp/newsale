@@ -1031,10 +1031,6 @@ export function PlanningTab(): React.ReactElement {
       {showWeeklySchedule && <WeeklyScheduleManager onClose={() => setShowWeeklySchedule(false)} />}
 
       {/* Plan Detail Modal */}
-      {console.log('🔍 Rendering PlanDetailModal:', {
-        isOpen: showPlanDetailModal,
-        plan: selectedPlan?.name || 'null',
-      })}
       <PlanDetailModal
         isOpen={showPlanDetailModal}
         onClose={handleClosePlanDetail}
