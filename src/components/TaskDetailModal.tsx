@@ -229,97 +229,125 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-[#1a1f2e] rounded-lg sm:rounded-2xl w-full max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl border border-gray-700/50 flex flex-col">
-        <div className="flex flex-col h-full">
-          {/* Header - Mobile Optimized */}
-          <div
-            className={`border-b border-gray-700 flex-shrink-0 ${
-              isEditMode
-                ? 'bg-gradient-to-r from-orange-600/20 to-yellow-600/20'
-                : 'bg-gradient-to-r from-blue-600/10 to-purple-600/10'
-            }`}
-          >
-            {/* Mobile Header Layout */}
-            <div className="p-3 sm:p-4 md:p-6">
-              {/* Mobile: Stack vertically, Desktop: Horizontal */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-                {/* Top Row on Mobile: Title + Close Button */}
-                <div className="flex items-center justify-between gap-3 md:gap-4 flex-1 min-w-0">
-                  {/* Work Type Badge - Smaller on mobile */}
-                  <div
-                    className={`inline-flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 rounded-full text-white text-xs font-medium ${workTypeInfo.color} flex-shrink-0`}
-                  >
-                    <WorkTypeIcon className="w-3 h-3" />
-                    <span className="hidden sm:inline">{workTypeInfo.label}</span>
-                  </div>
-
-                  {/* Task Title - Responsive - Editable */}
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      value={editData.name}
-                      onChange={e => handleInputChange('name', e.target.value)}
-                      className="text-base md:text-lg font-bold text-white bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-1 flex-1 min-w-0 focus:border-blue-500 focus:outline-none"
-                      placeholder="Tên công việc..."
-                    />
-                  ) : (
-                    <h2 className="text-base md:text-lg font-bold text-white break-words leading-tight flex-1 min-w-0">
-                      {task.name}
-                    </h2>
-                  )}
-
-                  {/* Edit Mode Indicator */}
-                  {isEditMode && (
-                    <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 rounded-full border border-orange-500/30">
-                      <Edit3 className="w-3 h-3 text-orange-400" />
-                      <span className="text-xs text-orange-300 hidden sm:inline">
-                        Đang chỉnh sửa
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Close button - Always visible on mobile */}
-                  <button
-                    onClick={onClose}
-                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0 md:hidden"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+      <div className="bg-[#1a1f2e] rounded-lg sm:rounded-2xl w-full max-w-2xl md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] shadow-2xl border border-gray-700/50 flex flex-col">
+        {/* Header - Mobile Optimized */}
+        <div
+          className={`border-b border-gray-700 flex-shrink-0 ${
+            isEditMode
+              ? 'bg-gradient-to-r from-orange-600/20 to-yellow-600/20'
+              : 'bg-gradient-to-r from-blue-600/10 to-purple-600/10'
+          }`}
+        >
+          {/* Mobile Header Layout */}
+          <div className="p-3 sm:p-4 md:p-6">
+            {/* Mobile: Stack vertically, Desktop: Horizontal */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
+              {/* Top Row on Mobile: Title + Close Button */}
+              <div className="flex items-center justify-between gap-3 md:gap-4 flex-1 min-w-0">
+                {/* Work Type Badge - Smaller on mobile */}
+                <div
+                  className={`inline-flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 rounded-full text-white text-xs font-medium ${workTypeInfo.color} flex-shrink-0`}
+                >
+                  <WorkTypeIcon className="w-3 h-3" />
+                  <span className="hidden sm:inline">{workTypeInfo.label}</span>
                 </div>
 
-                {/* Bottom Row on Mobile: Status + Actions */}
-                <div className="flex items-center justify-between md:justify-end gap-2">
-                  {/* Status and Priority - Editable */}
-                  <div className="flex items-center gap-2">
-                    <StatusPriorityEditor
-                      status={isEditMode ? editData.status : task.status}
-                      priority={isEditMode ? editData.priority : task.priority}
-                      onStatusChange={status => handleInputChange('status', status)}
-                      onPriorityChange={priority => handleInputChange('priority', priority)}
-                      isEditMode={isEditMode}
-                    />
-                  </div>
+                {/* Task Title - Responsive - Editable */}
+                {isEditMode ? (
+                  <input
+                    type="text"
+                    value={editData.name}
+                    onChange={e => handleInputChange('name', e.target.value)}
+                    className="text-base md:text-lg font-bold text-white bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-1 flex-1 min-w-0 focus:border-blue-500 focus:outline-none"
+                    placeholder="Tên công việc..."
+                  />
+                ) : (
+                  <h2 className="text-base md:text-lg font-bold text-white break-words leading-tight flex-1 min-w-0">
+                    {task.name}
+                  </h2>
+                )}
 
-                  {/* Mobile Edit Button */}
-                  <div className="flex md:hidden items-center gap-1">
-                    {isEditMode ? (
-                      <>
-                        <button
-                          onClick={handleSave}
-                          className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
-                          title="Lưu"
-                        >
-                          <Save className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={handleEditToggle}
-                          className="p-2 text-gray-400 hover:text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
-                          title="Hủy"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </>
-                    ) : (
+                {/* Edit Mode Indicator */}
+                {isEditMode && (
+                  <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 rounded-full border border-orange-500/30">
+                    <Edit3 className="w-3 h-3 text-orange-400" />
+                    <span className="text-xs text-orange-300 hidden sm:inline">Đang chỉnh sửa</span>
+                  </div>
+                )}
+
+                {/* Close button - Always visible on mobile */}
+                <button
+                  onClick={onClose}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0 md:hidden"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Bottom Row on Mobile: Status + Actions */}
+              <div className="flex items-center justify-between md:justify-end gap-2">
+                {/* Status and Priority - Editable */}
+                <div className="flex items-center gap-2">
+                  <StatusPriorityEditor
+                    status={isEditMode ? editData.status : task.status}
+                    priority={isEditMode ? editData.priority : task.priority}
+                    onStatusChange={status => handleInputChange('status', status)}
+                    onPriorityChange={priority => handleInputChange('priority', priority)}
+                    isEditMode={isEditMode}
+                  />
+                </div>
+
+                {/* Mobile Edit Button */}
+                <div className="flex md:hidden items-center gap-1">
+                  {isEditMode ? (
+                    <>
+                      <button
+                        onClick={handleSave}
+                        className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
+                        title="Lưu"
+                      >
+                        <Save className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={handleEditToggle}
+                        className="p-2 text-gray-400 hover:text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
+                        title="Hủy"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleEditToggle}
+                      className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                      title="Chỉnh sửa"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Action Buttons - Desktop only */}
+                <div className="hidden md:flex items-center gap-1 flex-shrink-0">
+                  {isEditMode ? (
+                    <>
+                      <button
+                        onClick={handleSave}
+                        className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
+                        title="Lưu thay đổi"
+                      >
+                        <Save className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={handleEditToggle}
+                        className="p-2 text-gray-400 hover:text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
+                        title="Hủy"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
                       <button
                         onClick={handleEditToggle}
                         className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
@@ -327,186 +355,160 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
-                    )}
-                  </div>
+                      <button
+                        onClick={onDelete}
+                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Xóa"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={onClose}
+                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
 
-                  {/* Action Buttons - Desktop only */}
-                  <div className="hidden md:flex items-center gap-1 flex-shrink-0">
-                    {isEditMode ? (
-                      <>
-                        <button
-                          onClick={handleSave}
-                          className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
-                          title="Lưu thay đổi"
-                        >
-                          <Save className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={handleEditToggle}
-                          className="p-2 text-gray-400 hover:text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
-                          title="Hủy"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={handleEditToggle}
-                          className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                          title="Chỉnh sửa"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={onDelete}
-                          className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Xóa"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </>
-                    )}
-                    <button
-                      onClick={onClose}
-                      className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+            {/* Compact Meta Info - Mobile Optimized */}
+            <div className="task-detail-meta-mobile mt-2 md:mt-3">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-green-400" />
+                <span className="hidden sm:inline">Bắt đầu: </span>
+                <span>
+                  {formatDate(task.startDate || task.createdAt || new Date().toISOString())}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-3 h-3 text-blue-400" />
+                <span className="hidden sm:inline">Tạo bởi: </span>
+                <span>{task.createdBy?.name || 'Không xác định'}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <User className="w-3 h-3 text-purple-400" />
+                <span className="hidden sm:inline">Thực hiện: </span>
+                <span>{task.assignedTo?.name || 'Chưa phân công'}</span>
+              </div>
+              {(task.dueDate || isEditMode) && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-red-400" />
+                  <span className="hidden sm:inline">Hạn chót: </span>
+                  {isEditMode ? (
+                    <input
+                      type="date"
+                      value={editData.dueDate ? editData.dueDate.split('T')[0] : ''}
+                      onChange={e =>
+                        handleInputChange(
+                          'dueDate',
+                          e.target.value ? e.target.value + 'T00:00:00.000Z' : ''
+                        )
+                      }
+                      className="bg-gray-800/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:border-blue-500 focus:outline-none"
+                    />
+                  ) : (
+                    <span>{formatDate(task.dueDate || '')}</span>
+                  )}
+                </div>
+              )}
+              {/* Checklist Progress - Compact on mobile */}
+              {checklistProgress.total > 0 && (
+                <div className="flex items-center gap-1">
+                  <Target className="w-3 h-3 text-green-400" />
+                  <span className="hidden sm:inline">Checklist: </span>
+                  <span>
+                    {checklistProgress.completed}/{checklistProgress.total} (
+                    {checklistProgress.percentage}%)
+                  </span>
+                </div>
+              )}
+              {/* Attachments Count - Compact on mobile */}
+              {attachments.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <Building className="w-3 h-3 text-purple-400" />
+                  <span className="hidden sm:inline">Tệp đính kèm: </span>
+                  <span>{attachments.length}</span>
+                </div>
+              )}
+              {/* Scheduled Status - Compact on mobile */}
+              {isScheduled && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-blue-400" />
+                  <span>Đã lên lịch</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Content - Scrollable Area */}
+        <div
+          className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-900/50 p-4 md:p-6"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            scrollBehavior: 'smooth',
+            overscrollBehavior: 'contain',
+          }}
+        >
+          <div className="max-w-4xl mx-auto space-y-4 md:space-y-8">
+            {/* Description Section - Mobile Optimized - Expandable */}
+            <div className="task-detail-section-mobile bg-white/5 rounded-xl md:rounded-2xl border border-gray-700/30">
+              {/* Content Header - Compact on mobile */}
+              <div className="p-4 md:p-6 border-b border-gray-700/20">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                    <Target className="w-3 h-3 md:w-4 md:h-4 text-blue-400" />
                   </div>
+                  <h3 className="text-base md:text-lg font-semibold text-white">
+                    Thông tin công việc chi tiết
+                  </h3>
                 </div>
               </div>
 
-              {/* Compact Meta Info - Mobile Optimized */}
-              <div className="task-detail-meta-mobile mt-2 md:mt-3">
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-green-400" />
-                  <span className="hidden sm:inline">Bắt đầu: </span>
-                  <span>
-                    {formatDate(task.startDate || task.createdAt || new Date().toISOString())}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="w-3 h-3 text-blue-400" />
-                  <span className="hidden sm:inline">Tạo bởi: </span>
-                  <span>{task.createdBy?.name || 'Không xác định'}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <User className="w-3 h-3 text-purple-400" />
-                  <span className="hidden sm:inline">Thực hiện: </span>
-                  <span>{task.assignedTo?.name || 'Chưa phân công'}</span>
-                </div>
-                {(task.dueDate || isEditMode) && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-red-400" />
-                    <span className="hidden sm:inline">Hạn chót: </span>
-                    {isEditMode ? (
-                      <input
-                        type="date"
-                        value={editData.dueDate ? editData.dueDate.split('T')[0] : ''}
-                        onChange={e =>
-                          handleInputChange(
-                            'dueDate',
-                            e.target.value ? e.target.value + 'T00:00:00.000Z' : ''
-                          )
-                        }
-                        className="bg-gray-800/50 border border-gray-600 rounded px-2 py-1 text-xs text-white focus:border-blue-500 focus:outline-none"
-                      />
+              {/* Content Body - Expandable on mobile - Editable */}
+              <div className="p-4 md:p-8 flex-1 flex flex-col">
+                {isEditMode ? (
+                  <div className="flex-1 flex flex-col">
+                    <label className="block text-white font-medium mb-2">Mô tả công việc</label>
+                    <textarea
+                      value={editData.description}
+                      onChange={e => handleInputChange('description', e.target.value)}
+                      className="flex-1 min-h-[200px] p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
+                      placeholder="Nhập mô tả chi tiết về công việc..."
+                    />
+                  </div>
+                ) : (
+                  <>
+                    {task.description ? (
+                      <div className="prose prose-invert prose-sm md:prose-lg max-w-none flex-1">
+                        <div className="task-detail-text-mobile text-gray-200 leading-relaxed whitespace-pre-wrap font-normal h-full">
+                          {task.description}
+                        </div>
+                      </div>
                     ) : (
-                      <span>{formatDate(task.dueDate || '')}</span>
+                      <div className="text-center py-8 md:py-16 flex-1 flex flex-col justify-center">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                          <Target className="w-6 h-6 md:w-8 md:h-8 text-gray-500" />
+                        </div>
+                        <p className="text-gray-500 text-base md:text-lg">Chưa có mô tả chi tiết</p>
+                        <p className="text-gray-600 text-xs md:text-sm mt-2">
+                          Thêm mô tả để cung cấp thông tin chi tiết về công việc này
+                        </p>
+                      </div>
                     )}
-                  </div>
-                )}
-                {/* Checklist Progress - Compact on mobile */}
-                {checklistProgress.total > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Target className="w-3 h-3 text-green-400" />
-                    <span className="hidden sm:inline">Checklist: </span>
-                    <span>
-                      {checklistProgress.completed}/{checklistProgress.total} (
-                      {checklistProgress.percentage}%)
-                    </span>
-                  </div>
-                )}
-                {/* Attachments Count - Compact on mobile */}
-                {attachments.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Building className="w-3 h-3 text-purple-400" />
-                    <span className="hidden sm:inline">Tệp đính kèm: </span>
-                    <span>{attachments.length}</span>
-                  </div>
-                )}
-                {/* Scheduled Status - Compact on mobile */}
-                {isScheduled && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-blue-400" />
-                    <span>Đã lên lịch</span>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Content - Mobile Optimized - ONLY Scroll Area */}
-          <div className="task-detail-scroll-mobile bg-gray-900/50 p-4 md:p-6">
-            <div className="max-w-4xl mx-auto space-y-4 md:space-y-8">
-              {/* Description Section - Mobile Optimized - Expandable */}
-              <div className="task-detail-section-mobile bg-white/5 rounded-xl md:rounded-2xl border border-gray-700/30">
-                {/* Content Header - Compact on mobile */}
-                <div className="p-4 md:p-6 border-b border-gray-700/20">
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                      <Target className="w-3 h-3 md:w-4 md:h-4 text-blue-400" />
-                    </div>
-                    <h3 className="text-base md:text-lg font-semibold text-white">
-                      Thông tin công việc chi tiết
-                    </h3>
-                  </div>
-                </div>
+            {/* Checklist Section - Now Active! */}
+            <TaskChecklist taskId={task.id} onProgressChange={handleProgressChange} />
 
-                {/* Content Body - Expandable on mobile - Editable */}
-                <div className="p-4 md:p-8 flex-1 flex flex-col">
-                  {isEditMode ? (
-                    <div className="flex-1 flex flex-col">
-                      <label className="block text-white font-medium mb-2">Mô tả công việc</label>
-                      <textarea
-                        value={editData.description}
-                        onChange={e => handleInputChange('description', e.target.value)}
-                        className="flex-1 min-h-[200px] p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
-                        placeholder="Nhập mô tả chi tiết về công việc..."
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      {task.description ? (
-                        <div className="prose prose-invert prose-sm md:prose-lg max-w-none flex-1">
-                          <div className="task-detail-text-mobile text-gray-200 leading-relaxed whitespace-pre-wrap font-normal h-full">
-                            {task.description}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 md:py-16 flex-1 flex flex-col justify-center">
-                          <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                            <Target className="w-6 h-6 md:w-8 md:h-8 text-gray-500" />
-                          </div>
-                          <p className="text-gray-500 text-base md:text-lg">
-                            Chưa có mô tả chi tiết
-                          </p>
-                          <p className="text-gray-600 text-xs md:text-sm mt-2">
-                            Thêm mô tả để cung cấp thông tin chi tiết về công việc này
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Checklist Section - Now Active! */}
-              <TaskChecklist taskId={task.id} onProgressChange={handleProgressChange} />
-
-              {/* Scheduling Section - Hidden because individual checklist items can be scheduled */}
-              {/*
+            {/* Scheduling Section - Hidden because individual checklist items can be scheduled */}
+            {/*
               <TaskScheduling
                 taskId={task.id}
                 currentTask={task}
@@ -514,8 +516,20 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               />
               */}
 
-              {/* Attachments Section - Moved down and will be collapsed */}
-              <TaskAttachments taskId={task.id} onAttachmentsChange={handleAttachmentsChange} />
+            {/* Attachments Section - Moved down and will be collapsed */}
+            <TaskAttachments taskId={task.id} onAttachmentsChange={handleAttachmentsChange} />
+
+            {/* Test content để đảm bảo có đủ nội dung scroll */}
+            <div className="bg-white/5 rounded-xl border border-gray-700/30 p-4">
+              <h3 className="text-white font-medium mb-2">Test Scroll Content</h3>
+              <div className="space-y-2 text-gray-300 text-sm">
+                {Array.from({ length: 20 }, (_, i) => (
+                  <p key={i}>
+                    Dòng test {i + 1}: Đây là nội dung test để kiểm tra chức năng scroll trong
+                    modal. Nội dung này sẽ được xóa sau khi xác nhận scroll hoạt động đúng.
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
         </div>
