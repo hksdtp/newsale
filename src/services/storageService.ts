@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
  */
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const serviceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+const serviceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !serviceKey) {
   throw new Error('Missing Supabase service key configuration');
