@@ -1,6 +1,8 @@
 import { AlertTriangle, Camera, Check, RotateCcw, Upload, X } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { getCurrentUser } from '../data/usersMockData';
+import AvatarService from '../services/avatarService';
 
 interface ChangeAvatarModalProps {
   isOpen: boolean;
@@ -131,20 +133,30 @@ const ChangeAvatarModal: React.FC<ChangeAvatarModalProps> = ({ isOpen, onClose, 
     setErrors([]);
 
     try {
-      // TODO: Implement actual avatar upload API call
-      // const formData = new FormData();
-      // formData.append('avatar', selectedFile);
-      // const response = await uploadAvatar(formData);
+      // Get current user
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        setErrors(['Không thể xác định người dùng hiện tại.']);
+        return;
+      }
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Resize image before upload
+      const resizedFile = await AvatarService.resizeImage(selectedFile, 400, 400);
 
-      // For now, just update localStorage with preview URL
+      // Upload to Supabase
+      const result = await AvatarService.uploadAvatar(resizedFile, currentUser.id);
+
+      if (!result.success) {
+        setErrors([result.error || 'Có lỗi xảy ra khi upload avatar.']);
+        return;
+      }
+
+      // Update localStorage with new avatar URL
       try {
         const savedUser = localStorage.getItem('auth_user');
         if (savedUser) {
           const user = JSON.parse(savedUser);
-          user.avatar = previewUrl; // In real app, this would be the uploaded URL
+          user.avatar = result.avatarUrl;
           localStorage.setItem('auth_user', JSON.stringify(user));
         }
       } catch (error) {
