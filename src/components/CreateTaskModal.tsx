@@ -1,4 +1,4 @@
-import { AlertTriangle, Building, CheckCircle, Clock, Plus, X } from 'lucide-react';
+import { AlertTriangle, Building, Calendar, CheckCircle, Clock, Plus, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { WorkType } from '../data/dashboardMockData';
 import { Employee, employeeService } from '../services/employeeService';
@@ -40,6 +40,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     platform: [] as string[],
     campaignType: '',
     shareScope: 'team' as 'team' | 'private' | 'public',
+    autoPinToCalendar: true, // 🆕 Mặc định bật auto-pin
   });
 
   const statusOptions = [
@@ -128,6 +129,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       createdBy: { id: currentUser.id, name: currentUser.name, email: currentUser.email },
       assignedTo: formData.taggedUsers.length > 0 ? formData.taggedUsers[0] : null,
       endDate: formData.dueDate,
+      autoPinToCalendar: formData.autoPinToCalendar, // 🆕 Truyền auto-pin option
     });
 
     // Reset form after successful submission
@@ -152,6 +154,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       platform: [],
       campaignType: '',
       shareScope: 'team',
+      autoPinToCalendar: true, // 🆕 Reset về mặc định bật
     });
   };
 
@@ -322,6 +325,34 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
               label="Phạm vi chia sẻ"
               required
             />
+
+            {/* 🆕 Auto-pin to Calendar Option - Force Vercel Deploy */}
+            <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-600/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <label className="text-white font-medium">Ghim vào Lịch Kế Hoạch</label>
+                    <p className="text-gray-400 text-sm">
+                      Tự động hiển thị công việc này trong Menu Kế Hoạch theo ngày tạo
+                    </p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.autoPinToCalendar}
+                    onChange={e =>
+                      setFormData({ ...formData, autoPinToCalendar: e.target.checked })
+                    }
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-blue-500"></div>
+                </label>
+              </div>
+            </div>
           </form>
         </div>
 
