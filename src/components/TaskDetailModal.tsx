@@ -1,14 +1,14 @@
 import {
-    Building,
-    Calendar,
-    Edit3,
-    Plus,
-    Save,
-    Target,
-    Trash2,
-    User,
-    Users,
-    X,
+  Building,
+  Calendar,
+  Edit3,
+  Plus,
+  Save,
+  Target,
+  Trash2,
+  User,
+  Users,
+  X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { getCurrentUser } from '../data/usersMockData';
@@ -17,6 +17,8 @@ import { ChecklistProgress } from '../services/checklistService';
 import { Employee, employeeService } from '../services/employeeService';
 import { TaskWithUsers } from '../services/taskService';
 import IOSDatePicker from './IOSDatePicker';
+import RichTextDisplay from './RichTextDisplay';
+import RichTextEditor from './RichTextEditor';
 import StatusPriorityEditor from './StatusPriorityEditor';
 import TaskAttachments from './TaskAttachments';
 import TaskChecklist from './TaskChecklist';
@@ -61,6 +63,10 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   // State for date pickers
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showDueDatePicker, setShowDueDatePicker] = useState(false);
+
+  // State for move task to different date
+  const [showMoveDatePicker, setShowMoveDatePicker] = useState(false);
+  const [moveToDate, setMoveToDate] = useState('');
 
   // State for user tagging - Sử dụng dữ liệu thực từ database
   const [showUserPicker, setShowUserPicker] = useState(false);
@@ -245,13 +251,20 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     if (isEditMode) {
       // Cancel edit - reset data
       if (task) {
+        const formatDateForPicker = (dateString: string) => {
+          if (!dateString) return '';
+          const date = parseVietnameseDate(dateString);
+          if (!date) return '';
+          return date.toISOString().split('T')[0];
+        };
+
         setEditData({
           name: task.name || '',
           description: task.description || '',
           priority: task.priority || 'normal',
           status: task.status || 'new-requests',
-          startDate: task.startDate || task.createdAt || '',
-          dueDate: task.dueDate || '',
+          startDate: formatDateForPicker(task.startDate || task.createdAt || ''),
+          dueDate: formatDateForPicker(task.dueDate || ''),
           assignedUsers: [task.assignedTo?.id || task.createdBy?.id || ''],
         });
       }
@@ -280,10 +293,22 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   };
 
   const handleInputChange = (field: string, value: string | string[]) => {
-    setEditData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+    // Handle date fields specially to ensure proper format
+    if ((field === 'startDate' || field === 'dueDate') && typeof value === 'string') {
+      // If it's an ISO string from date picker, extract just the date part
+      const dateValue = value.includes('T') ? value.split('T')[0] : value;
+      console.log(`📅 ${field} changed:`, value, '→', dateValue);
+
+      setEditData(prev => ({
+        ...prev,
+        [field]: dateValue,
+      }));
+    } else {
+      setEditData(prev => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
   // Helper functions for user management
@@ -302,6 +327,32 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
       ...prev,
       assignedUsers: prev.assignedUsers.filter(id => id !== userId),
     }));
+  };
+
+  // Handler for moving task to different date
+  const handleMoveTask = async () => {
+    if (!task || !moveToDate || !onUpdate) return;
+
+    try {
+      // Update the task's scheduled date
+      await onUpdate({
+        ...task,
+        startDate: moveToDate,
+        // Also update scheduled_date if it exists
+        scheduled_date: moveToDate,
+      });
+
+      // Close the modal and reset state
+      setShowMoveDatePicker(false);
+      setMoveToDate('');
+
+      alert(
+        `✅ Đã chuyển công việc "${task.name}" sang ngày ${new Date(moveToDate).toLocaleDateString('vi-VN')}`
+      );
+    } catch (error) {
+      console.error('Error moving task:', error);
+      alert('Không thể chuyển công việc. Vui lòng thử lại.');
+    }
   };
 
   // Helper function for smart date parsing and formatting
@@ -553,6 +604,13 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         <Edit3 className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => setShowMoveDatePicker(true)}
+                        className="p-2 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors"
+                        title="Chuyển sang ngày khác"
+                      >
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={onDelete}
                         className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         title="Xóa"
@@ -582,7 +640,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     <span className="text-gray-400 text-xs block">Bắt đầu:</span>
                     {isEditMode ? (
                       <IOSDatePicker
-                        value={editData.startDate ? editData.startDate.split('T')[0] : ''}
+                        value={editData.startDate || ''}
                         onChange={(date: string) => {
                           console.log('Start date changed:', date);
                           handleInputChange('startDate', date);
@@ -616,12 +674,13 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         {task.createdBy?.name || 'Không xác định'}
                       </span>
                       {/* 🏷️ Legacy cross-team task indicator */}
-                      {task.createdBy?.team_id && task.assignedTo?.team_id &&
-                       task.createdBy.team_id !== task.assignedTo.team_id && (
-                        <span className="px-1.5 py-0.5 bg-orange-600/20 border border-orange-500/30 rounded text-xs text-orange-300 font-medium whitespace-nowrap">
-                          Cross-team
-                        </span>
-                      )}
+                      {task.createdBy?.team_id &&
+                        task.assignedTo?.team_id &&
+                        task.createdBy.team_id !== task.assignedTo.team_id && (
+                          <span className="px-1.5 py-0.5 bg-orange-600/20 border border-orange-500/30 rounded text-xs text-orange-300 font-medium whitespace-nowrap">
+                            Cross-team
+                          </span>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -725,7 +784,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     <span className="text-gray-400 text-xs block">Hạn chót:</span>
                     {isEditMode ? (
                       <IOSDatePicker
-                        value={editData.dueDate ? editData.dueDate.split('T')[0] : ''}
+                        value={editData.dueDate || ''}
                         onChange={(date: string) => {
                           console.log('Due date changed:', date);
                           handleInputChange('dueDate', date);
@@ -740,7 +799,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         onClose={() => setShowDueDatePicker(false)}
                         color="red"
                         buttonClassName="text-xs"
-                        minDate={editData.startDate ? editData.startDate.split('T')[0] : undefined}
+                        minDate={editData.startDate || undefined}
                       />
                     ) : (
                       <span className="text-white text-xs truncate">
@@ -784,20 +843,21 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 {isEditMode ? (
                   <div className="flex-1 flex flex-col">
                     <label className="block text-white font-medium mb-2">Mô tả công việc</label>
-                    <textarea
+                    <RichTextEditor
                       value={editData.description}
-                      onChange={e => handleInputChange('description', e.target.value)}
-                      className="flex-1 min-h-[200px] p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
+                      onChange={value => handleInputChange('description', value)}
                       placeholder="Nhập mô tả chi tiết về công việc..."
+                      className="flex-1"
                     />
                   </div>
                 ) : (
                   <>
                     {task.description ? (
                       <div className="prose prose-invert prose-sm md:prose-lg max-w-none flex-1">
-                        <div className="task-detail-text-mobile text-gray-200 leading-relaxed whitespace-pre-wrap font-normal h-full">
-                          {task.description}
-                        </div>
+                        <RichTextDisplay
+                          content={task.description}
+                          className="task-detail-text-mobile text-gray-200 leading-relaxed font-normal h-full"
+                        />
                       </div>
                     ) : (
                       <div className="text-center py-8 md:py-16 flex-1 flex flex-col justify-center">
@@ -832,6 +892,60 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Move Task Date Picker Modal */}
+      {showMoveDatePicker && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-gray-800 rounded-lg border border-gray-600 p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Chuyển công việc sang ngày khác
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Chọn ngày mới:
+                </label>
+                <input
+                  type="date"
+                  value={moveToDate}
+                  onChange={e => setMoveToDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                />
+              </div>
+
+              {moveToDate && (
+                <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                  <p className="text-purple-300 text-sm">
+                    Công việc sẽ được chuyển sang:{' '}
+                    <strong>{new Date(moveToDate).toLocaleDateString('vi-VN')}</strong>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowMoveDatePicker(false);
+                  setMoveToDate('');
+                }}
+                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleMoveTask}
+                disabled={!moveToDate}
+                className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+              >
+                Chuyển ngày
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

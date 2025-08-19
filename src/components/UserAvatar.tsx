@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { User, Settings, Lock, Mail, LogOut, Camera, ChevronDown } from 'lucide-react';
+import { Camera, ChevronDown, Lock, LogOut, Mail, Settings, User } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { getCurrentUser } from '../data/usersMockData';
 
 interface UserAvatarProps {
@@ -8,7 +8,11 @@ interface UserAvatarProps {
   isCollapsed?: boolean; // For sidebar collapsed state
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ onLogout, className = '', isCollapsed = false }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({
+  onLogout,
+  className = '',
+  isCollapsed = false,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -22,7 +26,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ onLogout, className = '', isCol
       name: 'Unknown User',
       email: 'unknown@example.com',
       role: 'employee',
-      location: 'Hà Nội'
+      location: 'Hà Nội',
     };
   }
 
@@ -87,8 +91,12 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ onLogout, className = '', isCol
         title={isCollapsed ? user.name : undefined}
       >
         {/* Avatar */}
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-          {getAvatarInitials(user.name)}
+        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+          {user.avatar ? (
+            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+          ) : (
+            getAvatarInitials(user.name)
+          )}
         </div>
 
         {/* User Info - Hidden when collapsed */}
@@ -101,27 +109,35 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ onLogout, className = '', isCol
 
         {/* Dropdown Arrow - Hidden when collapsed */}
         {!isCollapsed && (
-          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          />
         )}
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className={`fixed ${isCollapsed ? 'left-20 bottom-4' : 'top-16 right-4'} w-80 max-w-[calc(100vw-2rem)] bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-[9999] max-h-[80vh] overflow-y-auto`}>
+        <div
+          className={`fixed ${isCollapsed ? 'left-20 bottom-4' : 'top-16 right-4'} w-80 max-w-[calc(100vw-2rem)] bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-[9999] max-h-[80vh] overflow-y-auto`}
+        >
           {/* User Profile Section */}
           <div className="p-4 border-b border-gray-600">
             <div className="flex items-center gap-4">
               {/* Large Avatar */}
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                  {getAvatarInitials(user.name)}
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg overflow-hidden">
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    getAvatarInitials(user.name)
+                  )}
                 </div>
                 {/* Camera Icon for Avatar Change */}
                 <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
                   <Camera className="w-3 h-3 text-white" />
                 </button>
               </div>
-              
+
               {/* User Details */}
               <div className="flex-1">
                 <h3 className="text-white font-semibold text-lg">{user.name}</h3>
@@ -148,7 +164,9 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ onLogout, className = '', isCol
               >
                 <Settings className="w-4 h-4" />
                 <span>Cài đặt</span>
-                <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${isSettingsOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown
+                  className={`w-4 h-4 ml-auto transition-transform ${isSettingsOpen ? 'rotate-180' : ''}`}
+                />
               </button>
 
               {/* Settings Submenu */}

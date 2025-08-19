@@ -4,6 +4,7 @@ import { WorkType } from '../data/dashboardMockData';
 import { Employee, employeeService } from '../services/employeeService';
 import DatePicker from './DatePicker';
 import Dropdown from './Dropdown';
+import RichTextEditor from './RichTextEditor';
 import ShareScopeSelector from './ShareScopeSelector';
 import TagUserInput from './TagUserInput';
 import WorkTypeDropdown from './WorkTypeDropdown';
@@ -220,13 +221,11 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
               <label className="block text-white font-medium mb-2">
                 Mô tả chi tiết <span className="text-red-400">*</span>
               </label>
-              <textarea
+              <RichTextEditor
                 value={formData.description}
-                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                onChange={value => setFormData({ ...formData, description: value })}
                 placeholder="Mô tả chi tiết về công việc, yêu cầu, mục tiêu..."
-                rows={4}
-                className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none"
-                required
+                className="w-full"
               />
             </div>
 

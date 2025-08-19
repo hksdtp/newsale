@@ -9,6 +9,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const serviceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !serviceKey) {
+  console.error('❌ Missing Supabase service key configuration');
   throw new Error('Missing Supabase service key configuration');
 }
 

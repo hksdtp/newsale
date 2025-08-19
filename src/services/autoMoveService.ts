@@ -1,5 +1,4 @@
 import { supabase } from '../shared/api/supabase';
-import { schedulingService } from './schedulingService';
 
 /**
  * 🤖 AUTO-MOVE SERVICE
@@ -17,9 +16,11 @@ class AutoMoveService {
   async moveScheduledTasksToToday(): Promise<AutoMoveResult> {
     try {
       console.log('🤖 Auto-move: Checking for scheduled tasks to move...');
-      
+
+
+
       const today = new Date().toISOString().split('T')[0];
-      
+
       // Get tasks scheduled for today that haven't been moved yet
       const { data: tasksToMove, error: fetchError } = await supabase
         .from('tasks')
@@ -74,9 +75,11 @@ class AutoMoveService {
   async moveOverdueScheduledTasks(): Promise<AutoMoveResult> {
     try {
       console.log('🤖 Auto-move: Checking for overdue scheduled tasks...');
-      
+
+
+
       const today = new Date().toISOString().split('T')[0];
-      
+
       // Get tasks scheduled for past dates that haven't been moved yet
       const { data: overdueTasks, error: fetchError } = await supabase
         .from('tasks')

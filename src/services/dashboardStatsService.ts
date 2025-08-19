@@ -97,6 +97,8 @@ export async function getPersonalStats(
   timeFilter: TimeFilter = { period: 'all' }
 ): Promise<CategoryStats> {
   try {
+
+
     const { startDate, endDate } = createTimeFilter(timeFilter);
 
     const { data: tasks, error } = await supabase

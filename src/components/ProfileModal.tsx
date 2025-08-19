@@ -99,8 +99,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onLogout, 
         <div className="flex items-center gap-4">
           {/* Large Avatar */}
           <div className="relative">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {getAvatarInitials(user.name)}
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg overflow-hidden">
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                getAvatarInitials(user.name)
+              )}
             </div>
             {/* Camera Icon for Avatar Change */}
             <button

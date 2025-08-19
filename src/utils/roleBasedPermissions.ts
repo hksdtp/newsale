@@ -33,11 +33,11 @@ export const getRolePermissions = (role: UserRole, location: string): RolePermis
 
     case 'team_leader':
       return {
-        canViewAllTeams: false, // Only their own team
-        canViewCrossLocation: false, // Only their location
+        canViewAllTeams: false, // 🔒 SECURITY: Only their own team
+        canViewCrossLocation: false, // 🔒 SECURITY: Only their location
         canCreateTasks: true,
-        canEditAllTasks: false, // Only their team's tasks
-        canDeleteAllTasks: false, // Only their team's tasks
+        canEditAllTasks: false, // 🔒 SECURITY: Only their team's tasks
+        canDeleteAllTasks: false, // 🔒 SECURITY: Only their team's tasks
         allowedTaskScopes: ['my-tasks', 'team-tasks', 'department-tasks'],
         defaultLocation
       };
@@ -88,14 +88,16 @@ export const getCurrentUserPermissions = (): RolePermissions => {
 };
 
 /**
- * Check if user can view tasks from a specific team
+ * 🔒 SECURITY: Check if user can view tasks from a specific team
+ * FIXED: Team leaders can ONLY view their own team's tasks, not other teams
  */
 export const canViewTeamTasks = (userTeamId: string, targetTeamId: string, userRole: UserRole): boolean => {
   if (userRole === 'retail_director') {
     return true; // Directors can view all teams
   }
-  
-  return userTeamId === targetTeamId; // Team leaders and employees can only view their own team
+
+  // 🔒 SECURITY FIX: Team leaders and employees can ONLY view their own team
+  return userTeamId === targetTeamId;
 };
 
 /**

@@ -2,6 +2,7 @@ import { Save, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { TaskWithUsers } from '../services/taskService';
 import { getPermissionErrorMessage, getTaskPermissions } from '../utils/taskPermissions';
+import RichTextEditor from './RichTextEditor';
 import WorkTypeDropdown from './WorkTypeDropdown';
 
 interface EditTaskModalProps {
@@ -122,7 +123,11 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
 
         {/* Form - Scrollable content */}
         <div className="flex-1 overflow-y-auto">
-          <form id="edit-task-form" onSubmit={handleSubmit} className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+          <form
+            id="edit-task-form"
+            onSubmit={handleSubmit}
+            className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6"
+          >
             {/* Work Type */}
             <WorkTypeDropdown
               label="Loại công việc"
@@ -156,17 +161,12 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
             {/* Description */}
             <div>
               <label className="block text-white font-medium mb-2">Mô tả chi tiết</label>
-              <textarea
+              <RichTextEditor
                 value={formData.description}
-                onChange={e => handleInputChange('description', e.target.value)}
+                onChange={value => handleInputChange('description', value)}
                 disabled={!canEdit}
-                rows={4}
-                className={`w-full p-3 border rounded-lg text-white placeholder-gray-400 focus:outline-none resize-none ${
-                  canEdit
-                    ? 'bg-gray-800/50 border-gray-600 focus:border-blue-500'
-                    : 'bg-gray-700/30 border-gray-700 cursor-not-allowed opacity-60'
-                }`}
                 placeholder="Mô tả chi tiết về công việc, yêu cầu, mục tiêu..."
+                className="w-full"
               />
             </div>
 
@@ -226,7 +226,6 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
                 />
               </div>
             </div>
-
           </form>
         </div>
 
