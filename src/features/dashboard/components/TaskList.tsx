@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import CreateTaskModal from '../../../components/CreateTaskModal';
 import DeleteConfirmModal from '../../../components/DeleteConfirmModal';
 import EditTaskModal from '../../../components/EditTaskModal';
-import { FilterState } from '../../../components/ModernTaskFilters';
+import ModernTaskFilters, { FilterState } from '../../../components/ModernTaskFilters';
 import MultiWorkTypeBadges from '../../../components/MultiWorkTypeBadges';
 import PriorityBadge from '../../../components/PriorityBadge';
 import ShareScopeBadge from '../../../components/ShareScopeBadge';
@@ -16,10 +16,10 @@ import { TaskWithUsers, taskService } from '../../../services/taskService';
 import { supabase } from '../../../shared/api/supabase';
 import { formatVietnameseDate, parseDate } from '../../../utils/dateUtils';
 import {
-  getCurrentUserPermissions,
-  getDefaultLocationFilter,
-  shouldShowLocationTabs,
-  shouldShowTeamSelectorButtons,
+    getCurrentUserPermissions,
+    getDefaultLocationFilter,
+    shouldShowLocationTabs,
+    shouldShowTeamSelectorButtons,
 } from '../../../utils/roleBasedPermissions';
 import { clearPermissionCache } from '../../../utils/taskPermissions';
 
@@ -525,13 +525,33 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
           user.location === (departmentTab === 'hanoi' ? 'Hà Nội' : 'Hồ Chí Minh')
       );
 
+      // 🔒 SECURITY FIX: Apply team-based filtering
       let teamTasks = filteredTasks.filter(task => {
         const assignedUser = users.find(u => u.name === task.assignedTo?.name);
         const createdUser = users.find(u => u.name === task.createdBy?.name);
-        return (
+
+        const isTaskFromThisTeam = (
           (assignedUser && assignedUser.team_id === team.id.toString()) ||
           (createdUser && createdUser.team_id === team.id.toString())
         );
+
+        // 🔒 SECURITY: Only show tasks if user can view this team
+        const canViewThisTeam = (
+          user.role === 'retail_director' || // Directors can see all teams
+          user.team_id === team.id.toString() // Users can only see their own team
+        );
+
+        console.log(`🔒 Team filter for "${task.name}" in team "${team.name}":`, {
+          currentUser: user.name,
+          currentUserTeam: user.team_id,
+          currentUserRole: user.role,
+          targetTeam: team.id.toString(),
+          isTaskFromThisTeam,
+          canViewThisTeam,
+          result: isTaskFromThisTeam && canViewThisTeam
+        });
+
+        return isTaskFromThisTeam && canViewThisTeam;
       });
 
       // Filter by selected member if any
