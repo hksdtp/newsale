@@ -16,10 +16,10 @@ import { TaskWithUsers, taskService } from '../../../services/taskService';
 import { supabase } from '../../../shared/api/supabase';
 import { formatVietnameseDate, parseDate } from '../../../utils/dateUtils';
 import {
-    getCurrentUserPermissions,
-    getDefaultLocationFilter,
-    shouldShowLocationTabs,
-    shouldShowTeamSelectorButtons,
+  getCurrentUserPermissions,
+  getDefaultLocationFilter,
+  shouldShowLocationTabs,
+  shouldShowTeamSelectorButtons,
 } from '../../../utils/roleBasedPermissions';
 import { clearPermissionCache } from '../../../utils/taskPermissions';
 
@@ -242,6 +242,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
             ? new Date(taskData.startDate).toISOString()
             : new Date().toISOString(), // Sử dụng startDate làm ngày tạo
           shareScope: taskData.shareScope,
+          autoPinToCalendar: taskData.autoPinToCalendar, // 🆕 Fix: Truyền auto-pin option
         },
         currentUserId
       );
@@ -530,16 +531,14 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
         const assignedUser = users.find(u => u.name === task.assignedTo?.name);
         const createdUser = users.find(u => u.name === task.createdBy?.name);
 
-        const isTaskFromThisTeam = (
+        const isTaskFromThisTeam =
           (assignedUser && assignedUser.team_id === team.id.toString()) ||
-          (createdUser && createdUser.team_id === team.id.toString())
-        );
+          (createdUser && createdUser.team_id === team.id.toString());
 
         // 🔒 SECURITY: Only show tasks if user can view this team
-        const canViewThisTeam = (
+        const canViewThisTeam =
           user.role === 'retail_director' || // Directors can see all teams
-          user.team_id === team.id.toString() // Users can only see their own team
-        );
+          user.team_id === team.id.toString(); // Users can only see their own team
 
         console.log(`🔒 Team filter for "${task.name}" in team "${team.name}":`, {
           currentUser: user.name,
@@ -548,7 +547,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
           targetTeam: team.id.toString(),
           isTaskFromThisTeam,
           canViewThisTeam,
-          result: isTaskFromThisTeam && canViewThisTeam
+          result: isTaskFromThisTeam && canViewThisTeam,
         });
 
         return isTaskFromThisTeam && canViewThisTeam;
