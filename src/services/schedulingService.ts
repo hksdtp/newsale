@@ -1,6 +1,6 @@
-import { supabase } from '../shared/api/supabase';
-import { getCurrentUser } from '../data/usersMockData';
 import { Task } from '../data/dashboardMockData';
+import { getCurrentUser } from '../data/usersMockData';
+import { supabase } from '../shared/api/supabase';
 
 export interface ScheduleTaskData {
   taskId: string;
@@ -38,8 +38,12 @@ class SchedulingService {
       // Check if date is in the past (allow today)
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const scheduleDate = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate());
-      
+      const scheduleDate = new Date(
+        scheduledDate.getFullYear(),
+        scheduledDate.getMonth(),
+        scheduledDate.getDate()
+      );
+
       if (scheduleDate < today) {
         return { success: false, error: 'Scheduled date cannot be in the past' };
       }
@@ -69,7 +73,7 @@ class SchedulingService {
       // Update task with scheduling information
       const updateData: any = {
         scheduled_date: data.scheduledDate,
-        source: 'manual' // Will be changed to 'scheduled' when moved
+        source: 'manual', // Will be changed to 'scheduled' when moved
       };
 
       if (data.scheduledTime) {
@@ -124,7 +128,7 @@ class SchedulingService {
         .update({
           scheduled_date: null,
           scheduled_time: null,
-          source: 'manual'
+          source: 'manual',
         })
         .eq('id', taskId)
         .select()
@@ -142,6 +146,18 @@ class SchedulingService {
     }
   }
 
+  // Get scheduled tasks for a specific date (alias for compatibility)
+  async getScheduledTasksForDate(date: string, userId?: string): Promise<any[]> {
+    const tasks = await this.getScheduledTasks(date, userId);
+    // Convert to TaskWithUsers format for PlanningTab
+    return tasks.map(task => ({
+      ...task,
+      createdBy: task.createdBy ? { id: task.createdBy, name: 'User', email: '' } : null,
+      assignedTo: task.assignedTo ? { id: task.assignedTo, name: 'User', email: '' } : null,
+      workTypes: Array.isArray(task.workType) ? [task.workType] : [task.workType || 'other'],
+    }));
+  }
+
   // Get scheduled tasks for a specific date
   async getScheduledTasks(date: string, userId?: string): Promise<ScheduledTask[]> {
     try {
@@ -151,7 +167,8 @@ class SchedulingService {
       }
 
       // Check permissions for viewing other users
-      const canViewAllSchedules = currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com';
+      const canViewAllSchedules =
+        currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com';
       const targetUserId = userId || currentUser.id;
 
       if (!canViewAllSchedules && targetUserId !== currentUser.id) {
@@ -164,7 +181,7 @@ class SchedulingService {
         targetDate,
         userId: targetUserId,
         requestedBy: currentUser.id,
-        isAdmin: canViewAllSchedules
+        isAdmin: canViewAllSchedules,
       });
 
       let query = supabase
@@ -281,7 +298,7 @@ class SchedulingService {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
 
     if (scheduledTime) {
@@ -333,7 +350,8 @@ class SchedulingService {
       }
 
       // Check if current user can view all schedules (admin permission)
-      const canViewAllSchedules = currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com';
+      const canViewAllSchedules =
+        currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com';
       if (!canViewAllSchedules && userId !== currentUser.id) {
         throw new Error('Permission denied: Cannot view other users schedules');
       }
@@ -362,7 +380,11 @@ class SchedulingService {
   }
 
   // Get scheduled tasks in date range
-  async getScheduledTasksInRange(startDate: string, endDate: string, userId?: string): Promise<ScheduledTask[]> {
+  async getScheduledTasksInRange(
+    startDate: string,
+    endDate: string,
+    userId?: string
+  ): Promise<ScheduledTask[]> {
     try {
       const currentUser = getCurrentUser();
       if (!currentUser) {
@@ -370,7 +392,8 @@ class SchedulingService {
       }
 
       // Check permissions for viewing other users
-      const canViewAllSchedules = currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com';
+      const canViewAllSchedules =
+        currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com';
       const targetUserId = userId || currentUser.id;
 
       if (!canViewAllSchedules && targetUserId !== currentUser.id) {
@@ -382,7 +405,7 @@ class SchedulingService {
         endDate,
         userId: targetUserId,
         requestedBy: currentUser.id,
-        isAdmin: canViewAllSchedules
+        isAdmin: canViewAllSchedules,
       });
 
       let query = supabase
@@ -422,16 +445,19 @@ class SchedulingService {
       return [];
     }
 
-    console.log('📋 Processing scheduled tasks:', data.map(t => ({
-      name: t.name,
-      date: t.scheduled_date,
-      time: t.scheduled_time,
-      dateOnly: t.scheduled_date?.split('T')[0] // Remove timezone part
-    })));
+    console.log(
+      '📋 Processing scheduled tasks:',
+      data.map(t => ({
+        name: t.name,
+        date: t.scheduled_date,
+        time: t.scheduled_time,
+        dateOnly: t.scheduled_date?.split('T')[0], // Remove timezone part
+      }))
+    );
 
     return data.map(task => ({
       ...task,
-      source: 'scheduled' as const
+      source: 'scheduled' as const,
     }));
   }
 }

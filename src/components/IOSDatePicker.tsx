@@ -62,6 +62,37 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
 
   const colors = colorVariants[color];
 
+  // Helper functions for dynamic class names to avoid Tailwind purging issues
+  const getTodayTextColor = (colorName: string) => {
+    switch (colorName) {
+      case 'green':
+        return 'text-green-400';
+      case 'red':
+        return 'text-red-400';
+      case 'blue':
+        return 'text-blue-400';
+      case 'purple':
+        return 'text-purple-400';
+      default:
+        return 'text-blue-400';
+    }
+  };
+
+  const getTodayBorderColor = (colorName: string) => {
+    switch (colorName) {
+      case 'green':
+        return 'border border-green-500/30';
+      case 'red':
+        return 'border border-red-500/30';
+      case 'blue':
+        return 'border border-blue-500/30';
+      case 'purple':
+        return 'border border-purple-500/30';
+      default:
+        return 'border border-blue-500/30';
+    }
+  };
+
   useEffect(() => {
     if (value) {
       const date = new Date(value);
@@ -229,6 +260,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
               ? 'top-full mt-2 slide-in-from-top-2'
               : 'bottom-full mb-2 slide-in-from-bottom-2'
           }`}
+        >
           {/* Header - Cải thiện spacing và typography */}
           <div className="flex items-center justify-between p-5 border-b border-gray-700/50 bg-gray-800/80">
             <button
@@ -273,7 +305,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
                         isSelected(date)
                           ? `${colors.accent} shadow-lg scale-105 ring-2 ring-white/20`
                           : isToday(date)
-                            ? `${colors.hover} text-${color}-400 border border-${color}-500/30 scale-105`
+                            ? `${colors.hover} ${getTodayTextColor(color)} ${getTodayBorderColor(color)} scale-105`
                             : isDateDisabled(date)
                               ? 'text-gray-600 cursor-not-allowed'
                               : 'text-gray-300 hover:bg-gray-700/50 hover:text-white hover:scale-105'
