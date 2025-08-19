@@ -4,13 +4,15 @@ import {
   CheckCircle,
   ChevronDown,
   Clock,
+  Eye,
   User,
   Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import TaskDetailModal from '../../../components/TaskDetailModal';
 import { getCurrentUser } from '../../../data/usersMockData';
 import { schedulingService } from '../../../services/schedulingService';
-import { TaskWithUsers } from '../../../services/taskService';
+import { taskService, TaskWithUsers } from '../../../services/taskService';
 import { teamsService } from '../../../services/teamsService';
 
 interface TeamMember {
@@ -83,22 +85,19 @@ function PlanningTab() {
   };
 
   // Load scheduled tasks for selected user and date
+  const loadScheduledTasks = async () => {
+    if (!selectedUserId || !selectedDate) return;
+
+    try {
+      const tasks = await schedulingService.getScheduledTasksForDate(selectedDate, selectedUserId);
+      setScheduledTasks(tasks || []);
+    } catch (error) {
+      console.error('Error loading scheduled tasks:', error);
+      setScheduledTasks([]);
+    }
+  };
+
   useEffect(() => {
-    const loadScheduledTasks = async () => {
-      if (!selectedUserId || !selectedDate) return;
-
-      try {
-        const tasks = await schedulingService.getScheduledTasksForDate(
-          selectedDate,
-          selectedUserId
-        );
-        setScheduledTasks(tasks || []);
-      } catch (error) {
-        console.error('Error loading scheduled tasks:', error);
-        setScheduledTasks([]);
-      }
-    };
-
     loadScheduledTasks();
   }, [selectedUserId, selectedDate]);
 

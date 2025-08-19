@@ -22,22 +22,22 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Convert plain text to HTML with basic formatting
   const textToHtml = (text: string): string => {
     if (!text) return '';
-    
+
     return text
       .replace(/\n/g, '<br>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/^- (.+)$/gm, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+      .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
   };
 
   // Convert HTML back to plain text with markdown-like formatting
   const htmlToText = (html: string): string => {
     if (!html) return '';
-    
+
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
-    
+
     // Replace HTML tags with markdown-like syntax
     let text = tempDiv.innerHTML
       .replace(/<br\s*\/?>/gi, '\n')
@@ -50,7 +50,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       .replace(/<\/?ul>/gi, '')
       .replace(/<\/?ol>/gi, '')
       .replace(/<[^>]*>/g, ''); // Remove any remaining HTML tags
-    
+
     return text.trim();
   };
 
@@ -153,9 +153,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         className={`p-3 min-h-[120px] text-white bg-gray-800/50 focus:outline-none ${
           disabled ? 'cursor-not-allowed opacity-50' : 'cursor-text'
         }`}
-        style={{ 
+        style={{
           wordBreak: 'break-word',
-          whiteSpace: 'pre-wrap'
+          whiteSpace: 'pre-wrap',
         }}
         suppressContentEditableWarning={true}
         data-placeholder={placeholder}

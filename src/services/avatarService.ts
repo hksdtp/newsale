@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from '../shared/api/supabase';
 
 export interface AvatarUploadResult {
   success: boolean;
@@ -27,12 +27,10 @@ export class AvatarService {
       const fileName = `avatars/${userId}/${Date.now()}.${fileExt}`;
 
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from(this.BUCKET_NAME)
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
+      const { data, error } = await supabase.storage.from(this.BUCKET_NAME).upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true,
+      });
 
       if (error) {
         console.error('Supabase upload error:', error);
@@ -40,9 +38,7 @@ export class AvatarService {
       }
 
       // Get public URL
-      const { data: urlData } = supabase.storage
-        .from(this.BUCKET_NAME)
-        .getPublicUrl(fileName);
+      const { data: urlData } = supabase.storage.from(this.BUCKET_NAME).getPublicUrl(fileName);
 
       if (!urlData?.publicUrl) {
         return { success: false, error: 'Không thể tạo URL cho avatar.' };
@@ -55,7 +51,6 @@ export class AvatarService {
       }
 
       return { success: true, avatarUrl: urlData.publicUrl };
-
     } catch (error) {
       console.error('Avatar upload error:', error);
       return { success: false, error: 'Có lỗi xảy ra khi upload avatar.' };
@@ -65,7 +60,10 @@ export class AvatarService {
   /**
    * Update user avatar URL in database
    */
-  private static async updateUserAvatar(userId: string, avatarUrl: string): Promise<{ success: boolean; error?: string }> {
+  private static async updateUserAvatar(
+    userId: string,
+    avatarUrl: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const { error } = await supabase
         .from('users')
@@ -116,9 +114,7 @@ export class AvatarService {
       const pathParts = url.pathname.split('/');
       const fileName = pathParts.slice(-3).join('/'); // Get last 3 parts: avatars/userId/filename
 
-      const { error } = await supabase.storage
-        .from(this.BUCKET_NAME)
-        .remove([fileName]);
+      const { error } = await supabase.storage.from(this.BUCKET_NAME).remove([fileName]);
 
       if (error) {
         console.error('Delete avatar error:', error);
@@ -152,8 +148,12 @@ export class AvatarService {
   /**
    * Resize image before upload (optional)
    */
-  static async resizeImage(file: File, maxWidth: number = 400, maxHeight: number = 400): Promise<File> {
-    return new Promise((resolve) => {
+  static async resizeImage(
+    file: File,
+    maxWidth: number = 400,
+    maxHeight: number = 400
+  ): Promise<File> {
+    return new Promise(resolve => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
@@ -161,7 +161,7 @@ export class AvatarService {
       img.onload = () => {
         // Calculate new dimensions
         let { width, height } = img;
-        
+
         if (width > height) {
           if (width > maxWidth) {
             height = (height * maxWidth) / width;
@@ -179,18 +179,22 @@ export class AvatarService {
 
         // Draw and compress
         ctx?.drawImage(img, 0, 0, width, height);
-        
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const resizedFile = new File([blob], file.name, {
-              type: file.type,
-              lastModified: Date.now()
-            });
-            resolve(resizedFile);
-          } else {
-            resolve(file);
-          }
-        }, file.type, 0.8); // 80% quality
+
+        canvas.toBlob(
+          blob => {
+            if (blob) {
+              const resizedFile = new File([blob], file.name, {
+                type: file.type,
+                lastModified: Date.now(),
+              });
+              resolve(resizedFile);
+            } else {
+              resolve(file);
+            }
+          },
+          file.type,
+          0.8
+        ); // 80% quality
       };
 
       img.src = URL.createObjectURL(file);

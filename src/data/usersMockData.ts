@@ -6,6 +6,7 @@ export interface MockUser {
   team_id: string;
   location: 'Hà Nội' | 'Hồ Chí Minh';
   role: 'employee' | 'team_leader' | 'retail_director';
+  avatar?: string; // URL của avatar
   team?: {
     id: string;
     name: string;

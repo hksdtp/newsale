@@ -47,6 +47,7 @@ export interface TaskWithUsers extends Omit<Task, 'createdBy' | 'assignedTo'> {
   shareScope?: 'team' | 'private' | 'public';
   createdAt?: string; // Ngày tạo từ database
   source?: 'manual' | 'scheduled' | 'recurring';
+  scheduled_date?: string; // Ngày được lên lịch
 }
 
 interface DbTask {
@@ -181,7 +182,9 @@ class TaskService {
         if (assigneeUser) {
           const canAssign = this.canAssignTaskToUser(currentUser, assigneeUser);
           if (!canAssign) {
-            throw new Error(`Bạn không có quyền giao việc cho ${assigneeUser.name}. Chỉ có thể giao việc trong cùng team.`);
+            throw new Error(
+              `Bạn không có quyền giao việc cho ${assigneeUser.name}. Chỉ có thể giao việc trong cùng team.`
+            );
           }
         }
       }
@@ -570,10 +573,8 @@ class TaskService {
             } else {
               // 🔒 SECURITY FIX: Team leaders can ONLY see their own team's tasks
               // Regular users: team scope tasks within SAME TEAM only
-              const isTaskFromSameTeam = (
-                task.createdBy?.team_id === userTeamId ||
-                task.assignedTo?.team_id === userTeamId
-              );
+              const isTaskFromSameTeam =
+                task.createdBy?.team_id === userTeamId || task.assignedTo?.team_id === userTeamId;
 
               const isInSameDepartment = task.department === userDepartment;
               const isTeamScope = effectiveShareScope === 'team';
@@ -587,7 +588,7 @@ class TaskService {
                 isTaskFromSameTeam,
                 isInSameDepartment,
                 isTeamScope,
-                result: isTeamScope && isTaskFromSameTeam && isInSameDepartment
+                result: isTeamScope && isTaskFromSameTeam && isInSameDepartment,
               });
 
               return isTeamScope && isTaskFromSameTeam && isInSameDepartment;
