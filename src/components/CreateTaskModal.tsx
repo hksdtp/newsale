@@ -326,16 +326,21 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
               required
             />
 
-            {/* 🆕 Auto-pin to Calendar Option - Force Vercel Deploy */}
-            <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-600/50">
+            {/* 🆕 Auto-pin to Calendar Option - ALWAYS VISIBLE */}
+            <div
+              className="bg-gray-800/30 rounded-lg p-4 border border-gray-600/50 !block"
+              style={{ display: 'block', visibility: 'visible' }}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
                     <Calendar className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <label className="text-white font-medium">Ghim vào Lịch Kế Hoạch</label>
-                    <p className="text-gray-400 text-sm">
+                    <label className="text-white font-medium text-base">
+                      Ghim vào Lịch Kế Hoạch
+                    </label>
+                    <p className="text-gray-400 text-sm mt-1">
                       Tự động hiển thị công việc này trong Menu Kế Hoạch theo ngày tạo
                     </p>
                   </div>
@@ -349,7 +354,10 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-blue-500"></div>
+                  <div className="w-12 h-7 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-blue-500 shadow-lg"></div>
+                  <span className="ml-3 text-sm text-gray-300 font-medium">
+                    {formData.autoPinToCalendar ? 'BẬT' : 'TẮT'}
+                  </span>
                 </label>
               </div>
             </div>
