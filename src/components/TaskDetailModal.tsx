@@ -1,14 +1,14 @@
 import {
-  Building,
-  Calendar,
-  Edit3,
-  Plus,
-  Save,
-  Target,
-  Trash2,
-  User,
-  Users,
-  X,
+    Building,
+    Calendar,
+    Edit3,
+    Plus,
+    Save,
+    Target,
+    Trash2,
+    User,
+    Users,
+    X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { getCurrentUser } from '../data/usersMockData';
@@ -611,9 +611,18 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   <Users className="w-4 h-4 text-blue-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <span className="text-gray-400 text-xs block">Tạo bởi:</span>
-                    <span className="text-white text-xs truncate block">
-                      {task.createdBy?.name || 'Phạm Thị Hương'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white text-xs truncate">
+                        {task.createdBy?.name || 'Không xác định'}
+                      </span>
+                      {/* 🏷️ Legacy cross-team task indicator */}
+                      {task.createdBy?.team_id && task.assignedTo?.team_id &&
+                       task.createdBy.team_id !== task.assignedTo.team_id && (
+                        <span className="px-1.5 py-0.5 bg-orange-600/20 border border-orange-500/30 rounded text-xs text-orange-300 font-medium whitespace-nowrap">
+                          Cross-team
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 

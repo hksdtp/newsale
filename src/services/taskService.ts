@@ -20,6 +20,7 @@ export interface CreateTaskData {
   department?: 'HN' | 'HCM';
   shareScope?: 'team' | 'private' | 'public';
   createdAt?: string; // Ngày tạo task (có thể khác ngày hiện tại)
+  autoPinToCalendar?: boolean; // 🆕 Tùy chọn tự động ghim vào lịch (default: true)
 }
 
 export interface UpdateTaskData extends Partial<CreateTaskData> {
@@ -174,7 +175,21 @@ class TaskService {
         throw new Error('Không tìm thấy thông tin người dùng');
       }
 
+      // 🔒 SECURITY: Validate cross-team assignment permissions
+      if (taskData.assignedToId && taskData.assignedToId !== createdById) {
+        const assigneeUser = await this.getUserInfo(taskData.assignedToId);
+        if (assigneeUser) {
+          const canAssign = this.canAssignTaskToUser(currentUser, assigneeUser);
+          if (!canAssign) {
+            throw new Error(`Bạn không có quyền giao việc cho ${assigneeUser.name}. Chỉ có thể giao việc trong cùng team.`);
+          }
+        }
+      }
+
       // Prepare data for database
+      const now = new Date();
+      const createdAtDate = taskData.createdAt ? new Date(taskData.createdAt) : now;
+
       const dbTask = {
         name: taskData.name,
         description: taskData.description || '',
@@ -188,7 +203,7 @@ class TaskService {
         status: 'new-requests',
         campaign_type: taskData.campaignType || '',
         platform: taskData.platform || [],
-        start_date: taskData.startDate || new Date().toISOString(),
+        start_date: taskData.startDate || createdAtDate.toISOString(),
         end_date: taskData.endDate || null,
         due_date: taskData.dueDate || null,
         created_by_id: createdById,
@@ -196,6 +211,11 @@ class TaskService {
         team_id: currentUser.team_id || null,
         department: taskData.department || (currentUser.location === 'Hà Nội' ? 'HN' : 'HCM'),
         share_scope: taskData.shareScope || 'team', // Add share_scope back
+        // 🆕 AUTO-PIN FEATURE: Tự động ghim task vào lịch theo ngày tạo (nếu được bật)
+        ...(taskData.autoPinToCalendar !== false && {
+          scheduled_date: createdAtDate.toISOString().split('T')[0], // Chỉ lấy phần date (YYYY-MM-DD)
+        }),
+        source: 'manual', // Keep as manual for user-created tasks
       };
 
       // Insert into Supabase
@@ -548,15 +568,29 @@ class TaskService {
               console.log(`🔍 Director sees all tasks: ${task.name}`);
               return true;
             } else {
-              // Regular users: team scope tasks within same team and department
-              return (
-                effectiveShareScope === 'team' &&
-                // Task belongs to same team
-                (task.createdBy?.team_id === userTeamId ||
-                  task.assignedTo?.team_id === userTeamId) &&
-                // Task is in same department/location
-                task.department === userDepartment
+              // 🔒 SECURITY FIX: Team leaders can ONLY see their own team's tasks
+              // Regular users: team scope tasks within SAME TEAM only
+              const isTaskFromSameTeam = (
+                task.createdBy?.team_id === userTeamId ||
+                task.assignedTo?.team_id === userTeamId
               );
+
+              const isInSameDepartment = task.department === userDepartment;
+              const isTeamScope = effectiveShareScope === 'team';
+
+              console.log(`🔒 Security check for "${task.name}":`, {
+                currentUser: currentUser?.name,
+                currentUserTeam: userTeamId,
+                currentUserRole: currentUser?.role,
+                taskCreatedByTeam: task.createdBy?.team_id,
+                taskAssignedToTeam: task.assignedTo?.team_id,
+                isTaskFromSameTeam,
+                isInSameDepartment,
+                isTeamScope,
+                result: isTeamScope && isTaskFromSameTeam && isInSameDepartment
+              });
+
+              return isTeamScope && isTaskFromSameTeam && isInSameDepartment;
             }
 
           case 'department-tasks':
@@ -723,6 +757,37 @@ class TaskService {
           }
         : null,
     };
+  }
+
+  // 🔒 SECURITY: Check if current user can assign tasks to target user
+  private canAssignTaskToUser(currentUser: any, targetUser: any): boolean {
+    // Directors can assign to anyone
+    if (currentUser.role === 'retail_director') {
+      return true;
+    }
+
+    // Team leaders can assign to:
+    // 1. Their own team members
+    // 2. Themselves
+    if (currentUser.role === 'team_leader') {
+      return (
+        currentUser.team_id === targetUser.team_id || // Same team
+        currentUser.id === targetUser.id // Self-assignment
+      );
+    }
+
+    // Regular employees can only assign to:
+    // 1. Their own team members (collaboration)
+    // 2. Themselves
+    if (currentUser.role === 'employee') {
+      return (
+        currentUser.team_id === targetUser.team_id || // Same team only
+        currentUser.id === targetUser.id // Self-assignment
+      );
+    }
+
+    // Default: deny
+    return false;
   }
 
   // Role-based task filtering methods

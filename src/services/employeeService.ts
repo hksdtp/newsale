@@ -83,10 +83,17 @@ class EmployeeService {
     }
   }
 
-  // Get employees for tagging (filtered by location and exclude current user)
+  // Get employees for tagging (filtered by location, team permissions, and exclude current user)
   async getTaggableEmployees(currentUserId: string, currentUserLocation?: string): Promise<TaggedUser[]> {
     try {
       const allEmployees = await this.getAllEmployees();
+
+      // Get current user info for team-based filtering
+      const currentUser = await this.getEmployeeById(currentUserId);
+      if (!currentUser) {
+        console.warn('Current user not found for tagging permissions');
+        return [];
+      }
 
       return allEmployees
         .filter(emp => {
@@ -95,6 +102,13 @@ class EmployeeService {
 
           // Filter by location if provided
           if (currentUserLocation && emp.location !== currentUserLocation) return false;
+
+          // 🔒 SECURITY: Team-based assignment permissions
+          const canAssignToThisUser = this.canAssignTaskToUser(currentUser, emp);
+          if (!canAssignToThisUser) {
+            console.log(`🔒 Assignment blocked: ${currentUser.name} (${currentUser.role}) cannot assign to ${emp.name} (${emp.role}) - different teams`);
+            return false;
+          }
 
           return true;
         })
@@ -110,6 +124,37 @@ class EmployeeService {
       console.error('Error in getTaggableEmployees:', error);
       return [];
     }
+  }
+
+  // 🔒 SECURITY: Check if current user can assign tasks to target user
+  private canAssignTaskToUser(currentUser: Employee, targetUser: Employee): boolean {
+    // Directors can assign to anyone
+    if (currentUser.role === 'retail_director') {
+      return true;
+    }
+
+    // Team leaders can assign to:
+    // 1. Their own team members
+    // 2. Themselves
+    if (currentUser.role === 'team_leader') {
+      return (
+        currentUser.team_id === targetUser.team_id || // Same team
+        currentUser.id === targetUser.id // Self-assignment
+      );
+    }
+
+    // Regular employees can only assign to:
+    // 1. Their own team members (collaboration)
+    // 2. Themselves
+    if (currentUser.role === 'employee') {
+      return (
+        currentUser.team_id === targetUser.team_id || // Same team only
+        currentUser.id === targetUser.id // Self-assignment
+      );
+    }
+
+    // Default: deny
+    return false;
   }
 
   // Get employees by location
