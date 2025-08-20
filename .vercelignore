@@ -1,0 +1,13 @@
+node_modules
+.git
+.env.local
+.vscode
+tests
+docs
+scripts
+database
+supabase
+dist
+.storybook
+playwright-report
+test-results
