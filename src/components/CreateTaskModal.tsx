@@ -161,7 +161,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-[#1a1f2e] rounded-lg sm:rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl border border-gray-700/50 flex flex-col">
+      <div className="bg-[#1a1f2e] rounded-lg sm:rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl border border-gray-700/50 flex flex-col mx-2 sm:mx-0">
         {/* Header - Flex-shrink-0 để không bị co lại */}
         <div className="flex-shrink-0 p-3 sm:p-4 md:p-6 border-b border-gray-700 bg-gradient-to-r from-blue-600/10 to-purple-600/10">
           <div className="flex items-center justify-between">
