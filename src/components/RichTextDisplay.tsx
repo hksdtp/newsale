@@ -13,24 +13,47 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   const formatContent = (text: string): string => {
     if (!text) return '';
     
-    return text
-      // Convert line breaks
-      .replace(/\n/g, '<br>')
-      // Convert bold text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Convert italic text
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Convert underlined text
-      .replace(/_(.*?)_/g, '<u>$1</u>')
-      // Convert bullet points
-      .replace(/^- (.+)$/gm, '<li>$1</li>')
-      // Wrap consecutive list items in ul tags
-      .replace(/(<li>.*<\/li>(\s*<br>\s*<li>.*<\/li>)*)/g, '<ul>$1</ul>')
-      // Clean up extra br tags around lists
-      .replace(/<br>\s*<ul>/g, '<ul>')
-      .replace(/<\/ul>\s*<br>/g, '</ul>')
-      // Clean up br tags inside lists
-      .replace(/<li>(.*?)<br>\s*<\/li>/g, '<li>$1</li>');
+    // Split text into lines and process systematically
+    const lines = text.split('\n');
+    const processedLines: string[] = [];
+    let inList = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+      
+      // Apply text formatting first
+      line = line
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/_(.*?)_/g, '<u>$1</u>');
+      
+      const trimmedLine = line.trim();
+      
+      if (trimmedLine.startsWith('- ')) {
+        if (!inList) {
+          processedLines.push('<ul>');
+          inList = true;
+        }
+        processedLines.push(`<li>${trimmedLine.substring(2)}</li>`);
+      } else {
+        if (inList) {
+          processedLines.push('</ul>');
+          inList = false;
+        }
+        if (trimmedLine === '') {
+          processedLines.push('<br>');
+        } else {
+          processedLines.push(line);
+        }
+      }
+    }
+
+    // Close any open list
+    if (inList) {
+      processedLines.push('</ul>');
+    }
+
+    return processedLines.join('');
   };
 
   const formattedContent = formatContent(content);

@@ -370,7 +370,17 @@ class TaskService {
 
       // Map fields to database columns
       if (taskData.name !== undefined) updateData.name = taskData.name;
-      if (taskData.description !== undefined) updateData.description = taskData.description;
+      if (taskData.description !== undefined) {
+        updateData.description = taskData.description;
+        // Debug: Log description being saved
+        console.log('🔍 Saving description:', {
+          taskId: taskData.id,
+          descriptionRaw: taskData.description,
+          descriptionLength: taskData.description?.length,
+          hasNewlines: taskData.description?.includes('\n'),
+          hasBr: taskData.description?.includes('<br>'),
+        });
+      }
       if (taskData.priority !== undefined) updateData.priority = taskData.priority;
       if (taskData.status !== undefined) updateData.status = taskData.status;
       // Work types: support array and single

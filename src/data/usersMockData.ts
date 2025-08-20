@@ -55,8 +55,8 @@ export const getTeamsByLocation = (location: 'HN' | 'HCM'): MockTeam[] => {
 export const isDirector = (userId: string): boolean => {
   const user = getUserById(userId) || getCurrentUser();
 
-  // Only KHỔNG ĐỨC MẠNH is considered Director
-  const isDirectorByName = user?.name === 'Khổng Đức Mạnh';
+  // Both KHỔNG ĐỨC MẠNH and NGUYỄN HẢI NINH are considered Directors
+  const isDirectorByName = user?.name === 'Khổng Đức Mạnh' || user?.name === 'Nguyễn Hải Ninh';
   const isDirectorByRole = user?.role === 'retail_director';
 
   // Must have both correct name AND role

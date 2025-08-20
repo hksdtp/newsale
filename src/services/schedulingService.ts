@@ -168,7 +168,8 @@ class SchedulingService {
 
       // Check permissions for viewing other users
       const canViewAllSchedules =
-        currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com';
+        currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com' ||
+        currentUser.name === 'Nguyễn Hải Ninh';
       const targetUserId = userId || currentUser.id;
 
       if (!canViewAllSchedules && targetUserId !== currentUser.id) {
@@ -351,7 +352,8 @@ class SchedulingService {
 
       // Check if current user can view all schedules (admin permission)
       const canViewAllSchedules =
-        currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com';
+        currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com' ||
+        currentUser.name === 'Nguyễn Hải Ninh';
       if (!canViewAllSchedules && userId !== currentUser.id) {
         throw new Error('Permission denied: Cannot view other users schedules');
       }
@@ -393,7 +395,8 @@ class SchedulingService {
 
       // Check permissions for viewing other users
       const canViewAllSchedules =
-        currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com';
+        currentUser.name === 'Khổng Đức Mạnh' || currentUser.email === 'manh.khong@company.com' ||
+        currentUser.name === 'Nguyễn Hải Ninh';
       const targetUserId = userId || currentUser.id;
 
       if (!canViewAllSchedules && targetUserId !== currentUser.id) {

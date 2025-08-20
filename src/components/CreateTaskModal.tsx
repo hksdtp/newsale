@@ -265,7 +265,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
               />
             </div>
 
-            {/* Chi nhánh - Chỉ hiển thị cho Khổng Đức Mạnh (Giám đốc) */}
+            {/* Chi nhánh - Chỉ hiển thị cho Khổng Đức Mạnh và Nguyễn Hải Ninh (Giám đốc) */}
             {isDirector && (
               <div>
                 <Dropdown

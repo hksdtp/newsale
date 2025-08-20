@@ -23,12 +23,45 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const textToHtml = (text: string): string => {
     if (!text) return '';
 
-    return text
-      .replace(/\n/g, '<br>')
+    // Split by double line breaks to preserve paragraphs
+    let result = text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^- (.+)$/gm, '<li>$1</li>')
-      .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+      .replace(/_(.*?)_/g, '<u>$1</u>');
+
+    // Handle bullet lists properly
+    const lines = result.split('\n');
+    const processedLines: string[] = [];
+    let inList = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('- ')) {
+        if (!inList) {
+          processedLines.push('<ul>');
+          inList = true;
+        }
+        processedLines.push(`<li>${line.substring(2)}</li>`);
+      } else {
+        if (inList) {
+          processedLines.push('</ul>');
+          inList = false;
+        }
+        if (line === '') {
+          processedLines.push('<br>');
+        } else {
+          processedLines.push(line);
+        }
+      }
+    }
+
+    // Close any open list
+    if (inList) {
+      processedLines.push('</ul>');
+    }
+
+    return processedLines.join('');
   };
 
   // Convert HTML back to plain text with markdown-like formatting
@@ -38,20 +71,29 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
-    // Replace HTML tags with markdown-like syntax
+    // Process the HTML systematically
     let text = tempDiv.innerHTML
+      // Handle line breaks first
       .replace(/<br\s*\/?>/gi, '\n')
+      // Handle formatting
       .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
       .replace(/<b>(.*?)<\/b>/gi, '**$1**')
       .replace(/<em>(.*?)<\/em>/gi, '*$1*')
       .replace(/<i>(.*?)<\/i>/gi, '*$1*')
       .replace(/<u>(.*?)<\/u>/gi, '_$1_')
-      .replace(/<li>(.*?)<\/li>/gi, '- $1\n')
-      .replace(/<\/?ul>/gi, '')
-      .replace(/<\/?ol>/gi, '')
-      .replace(/<[^>]*>/g, ''); // Remove any remaining HTML tags
+      // Handle lists properly - first add newlines around list items
+      .replace(/<li>/gi, '- ')
+      .replace(/<\/li>/gi, '\n')
+      // Remove list container tags
+      .replace(/<\/?ul>/gi, '\n')
+      .replace(/<\/?ol>/gi, '\n')
+      // Remove any remaining HTML tags
+      .replace(/<[^>]*>/g, '')
+      // Clean up multiple consecutive newlines
+      .replace(/\n\s*\n\s*\n/g, '\n\n')
+      .replace(/^\n+|\n+$/g, ''); // Remove leading/trailing newlines
 
-    return text.trim();
+    return text;
   };
 
   // Update editor content when value changes

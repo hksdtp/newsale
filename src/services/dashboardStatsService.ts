@@ -319,7 +319,7 @@ export async function getDashboardStats(
   const personalStats = await getPersonalStats(currentUser.id, timeFilter);
 
   // Khổng Đức Mạnh - chỉ xem theo khu vực (Hà Nội/HCM) với team selector
-  if (currentUser.name === 'Khổng Đức Mạnh' || currentUser.role === 'retail_director') {
+  if (currentUser.name === 'Khổng Đức Mạnh' || currentUser.name === 'Nguyễn Hải Ninh' || currentUser.role === 'retail_director') {
     const [hanoiStats, hcmStats] = await Promise.all([
       getLocationStats('Hà Nội', timeFilter),
       getLocationStats('Hồ Chí Minh', timeFilter),

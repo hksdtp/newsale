@@ -152,6 +152,15 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         assignedUsers: [task.assignedTo?.id || task.createdBy?.id || ''], // Default to current assignee or creator
       });
 
+      // Debug: Log description format
+      console.log('🔍 Task description format:', {
+        taskId: task.id,
+        descriptionRaw: task.description,
+        descriptionLength: task.description?.length,
+        hasNewlines: task.description?.includes('\n'),
+        hasBr: task.description?.includes('<br>'),
+      });
+
       console.log('TaskDetailModal: Loaded task data:', {
         taskId: task.id,
         startDate: task.startDate,
