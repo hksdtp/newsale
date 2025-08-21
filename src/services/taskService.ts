@@ -1,6 +1,7 @@
 import { Task, WorkType } from '../data/dashboardMockData';
 import { getCurrentUser, getUserById, isDirector } from '../data/usersMockData';
 import { supabase } from '../shared/api/supabase';
+import { formatLocalDateString } from '../utils/dateUtils';
 import { getCurrentUserPermissions } from '../utils/roleBasedPermissions';
 import { withUserContext } from './authContextService';
 
@@ -72,9 +73,29 @@ interface DbTask {
 }
 
 class TaskService {
+  // Helper method to format date for display (YYYY-MM-DD format)
+  private formatDateForDisplay(dateString: string): string {
+    if (!dateString) return '';
+
+    // If it's already in YYYY-MM-DD format, return as is
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateString;
+    }
+
+    // If it's ISO string, extract date part using local timezone
+    if (dateString.includes('T')) {
+      const date = createLocalDate(dateString.split('T')[0]);
+      return date ? formatLocalDateString(date) : dateString.split('T')[0];
+    }
+
+    // Try to parse and format
+    const date = createLocalDate(dateString);
+    return date ? formatLocalDateString(date) : dateString;
+  }
+
   // Helper method to filter scheduled tasks based on date
   private filterScheduledTasks(tasks: any[]): any[] {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const today = formatLocalDateString(new Date()); // YYYY-MM-DD format
 
     return tasks.filter(task => {
       // If task has scheduled_date, filter based on source type
@@ -206,7 +227,7 @@ class TaskService {
         status: 'new-requests',
         campaign_type: taskData.campaignType || '',
         platform: taskData.platform || [],
-        start_date: taskData.startDate || createdAtDate.toISOString(),
+        start_date: taskData.startDate || formatLocalDateString(createdAtDate),
         end_date: taskData.endDate || null,
         due_date: taskData.dueDate || null,
         created_by_id: createdById,
@@ -216,7 +237,7 @@ class TaskService {
         share_scope: taskData.shareScope || 'team', // Add share_scope back
         // 🆕 AUTO-PIN FEATURE: Tự động ghim task vào lịch theo ngày tạo (nếu được bật)
         ...(taskData.autoPinToCalendar !== false && {
-          scheduled_date: createdAtDate.toISOString().split('T')[0], // Chỉ lấy phần date (YYYY-MM-DD)
+          scheduled_date: formatLocalDateString(createdAtDate), // Chỉ lấy phần date (YYYY-MM-DD)
         }),
         source: 'manual', // Keep as manual for user-created tasks
       };
@@ -280,7 +301,7 @@ class TaskService {
         console.log('📅 Task filtering in getTasks:', {
           totalTasks: tasks.length,
           filteredTasks: filteredTasks.length,
-          today: new Date().toISOString().split('T')[0],
+          today: formatLocalDateString(new Date()),
           hiddenScheduledTasks: tasks.length - filteredTasks.length,
         });
 
@@ -715,36 +736,12 @@ class TaskService {
       campaignType: dbTask.campaign_type || '',
       platform: dbTask.platform || [],
       startDate: dbTask.start_date
-        ? new Date(dbTask.start_date).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          })
+        ? this.formatDateForDisplay(dbTask.start_date)
         : dbTask.created_at
-          ? new Date(dbTask.created_at).toLocaleDateString('vi-VN', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            })
-          : new Date().toLocaleDateString('vi-VN', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            }),
-      endDate: dbTask.end_date
-        ? new Date(dbTask.end_date).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          })
-        : '',
-      dueDate: dbTask.due_date
-        ? new Date(dbTask.due_date).toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          })
-        : '',
+          ? this.formatDateForDisplay(dbTask.created_at)
+          : formatLocalDateString(new Date()),
+      endDate: dbTask.end_date ? this.formatDateForDisplay(dbTask.end_date) : '',
+      dueDate: dbTask.due_date ? this.formatDateForDisplay(dbTask.due_date) : '',
       createdAt: dbTask.created_at || new Date().toISOString(),
       department: (dbTask.department as 'HN' | 'HCM') || 'HN',
       group: '',

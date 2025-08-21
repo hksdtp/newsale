@@ -25,6 +25,26 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
     campaignType: '',
   });
 
+  // Helper function to convert DD/MM/YYYY to YYYY-MM-DD for input[type="date"]
+  const convertDateForInput = (dateStr: string): string => {
+    if (!dateStr) return '';
+
+    // If already in YYYY-MM-DD format, return as is
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateStr;
+    }
+
+    // If in DD/MM/YYYY format, convert to YYYY-MM-DD
+    const ddmmyyyyPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const match = dateStr.match(ddmmyyyyPattern);
+    if (match) {
+      const [, day, month, year] = match;
+      return `${year}-${month}-${day}`;
+    }
+
+    return dateStr;
+  };
+
   // Load task data when modal opens
   useEffect(() => {
     if (isOpen && task) {
@@ -34,7 +54,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
         workTypes: task.workType ? [task.workType] : [],
         priority: task.priority || 'normal',
         status: task.status || 'new-requests',
-        dueDate: task.dueDate || '',
+        dueDate: convertDateForInput(task.dueDate || ''),
         assignedTo: task.assignedTo?.name || '',
         department: task.department || 'HN',
         campaignType: task.campaignType || '',
