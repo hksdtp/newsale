@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './rich-text.css';
 
 :root {
   --background: #ffffff;

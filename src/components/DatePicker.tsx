@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createLocalDate } from '../utils/dateUtils';
 
 interface DatePickerProps {
   value: string;
@@ -13,15 +14,15 @@ interface DatePickerProps {
 const DatePicker: React.FC<DatePickerProps> = ({
   value,
   onChange,
-  placeholder = "Chọn ngày",
+  placeholder = 'Chọn ngày',
   label,
   required = false,
-  minDate
+  minDate,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(
-    value ? new Date(value) : null
+    value ? createLocalDate(value) : null
   );
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -42,12 +43,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
   const formatInputDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    return formatLocalDateString(date);
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -59,17 +60,17 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-    
+
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-    
+
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }
-    
+
     return days;
   };
 
@@ -93,8 +94,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   const isDateDisabled = (date: Date) => {
     if (!minDate) return false;
-    const minDateTime = new Date(minDate).getTime();
-    return date.getTime() < minDateTime;
+    const minDateObj = createLocalDate(minDate);
+    if (!minDateObj) return false;
+    return date.getTime() < minDateObj.getTime();
   };
 
   const isToday = (date: Date) => {
@@ -117,7 +119,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
           {label} {required && <span className="text-red-400">*</span>}
         </label>
       )}
-      
+
       {/* Input Field */}
       <div
         onClick={() => setIsOpen(!isOpen)}
@@ -142,11 +144,11 @@ const DatePicker: React.FC<DatePickerProps> = ({
             >
               <ChevronLeft className="w-5 h-5 text-gray-400" />
             </button>
-            
+
             <h3 className="text-white font-semibold">
               {currentMonth.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
             </h3>
-            
+
             <button
               onClick={() => navigateMonth('next')}
               className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
@@ -174,13 +176,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     disabled={isDateDisabled(date)}
                     className={`
                       w-full h-full rounded-lg text-sm font-medium transition-all duration-200
-                      ${isSelected(date)
-                        ? 'bg-blue-500 text-white shadow-lg scale-105'
-                        : isToday(date)
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        : isDateDisabled(date)
-                        ? 'text-gray-600 cursor-not-allowed'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      ${
+                        isSelected(date)
+                          ? 'bg-blue-500 text-white shadow-lg scale-105'
+                          : isToday(date)
+                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            : isDateDisabled(date)
+                              ? 'text-gray-600 cursor-not-allowed'
+                              : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                       }
                     `}
                   >

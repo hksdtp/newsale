@@ -1,5 +1,6 @@
 import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { createLocalDate } from '../utils/dateUtils';
 
 interface IOSDatePickerProps {
   value: string;
@@ -31,7 +32,9 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
   color = 'blue',
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    value ? createLocalDate(value) : null
+  );
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -95,9 +98,11 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
 
   useEffect(() => {
     if (value) {
-      const date = new Date(value);
-      setSelectedDate(date);
-      setCurrentMonth(date);
+      const date = createLocalDate(value);
+      if (date) {
+        setSelectedDate(date);
+        setCurrentMonth(date);
+      }
     }
   }, [value]);
 
@@ -156,7 +161,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
   };
 
   const formatInputDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    return formatLocalDateString(date);
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -184,7 +189,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
-    onChange(formatInputDate(date) + 'T00:00:00.000Z');
+    onChange(formatInputDate(date));
     onClose();
   };
 
@@ -204,13 +209,13 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
     const dateTime = date.getTime();
 
     if (minDate) {
-      const minDateTime = new Date(minDate).getTime();
-      if (dateTime < minDateTime) return true;
+      const minDateObj = createLocalDate(minDate);
+      if (minDateObj && dateTime < minDateObj.getTime()) return true;
     }
 
     if (maxDate) {
-      const maxDateTime = new Date(maxDate).getTime();
-      if (dateTime > maxDateTime) return true;
+      const maxDateObj = createLocalDate(maxDate);
+      if (maxDateObj && dateTime > maxDateObj.getTime()) return true;
     }
 
     return false;

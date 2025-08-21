@@ -1,0 +1,91 @@
+/* Rich Text Display Styles for Dark Theme */
+.rich-text-display {
+  color: #e5e7eb !important;
+}
+
+.rich-text-display * {
+  color: inherit !important;
+}
+
+.rich-text-display strong {
+  font-weight: 600;
+  color: #f9fafb !important;
+}
+
+.rich-text-display em {
+  font-style: italic;
+  color: #d1d5db !important;
+}
+
+.rich-text-display u {
+  text-decoration: underline;
+  color: inherit !important;
+}
+
+.rich-text-display ul {
+  margin: 8px 0;
+  padding-left: 20px;
+  color: inherit !important;
+}
+
+.rich-text-display li {
+  margin: 4px 0;
+  list-style-type: disc;
+  color: inherit !important;
+}
+
+.rich-text-display blockquote {
+  border-left: 4px solid #6b7280;
+  margin: 10px 0;
+  padding-left: 15px;
+  font-style: italic;
+  color: #d1d5db !important;
+  background-color: rgba(75, 85, 99, 0.1);
+  border-radius: 4px;
+  padding: 10px 15px;
+}
+
+.rich-text-display div[style*="text-align"] {
+  color: inherit !important;
+}
+
+/* Ensure spans with background colors have readable text */
+.rich-text-display span[style*="background-color"] {
+  color: #1f2937 !important;
+  font-weight: 500;
+}
+
+/* Ensure spans with custom colors override the default */
+.rich-text-display span[style*="color:"] {
+  /* Color will be set by inline style */
+}
+
+/* Ensure font size spans inherit color */
+.rich-text-display span[style*="font-size"] {
+  color: inherit !important;
+}
+
+/* Fix any potential black text issues */
+.rich-text-display,
+.rich-text-display p,
+.rich-text-display div,
+.rich-text-display span:not([style*="color:"]):not([style*="background-color"]) {
+  color: #e5e7eb !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .rich-text-display {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .rich-text-display ul {
+    padding-left: 16px;
+  }
+  
+  .rich-text-display blockquote {
+    padding: 8px 12px;
+    margin: 8px 0;
+  }
+}

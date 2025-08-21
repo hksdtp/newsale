@@ -1,17 +1,16 @@
-import { 
-  Bold, 
-  Italic, 
-  List, 
-  Underline, 
-  Type, 
-  Palette, 
-  AlignLeft, 
-  AlignCenter, 
+import {
+  AlignCenter,
+  AlignLeft,
   AlignRight,
-  Undo,
+  Bold,
+  Italic,
+  List,
+  Palette,
+  Quote,
   Redo,
-  Link,
-  Quote
+  Type,
+  Underline,
+  Undo,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -35,11 +34,30 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showMobileToolbar, setShowMobileToolbar] = useState(false);
 
-  // Predefined colors for quick access
+  // Predefined colors optimized for dark theme with better contrast
   const colors = [
-    '#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff',
-    '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080',
-    '#ffc0cb', '#a52a2a', '#808080', '#000080', '#008000'
+    '#ffffff',
+    '#e5e7eb',
+    '#d1d5db',
+    '#9ca3af',
+    '#6b7280',
+    '#374151',
+    '#ef4444',
+    '#f97316',
+    '#f59e0b',
+    '#eab308',
+    '#84cc16',
+    '#22c55e',
+    '#10b981',
+    '#06b6d4',
+    '#0ea5e9',
+    '#3b82f6',
+    '#6366f1',
+    '#8b5cf6',
+    '#a855f7',
+    '#d946ef',
+    '#ec4899',
+    '#f43f5e',
   ];
 
   // Convert plain text to HTML with enhanced formatting
@@ -51,12 +69,21 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/_(.*?)_/g, '<u>$1</u>')
-      .replace(/\[color:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/color\]/g, '<span style="color: $1">$2</span>')
-      .replace(/\[bg:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/bg\]/g, '<span style="background-color: $1; padding: 2px 4px; border-radius: 3px">$2</span>')
+      .replace(
+        /\[color:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/color\]/g,
+        '<span style="color: $1">$2</span>'
+      )
+      .replace(
+        /\[bg:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/bg\]/g,
+        '<span style="background-color: $1; padding: 2px 4px; border-radius: 3px">$2</span>'
+      )
       .replace(/\[size:(\d+)\](.*?)\[\/size\]/g, '<span style="font-size: $1px">$2</span>')
       .replace(/\[center\](.*?)\[\/center\]/g, '<div style="text-align: center">$1</div>')
       .replace(/\[right\](.*?)\[\/right\]/g, '<div style="text-align: right">$1</div>')
-      .replace(/\[quote\](.*?)\[\/quote\]/g, '<blockquote style="border-left: 4px solid #ccc; margin: 10px 0; padding-left: 10px; font-style: italic">$1</blockquote>');
+      .replace(
+        /\[quote\](.*?)\[\/quote\]/g,
+        '<blockquote style="border-left: 4px solid #ccc; margin: 10px 0; padding-left: 10px; font-style: italic">$1</blockquote>'
+      );
 
     // Handle bullet lists properly
     const lines = result.split('\n');
@@ -65,7 +92,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       if (line.startsWith('- ')) {
         if (!inList) {
           processedLines.push('<ul>');
@@ -108,12 +135,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       if (node.nodeType === Node.TEXT_NODE) {
         return node.textContent || '';
       }
-      
+
       if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as Element;
         const tagName = element.tagName.toLowerCase();
         const style = element.getAttribute('style') || '';
-        
+
         switch (tagName) {
           case 'br':
             return '\n';
@@ -135,7 +162,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             const colorMatch = style.match(/color:\s*([^;]+)/);
             const bgMatch = style.match(/background-color:\s*([^;]+)/);
             const sizeMatch = style.match(/font-size:\s*(\d+)px/);
-            
+
             if (colorMatch) {
               return `[color:${colorMatch[1]}]${element.textContent}[/color]`;
             } else if (bgMatch) {
@@ -162,16 +189,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             return Array.from(element.childNodes).map(processNode).join('');
         }
       }
-      
+
       return '';
     };
 
     const result = Array.from(tempDiv.childNodes).map(processNode).join('');
-    
+
     // Clean up extra newlines
-    const cleanedResult = result
-      .replace(/\n\s*\n\s*\n/g, '\n\n')
-      .replace(/^\n+|\n+$/g, '');
+    const cleanedResult = result.replace(/\n\s*\n\s*\n/g, '\n\n').replace(/^\n+|\n+$/g, '');
 
     console.log('🔍 htmlToText output:', cleanedResult);
     return cleanedResult;
@@ -192,7 +217,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (editorRef.current) {
       const htmlContent = editorRef.current.innerHTML;
       const textContent = htmlToText(htmlContent);
-      
+
       // Debug: Log conversion process
       console.log('🔍 RichTextEditor input change:', {
         htmlContent,
@@ -200,7 +225,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         hasNewlines: textContent.includes('\n'),
         isList: textContent.includes('- '),
       });
-      
+
       onChange(textContent);
     }
   };
@@ -241,7 +266,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const selection = window.getSelection();
     if (selection && selection.toString()) {
       const selectedText = selection.toString();
-      document.execCommand('insertHTML', false, `<blockquote style="border-left: 4px solid #ccc; margin: 10px 0; padding-left: 10px; font-style: italic">${selectedText}</blockquote>`);
+      document.execCommand(
+        'insertHTML',
+        false,
+        `<blockquote style="border-left: 4px solid #ccc; margin: 10px 0; padding-left: 10px; font-style: italic">${selectedText}</blockquote>`
+      );
       handleInput();
     }
   };
@@ -286,12 +315,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       </div>
 
       {/* Desktop Toolbar - Always visible on desktop */}
-      <div className={`hidden md:flex items-center gap-1 p-2 bg-gray-800/50 border-b border-gray-600 flex-wrap`}>
+      <div
+        className={`hidden md:flex items-center gap-1 p-2 bg-gray-800/50 border-b border-gray-600 flex-wrap`}
+      >
         {/* Basic Formatting */}
         <button
           type="button"
           onClick={undo}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="Hoàn tác (Ctrl+Z)"
           disabled={disabled}
         >
@@ -300,19 +331,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={redo}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="Làm lại (Ctrl+Y)"
           disabled={disabled}
         >
           <Redo className="w-4 h-4" />
         </button>
-        
+
         <div className="w-px h-4 bg-gray-600 mx-1" />
 
         <button
           type="button"
           onClick={() => formatText('bold')}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="In đậm (Ctrl+B)"
           disabled={disabled}
         >
@@ -321,7 +352,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => formatText('italic')}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="In nghiêng (Ctrl+I)"
           disabled={disabled}
         >
@@ -330,7 +361,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => formatText('underline')}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="Gạch chân (Ctrl+U)"
           disabled={disabled}
         >
@@ -344,18 +375,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <button
             type="button"
             onClick={() => setShowColorPicker(!showColorPicker)}
-            className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+            className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
             title="Màu chữ"
             disabled={disabled}
           >
             <Palette className="w-4 h-4" />
           </button>
-          
+
           {showColorPicker && (
             <div className="absolute top-full left-0 z-50 mt-1 p-3 bg-gray-800 border border-gray-600 rounded-lg shadow-xl">
               <div className="text-xs text-gray-400 mb-2">Màu chữ</div>
               <div className="grid grid-cols-5 gap-1 mb-3">
-                {colors.map((color) => (
+                {colors.map(color => (
                   <button
                     key={color}
                     type="button"
@@ -368,7 +399,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               </div>
               <div className="text-xs text-gray-400 mb-2">Màu nền</div>
               <div className="grid grid-cols-5 gap-1">
-                {colors.map((color) => (
+                {colors.map(color => (
                   <button
                     key={`bg-${color}`}
                     type="button"
@@ -391,7 +422,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => applyAlignment('Left')}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="Căn trái"
           disabled={disabled}
         >
@@ -400,7 +431,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => applyAlignment('Center')}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="Căn giữa"
           disabled={disabled}
         >
@@ -409,7 +440,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => applyAlignment('Right')}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="Căn phải"
           disabled={disabled}
         >
@@ -422,7 +453,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => formatText('insertUnorderedList')}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="Danh sách"
           disabled={disabled}
         >
@@ -431,7 +462,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={insertQuote}
-          className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
           title="Trích dẫn"
           disabled={disabled}
         >
@@ -498,13 +529,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               <Palette className="w-4 h-4" />
             </button>
           </div>
-          
+
           {/* Mobile Color Picker */}
           {showColorPicker && (
             <div className="mt-2 p-3 bg-gray-700/50 rounded border border-gray-600">
               <div className="text-xs text-gray-400 mb-2">Màu chữ</div>
               <div className="grid grid-cols-8 gap-1 mb-3">
-                {colors.map((color) => (
+                {colors.map(color => (
                   <button
                     key={color}
                     type="button"
@@ -517,7 +548,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               </div>
               <div className="text-xs text-gray-400 mb-2">Màu nền</div>
               <div className="grid grid-cols-8 gap-1">
-                {colors.map((color) => (
+                {colors.map(color => (
                   <button
                     key={`bg-${color}`}
                     type="button"
@@ -567,17 +598,17 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           pointer-events: none;
           font-style: italic;
         }
-        
+
         [contenteditable] ul {
           margin: 8px 0;
           padding-left: 20px;
         }
-        
+
         [contenteditable] li {
           margin: 4px 0;
           list-style-type: disc;
         }
-        
+
         [contenteditable] blockquote {
           margin: 10px 0;
           padding-left: 15px;
@@ -585,41 +616,41 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           font-style: italic;
           color: #d1d5db;
         }
-        
+
         [contenteditable] strong {
           font-weight: bold;
         }
-        
+
         [contenteditable] em {
           font-style: italic;
         }
-        
+
         [contenteditable] u {
           text-decoration: underline;
         }
-        
+
         /* Mobile specific styles */
         @media (max-width: 768px) {
           [contenteditable] {
             font-size: 16px !important;
             line-height: 1.5;
           }
-          
+
           [contenteditable] ul {
             padding-left: 16px;
           }
-          
+
           [contenteditable] blockquote {
             padding-left: 12px;
             border-left-width: 3px;
           }
         }
-        
+
         /* Focus styles for better accessibility */
         [contenteditable]:focus {
           outline: none;
         }
-        
+
         /* Selection styles */
         [contenteditable] ::selection {
           background-color: rgba(59, 130, 246, 0.3);

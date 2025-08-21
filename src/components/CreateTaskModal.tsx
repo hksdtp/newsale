@@ -2,6 +2,7 @@ import { AlertTriangle, Building, Calendar, CheckCircle, Clock, Plus, X } from '
 import React, { useState } from 'react';
 import { WorkType } from '../data/dashboardMockData';
 import { Employee, employeeService } from '../services/employeeService';
+import { getTodayDateString } from '../utils/dateUtils';
 import DatePicker from './DatePicker';
 import Dropdown from './Dropdown';
 import RichTextEditor from './RichTextEditor';
@@ -25,7 +26,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     // Logic ngày mặc định:
     // - Công việc mới: Ngày bắt đầu = ngày hôm nay
     // - Công việc con (từ checklist): Ngày tạo = ngày hôm đó (được set trong TaskList.tsx)
-    return new Date().toISOString().split('T')[0];
+    return getTodayDateString();
   };
 
   const [formData, setFormData] = useState({

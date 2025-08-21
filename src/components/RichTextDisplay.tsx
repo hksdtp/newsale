@@ -5,14 +5,11 @@ interface RichTextDisplayProps {
   className?: string;
 }
 
-const RichTextDisplay: React.FC<RichTextDisplayProps> = ({ 
-  content, 
-  className = '' 
-}) => {
+const RichTextDisplay: React.FC<RichTextDisplayProps> = ({ content, className = '' }) => {
   // Convert enhanced markdown-like text to HTML for display
   const formatContent = (text: string): string => {
     if (!text) return '';
-    
+
     // Split text into lines and process systematically
     const lines = text.split('\n');
     const processedLines: string[] = [];
@@ -20,7 +17,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
 
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
-      
+
       // Apply enhanced text formatting first
       line = line
         // Basic formatting
@@ -28,25 +25,45 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/_(.*?)_/g, '<u>$1</u>')
         // Color formatting
-        .replace(/\[color:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/color\]/g, '<span style="color: $1">$2</span>')
+        .replace(
+          /\[color:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/color\]/g,
+          '<span style="color: $1">$2</span>'
+        )
         // Background color
-        .replace(/\[bg:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/bg\]/g, '<span style="background-color: $1; padding: 2px 4px; border-radius: 3px; display: inline-block">$2</span>')
+        .replace(
+          /\[bg:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/bg\]/g,
+          '<span style="background-color: $1; padding: 2px 4px; border-radius: 3px; display: inline-block; color: #1f2937">$2</span>'
+        )
         // Font size
-        .replace(/\[size:(\d+)\](.*?)\[\/size\]/g, '<span style="font-size: $1px">$2</span>')
+        .replace(
+          /\[size:(\d+)\](.*?)\[\/size\]/g,
+          '<span style="font-size: $1px; color: inherit">$2</span>'
+        )
         // Alignment - will be handled at block level
-        .replace(/\[center\](.*?)\[\/center\]/g, '<div style="text-align: center">$1</div>')
-        .replace(/\[right\](.*?)\[\/right\]/g, '<div style="text-align: right">$1</div>')
+        .replace(
+          /\[center\](.*?)\[\/center\]/g,
+          '<div style="text-align: center; color: inherit">$1</div>'
+        )
+        .replace(
+          /\[right\](.*?)\[\/right\]/g,
+          '<div style="text-align: right; color: inherit">$1</div>'
+        )
         // Quotes
-        .replace(/\[quote\](.*?)\[\/quote\]/g, '<blockquote style="border-left: 4px solid #6b7280; margin: 10px 0; padding-left: 15px; font-style: italic; color: #d1d5db">$1</blockquote>');
-      
+        .replace(
+          /\[quote\](.*?)\[\/quote\]/g,
+          '<blockquote style="border-left: 4px solid #6b7280; margin: 10px 0; padding-left: 15px; font-style: italic; color: #d1d5db">$1</blockquote>'
+        );
+
       const trimmedLine = line.trim();
-      
+
       if (trimmedLine.startsWith('- ')) {
         if (!inList) {
           processedLines.push('<ul style="margin: 8px 0; padding-left: 20px; color: inherit">');
           inList = true;
         }
-        processedLines.push(`<li style="margin: 4px 0; list-style-type: disc">${trimmedLine.substring(2)}</li>`);
+        processedLines.push(
+          `<li style="margin: 4px 0; list-style-type: disc; color: inherit">${trimmedLine.substring(2)}</li>`
+        );
       } else {
         if (inList) {
           processedLines.push('</ul>');
@@ -71,14 +88,13 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   const formattedContent = formatContent(content);
 
   return (
-    <div 
-      className={`rich-text-display ${className}`}
+    <div
+      className={`rich-text-display text-gray-200 ${className}`}
       dangerouslySetInnerHTML={{ __html: formattedContent }}
       style={{
         lineHeight: '1.6',
         wordBreak: 'break-word',
         fontSize: '14px',
-        color: 'inherit'
       }}
     />
   );
