@@ -1,6 +1,6 @@
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { createLocalDate } from '../utils/dateUtils';
+import { createLocalDate, formatLocalDateString } from '../utils/dateUtils';
 
 interface DatePickerProps {
   value: string;

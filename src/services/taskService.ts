@@ -1,7 +1,7 @@
 import { Task, WorkType } from '../data/dashboardMockData';
 import { getCurrentUser, getUserById, isDirector } from '../data/usersMockData';
 import { supabase } from '../shared/api/supabase';
-import { formatLocalDateString } from '../utils/dateUtils';
+import { createLocalDate, formatLocalDateString } from '../utils/dateUtils';
 import { getCurrentUserPermissions } from '../utils/roleBasedPermissions';
 import { withUserContext } from './authContextService';
 
