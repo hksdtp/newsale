@@ -62,12 +62,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
     }
   }, [addingNew]);
 
-  // Auto-show add form when no items exist
-  useEffect(() => {
-    if (!loading && items.length === 0 && !addingNew) {
-      setAddingNew(true);
-    }
-  }, [loading, items.length, addingNew]);
+  // Removed auto-show add form - user should click button to add items
 
   useEffect(() => {
     if (editingId && editInputRef.current) {
@@ -450,7 +445,23 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
               </div>
             ))}
           </div>
-        ) : null}
+        ) : (
+          !addingNew && (
+            <div className="text-center py-8">
+              <div className="w-12 h-12 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                <CheckSquare className="w-6 h-6 text-gray-500" />
+              </div>
+              <p className="text-gray-500 text-sm mb-3">Chưa có công việc con nào</p>
+              <button
+                onClick={() => setAddingNew(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="text-sm">Thêm công việc con đầu tiên</span>
+              </button>
+            </div>
+          )
+        )}
       </div>
 
       {/* Scheduling Modal */}

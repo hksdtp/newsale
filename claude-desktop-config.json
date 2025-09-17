@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": ["mcp-server-serena"],
+      "env": {
+        "LOG_LEVEL": "info"
+      }
+    },
+    "human-mcp": {
+      "command": "npx",
+      "args": ["@goonnguyen/human-mcp"],
+      "env": {
+        "GOOGLE_GEMINI_API_KEY": "AIzaSyCFj6_UQPUsCuQb2um4yPRb7QF1sxyyzvA",
+        "LOG_LEVEL": "info",
+        "TRANSPORT_TYPE": "stdio"
+      }
+    }
+  }
+}

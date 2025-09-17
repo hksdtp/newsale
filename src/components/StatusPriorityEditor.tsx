@@ -1,5 +1,5 @@
-import React from 'react';
 import { ChevronDown } from 'lucide-react';
+import React from 'react';
 
 interface StatusPriorityEditorProps {
   status: 'new-requests' | 'approved' | 'live';
@@ -14,31 +14,31 @@ const StatusPriorityEditor: React.FC<StatusPriorityEditorProps> = ({
   priority,
   onStatusChange,
   onPriorityChange,
-  isEditMode
+  isEditMode,
 }) => {
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'new-requests':
-        return { label: 'Yêu cầu mới', color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' };
+        return { label: 'Yêu cầu mới', color: 'bg-yellow-100 text-yellow-800' };
       case 'approved':
-        return { label: 'Đã duyệt', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' };
+        return { label: 'Đã duyệt', color: 'bg-blue-100 text-blue-800' };
       case 'live':
-        return { label: 'Đang thực hiện', color: 'bg-green-500/20 text-green-300 border-green-500/30' };
+        return { label: 'Đang thực hiện', color: 'bg-green-100 text-green-800' };
       default:
-        return { label: 'Không xác định', color: 'bg-gray-500/20 text-gray-300 border-gray-500/30' };
+        return { label: 'Không xác định', color: 'bg-gray-100 text-gray-800' };
     }
   };
 
   const getPriorityInfo = (priority: string) => {
     switch (priority) {
       case 'low':
-        return { label: 'Thấp', color: 'bg-gray-500/20 text-gray-300 border-gray-500/30' };
+        return { label: 'Thấp', color: 'bg-gray-100 text-gray-800' };
       case 'normal':
-        return { label: 'Bình thường', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' };
+        return { label: 'Bình thường', color: 'bg-orange-100 text-orange-800' };
       case 'high':
-        return { label: 'Cao', color: 'bg-red-500/20 text-red-300 border-red-500/30' };
+        return { label: 'Cao', color: 'bg-red-100 text-red-800' };
       default:
-        return { label: 'Bình thường', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' };
+        return { label: 'Bình thường', color: 'bg-orange-100 text-orange-800' };
     }
   };
 
@@ -62,10 +62,12 @@ const StatusPriorityEditor: React.FC<StatusPriorityEditorProps> = ({
     <div className="flex items-center gap-2">
       {/* Status Dropdown */}
       <div className="relative">
-        <div className={`relative px-3 py-1 rounded-full text-xs font-medium border cursor-pointer ${statusInfo.color} bg-gray-800/50`}>
+        <div
+          className={`relative px-3 py-1 rounded-full text-xs font-medium border cursor-pointer ${statusInfo.color} bg-gray-800/50`}
+        >
           <select
             value={status}
-            onChange={(e) => onStatusChange(e.target.value as 'new-requests' | 'approved' | 'live')}
+            onChange={e => onStatusChange(e.target.value as 'new-requests' | 'approved' | 'live')}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           >
             <option value="new-requests">Yêu cầu mới</option>
@@ -81,10 +83,12 @@ const StatusPriorityEditor: React.FC<StatusPriorityEditorProps> = ({
 
       {/* Priority Dropdown */}
       <div className="relative">
-        <div className={`relative px-3 py-1 rounded-full text-xs font-medium border cursor-pointer ${priorityInfo.color} bg-gray-800/50`}>
+        <div
+          className={`relative px-3 py-1 rounded-full text-xs font-medium border cursor-pointer ${priorityInfo.color} bg-gray-800/50`}
+        >
           <select
             value={priority}
-            onChange={(e) => onPriorityChange(e.target.value as 'low' | 'normal' | 'high')}
+            onChange={e => onPriorityChange(e.target.value as 'low' | 'normal' | 'high')}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           >
             <option value="low">Thấp</option>

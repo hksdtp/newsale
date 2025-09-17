@@ -1,5 +1,6 @@
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { createLocalDate, formatLocalDateString } from '../utils/dateUtils';
 
 interface DatePickerProps {
@@ -24,7 +25,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date | null>(
     value ? createLocalDate(value) : null
   );
+  const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -112,6 +115,28 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const days = getDaysInMonth(currentMonth);
   const weekDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
+  // Calculate position when opening
+  const toggleCalendar = () => {
+    if (!isOpen && inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      
+      // Determine if should show above or below
+      let top = rect.bottom + 8;
+      if (top + 400 > viewportHeight && rect.top > 400) {
+        // Show above if not enough space below
+        top = rect.top - 400;
+      }
+      
+      setCalendarPosition({
+        top,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div className="relative" ref={containerRef}>
       {label && (
@@ -122,7 +147,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
       {/* Input Field */}
       <div
-        onClick={() => setIsOpen(!isOpen)}
+        ref={inputRef}
+        onClick={toggleCalendar}
         className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white cursor-pointer hover:border-gray-500 transition-colors relative"
       >
         <div className="flex items-center justify-between">
@@ -133,9 +159,17 @@ const DatePicker: React.FC<DatePickerProps> = ({
         </div>
       </div>
 
-      {/* Calendar Dropdown */}
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-50 overflow-hidden">
+      {/* Calendar Dropdown Portal */}
+      {isOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-[99999] overflow-hidden"
+          style={{
+            top: `${calendarPosition.top}px`,
+            left: `${calendarPosition.left}px`,
+            width: `${calendarPosition.width}px`,
+            minWidth: '320px',
+          }}
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
             <button
@@ -213,7 +247,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
               Ngày mai
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -1,149 +1,82 @@
-import { Plus, X } from 'lucide-react';
 import React from 'react';
 import WorkTypeBadge, { WorkType } from './WorkTypeBadge';
 
 interface MultiWorkTypeBadgesProps {
-  workTypes: WorkType[] | string[] | string | undefined;
+  workTypes: WorkType[];
   onChange?: (workTypes: WorkType[]) => void;
-  maxDisplay?: number;
   className?: string;
+  maxDisplay?: number;
 }
 
-const allWorkTypes: WorkType[] = [
-  'sbg-new',
-  'sbg-old',
-  'partner-new',
-  'partner-old',
-  'kts-new',
-  'kts-old',
-  'customer-new',
-  'customer-old',
-  'other',
-];
-
 const MultiWorkTypeBadges: React.FC<MultiWorkTypeBadgesProps> = ({
-  workTypes,
+  workTypes = [],
   onChange,
-  maxDisplay = 3,
   className = '',
+  maxDisplay = 3
 }) => {
-  // Normalize workTypes to array
-  const normalizedWorkTypes: WorkType[] = (() => {
-    console.log('🏷️ MultiWorkTypeBadges received workTypes:', workTypes, 'Type:', typeof workTypes);
+  // Ensure we have at least one work type
+  const displayWorkTypes = workTypes.length > 0 ? workTypes : ['other'];
+  
+  // Limit the number of displayed badges
+  const visibleWorkTypes = displayWorkTypes.slice(0, maxDisplay);
+  const remainingCount = displayWorkTypes.length - maxDisplay;
 
-    if (!workTypes) return ['other'];
-    if (Array.isArray(workTypes)) return workTypes as WorkType[];
-    if (typeof workTypes === 'string') {
-      // Handle array string format like "[\"sbg-new\"]"
-      if (workTypes.startsWith('[') && workTypes.endsWith(']')) {
-        try {
-          const parsed = JSON.parse(workTypes);
-          return Array.isArray(parsed) ? parsed : [workTypes as WorkType];
-        } catch {
-          return [workTypes as WorkType];
-        }
-      }
-      return [workTypes as WorkType];
-    }
-    return ['other'];
-  })();
-
-  console.log('🏷️ Normalized workTypes:', normalizedWorkTypes);
-
-  const displayedTypes = normalizedWorkTypes.slice(0, maxDisplay);
-  const remainingCount = normalizedWorkTypes.length - maxDisplay;
-
-  const availableTypes = allWorkTypes.filter(type => !normalizedWorkTypes.includes(type));
-
-  const handleRemoveType = (typeToRemove: WorkType) => {
-    if (onChange) {
-      const newTypes = normalizedWorkTypes.filter(type => type !== typeToRemove);
-      onChange(newTypes);
-    }
+  const handleWorkTypeChange = (index: number, newWorkType: WorkType) => {
+    if (!onChange) return;
+    
+    const updatedWorkTypes = [...displayWorkTypes];
+    updatedWorkTypes[index] = newWorkType;
+    onChange(updatedWorkTypes);
   };
 
-  const handleAddType = (typeToAdd: WorkType) => {
-    if (onChange && !normalizedWorkTypes.includes(typeToAdd)) {
-      onChange([...normalizedWorkTypes, typeToAdd]);
-    }
+  const handleAddWorkType = () => {
+    if (!onChange) return;
+    
+    const newWorkTypes = [...displayWorkTypes, 'other' as WorkType];
+    onChange(newWorkTypes);
   };
 
-  const handleChangeType = (oldType: WorkType, newType: WorkType) => {
-    if (onChange) {
-      const newTypes = normalizedWorkTypes.map(type => (type === oldType ? newType : type));
-      onChange(newTypes);
-    }
+  const handleRemoveWorkType = (index: number) => {
+    if (!onChange || displayWorkTypes.length <= 1) return;
+    
+    const newWorkTypes = displayWorkTypes.filter((_, i) => i !== index);
+    onChange(newWorkTypes);
   };
 
   return (
-    <div className={`flex items-center gap-1 flex-wrap ${className}`}>
-      {/* Display current badges */}
-      {displayedTypes.map((workType, index) => (
-        <div key={`${workType}-${index}`} className="relative group">
+    <div className={`flex flex-wrap items-center gap-1 ${className}`}>
+      {visibleWorkTypes.map((workType, index) => (
+        <div key={index} className="relative group">
           <WorkTypeBadge
             value={workType}
-            onChange={onChange ? newType => handleChangeType(workType, newType) : undefined}
+            onChange={onChange ? (newWorkType) => handleWorkTypeChange(index, newWorkType) : undefined}
           />
-          {onChange && normalizedWorkTypes.length > 1 && (
+          {onChange && displayWorkTypes.length > 1 && (
             <button
-              onClick={e => {
-                e.stopPropagation();
-                handleRemoveType(workType);
-              }}
-              className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => handleRemoveWorkType(index)}
+              className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
               title="Xóa danh mục"
             >
-              <X className="w-2 h-2 text-white" />
+              ×
             </button>
           )}
         </div>
       ))}
-
-      {/* Show remaining count */}
+      
       {remainingCount > 0 && (
-        <div
-          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white bg-gray-600 border border-gray-500/30"
-          title={`+${remainingCount} danh mục khác`}
-        >
+        <div className="px-2 py-1 rounded-full text-xs font-medium bg-gray-600/20 text-gray-400 border border-gray-600/30">
           +{remainingCount}
         </div>
       )}
-
-      {/* Add button - Simple select like StatusBadge */}
-      {onChange && availableTypes.length > 0 && (
-        <div className="relative inline-flex items-center">
-          <div
-            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-gray-300 bg-gray-700/50 hover:bg-gray-600/50 border border-gray-600/30 transition-colors cursor-pointer"
-            title="Thêm danh mục"
-          >
-            <Plus className="w-3 h-3" />
-          </div>
-          <select
-            value=""
-            onChange={e => {
-              if (e.target.value) {
-                handleAddType(e.target.value as WorkType);
-                e.target.value = ''; // Reset select
-              }
-            }}
-            className="absolute inset-0 opacity-0 cursor-pointer"
-          >
-            <option value="">Thêm danh mục</option>
-            {availableTypes.map(type => (
-              <option key={type} value={type}>
-                {type === 'sbg-new' && 'SBG mới'}
-                {type === 'sbg-old' && 'SBG cũ'}
-                {type === 'partner-new' && 'Đối tác mới'}
-                {type === 'partner-old' && 'Đối tác cũ'}
-                {type === 'kts-new' && 'KTS mới'}
-                {type === 'kts-old' && 'KTS cũ'}
-                {type === 'customer-new' && 'Khách hàng mới'}
-                {type === 'customer-old' && 'Khách hàng cũ'}
-                {type === 'other' && 'Công việc khác'}
-              </option>
-            ))}
-          </select>
-        </div>
+      
+      {onChange && displayWorkTypes.length < 5 && (
+        <button
+          onClick={handleAddWorkType}
+          className="px-2 py-1 rounded-full text-xs font-medium bg-gray-600/20 text-gray-400 border border-gray-600/30 hover:bg-gray-600/30 transition-colors"
+          title="Thêm danh mục"
+        >
+          +
+        </button>
       )}
     </div>
   );

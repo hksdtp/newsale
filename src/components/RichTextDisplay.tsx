@@ -51,7 +51,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({ content, className = 
         // Quotes
         .replace(
           /\[quote\](.*?)\[\/quote\]/g,
-          '<blockquote style="border-left: 4px solid #6b7280; margin: 10px 0; padding-left: 15px; font-style: italic; color: #d1d5db">$1</blockquote>'
+          '<blockquote style="border-left: 4px solid #6b7280; margin: 10px 0; padding-left: 15px; font-style: italic; color: #374151">$1</blockquote>'
         );
 
       const trimmedLine = line.trim();
@@ -89,12 +89,14 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({ content, className = 
 
   return (
     <div
-      className={`rich-text-display text-gray-200 ${className}`}
+      className={`rich-text-display text-gray-900 ${className}`}
       dangerouslySetInnerHTML={{ __html: formattedContent }}
       style={{
-        lineHeight: '1.6',
+        lineHeight: '1.7',
         wordBreak: 'break-word',
-        fontSize: '14px',
+        fontSize: '16px',
+        backgroundColor: 'white',
+        color: '#111827',
       }}
     />
   );

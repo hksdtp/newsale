@@ -246,7 +246,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
       <button
         type="button"
         onClick={onToggle}
-        className={`w-full p-2.5 bg-gray-800/50 border border-gray-600 rounded-lg text-white text-left transition-all duration-200 ${colors.button} ${buttonClassName}`}
+        className={`w-full p-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-left transition-all duration-200 ${colors.button} ${buttonClassName}`}
       >
         <div className="flex items-center justify-between">
           <span className={selectedDate ? 'text-white' : 'text-gray-400'}>

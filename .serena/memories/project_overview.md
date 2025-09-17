@@ -1,0 +1,1 @@
+The project is a web application for team management that uses Supabase for its backend. The application allows users to select from a list of team members, log in with a password, and access a dashboard. It also includes features like password changes on first login and team-based access control.

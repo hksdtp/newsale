@@ -11,8 +11,10 @@ import {
   Type,
   Underline,
   Undo,
+  X,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface RichTextEditorProps {
   value: string;
@@ -30,9 +32,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   disabled = false,
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
+  const colorButtonRef = useRef<HTMLButtonElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showMobileToolbar, setShowMobileToolbar] = useState(false);
+  const [colorPickerPosition, setColorPickerPosition] = useState({ top: 0, left: 0 });
 
   // Predefined colors optimized for dark theme with better contrast
   const colors = [
@@ -69,12 +73,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/_(.*?)_/g, '<u>$1</u>')
+      .replace(/\[color:([^\]]+)\](.*?)\[\/color\]/g, '<span style="color: $1">$2</span>')
       .replace(
-        /\[color:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/color\]/g,
-        '<span style="color: $1">$2</span>'
-      )
-      .replace(
-        /\[bg:(#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}|[a-zA-Z]+)\](.*?)\[\/bg\]/g,
+        /\[bg:([^\]]+)\](.*?)\[\/bg\]/g,
         '<span style="background-color: $1; padding: 2px 4px; border-radius: 3px">$2</span>'
       )
       .replace(/\[size:(\d+)\](.*?)\[\/size\]/g, '<span style="font-size: $1px">$2</span>')
@@ -164,13 +165,27 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             const sizeMatch = style.match(/font-size:\s*(\d+)px/);
 
             if (colorMatch) {
-              return `[color:${colorMatch[1]}]${element.textContent}[/color]`;
+              const colorValue = colorMatch[1].trim();
+              // Process child nodes to avoid nested color tags
+              const content = Array.from(element.childNodes).map(processNode).join('');
+              // Only wrap if content doesn't already have color formatting
+              if (!content.includes('[color:')) {
+                return `[color:${colorValue}]${content}[/color]`;
+              }
+              return content;
             } else if (bgMatch) {
-              return `[bg:${bgMatch[1]}]${element.textContent}[/bg]`;
+              const bgValue = bgMatch[1].trim();
+              const content = Array.from(element.childNodes).map(processNode).join('');
+              if (!content.includes('[bg:')) {
+                return `[bg:${bgValue}]${content}[/bg]`;
+              }
+              return content;
             } else if (sizeMatch) {
               return `[size:${sizeMatch[1]}]${element.textContent}[/size]`;
             }
-            return element.textContent || '';
+            return (
+              Array.from(element.childNodes).map(processNode).join('') || element.textContent || ''
+            );
           case 'div':
             const alignMatch = style.match(/text-align:\s*([^;]+)/);
             if (alignMatch) {
@@ -299,15 +314,57 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   };
 
+  // Toggle color picker with position calculation
+  const toggleColorPicker = () => {
+    if (!showColorPicker && colorButtonRef.current) {
+      const rect = colorButtonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      // Calculate position - prefer right side, fallback to left
+      let left = rect.right + 10;
+      if (left + 320 > viewportWidth) {
+        left = rect.left - 320;
+      }
+
+      // Calculate vertical position - prefer below, fallback to above
+      let top = rect.bottom + 10;
+      if (top + 400 > viewportHeight) {
+        top = rect.top - 400;
+      }
+
+      setColorPickerPosition({ top, left });
+    }
+    setShowColorPicker(!showColorPicker);
+  };
+
+  // Close color picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        showColorPicker &&
+        !colorButtonRef.current?.contains(e.target as Node) &&
+        !(e.target as Element).closest('.color-picker-portal')
+      ) {
+        setShowColorPicker(false);
+      }
+    };
+
+    if (showColorPicker) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showColorPicker]);
+
   return (
-    <div className={`border border-gray-600 rounded-lg overflow-hidden ${className}`}>
+    <div className={`border border-gray-300 rounded-lg bg-white ${className}`}>
       {/* Mobile Toolbar Toggle */}
-      <div className="md:hidden flex justify-between items-center p-2 bg-gray-800/30 border-b border-gray-600">
-        <span className="text-gray-400 text-sm">Công cụ định dạng</span>
+      <div className="md:hidden flex justify-between items-center p-2 bg-white border-b border-gray-200">
+        <span className="text-gray-600 text-sm">Công cụ định dạng</span>
         <button
           type="button"
           onClick={() => setShowMobileToolbar(!showMobileToolbar)}
-          className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           disabled={disabled}
         >
           <Type className="w-4 h-4" />
@@ -316,13 +373,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       {/* Desktop Toolbar - Always visible on desktop */}
       <div
-        className={`hidden md:flex items-center gap-1 p-2 bg-gray-800/50 border-b border-gray-600 flex-wrap`}
+        className={`hidden md:flex items-center gap-1 p-2 bg-white border-b border-gray-200 flex-wrap`}
       >
         {/* Basic Formatting */}
         <button
           type="button"
           onClick={undo}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="Hoàn tác (Ctrl+Z)"
           disabled={disabled}
         >
@@ -331,19 +388,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={redo}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="Làm lại (Ctrl+Y)"
           disabled={disabled}
         >
           <Redo className="w-4 h-4" />
         </button>
 
-        <div className="w-px h-4 bg-gray-600 mx-1" />
+        <div className="w-px h-4 bg-gray-300 mx-1" />
 
         <button
           type="button"
           onClick={() => formatText('bold')}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="In đậm (Ctrl+B)"
           disabled={disabled}
         >
@@ -352,7 +409,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => formatText('italic')}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="In nghiêng (Ctrl+I)"
           disabled={disabled}
         >
@@ -361,68 +418,36 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => formatText('underline')}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="Gạch chân (Ctrl+U)"
           disabled={disabled}
         >
           <Underline className="w-4 h-4" />
         </button>
 
-        <div className="w-px h-4 bg-gray-600 mx-1" />
+        <div className="w-px h-4 bg-gray-300 mx-1" />
 
         {/* Color Picker */}
         <div className="relative">
           <button
+            ref={colorButtonRef}
             type="button"
-            onClick={() => setShowColorPicker(!showColorPicker)}
-            className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+            onClick={toggleColorPicker}
+            className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
             title="Màu chữ"
             disabled={disabled}
           >
             <Palette className="w-4 h-4" />
           </button>
-
-          {showColorPicker && (
-            <div className="absolute top-full left-0 z-50 mt-1 p-3 bg-gray-800 border border-gray-600 rounded-lg shadow-xl">
-              <div className="text-xs text-gray-400 mb-2">Màu chữ</div>
-              <div className="grid grid-cols-5 gap-1 mb-3">
-                {colors.map(color => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => applyColor(color)}
-                    className="w-6 h-6 rounded border border-gray-600 hover:scale-110 transition-transform"
-                    style={{ backgroundColor: color }}
-                    title={color}
-                  />
-                ))}
-              </div>
-              <div className="text-xs text-gray-400 mb-2">Màu nền</div>
-              <div className="grid grid-cols-5 gap-1">
-                {colors.map(color => (
-                  <button
-                    key={`bg-${color}`}
-                    type="button"
-                    onClick={() => applyBackgroundColor(color)}
-                    className="w-6 h-6 rounded border border-gray-600 hover:scale-110 transition-transform relative"
-                    style={{ backgroundColor: color }}
-                    title={`Nền ${color}`}
-                  >
-                    <div className="absolute inset-1 border border-gray-300 rounded" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
-        <div className="w-px h-4 bg-gray-600 mx-1" />
+        <div className="w-px h-4 bg-gray-300 mx-1" />
 
         {/* Alignment */}
         <button
           type="button"
           onClick={() => applyAlignment('Left')}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="Căn trái"
           disabled={disabled}
         >
@@ -431,7 +456,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => applyAlignment('Center')}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="Căn giữa"
           disabled={disabled}
         >
@@ -440,20 +465,20 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => applyAlignment('Right')}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="Căn phải"
           disabled={disabled}
         >
           <AlignRight className="w-4 h-4" />
         </button>
 
-        <div className="w-px h-4 bg-gray-600 mx-1" />
+        <div className="w-px h-4 bg-gray-300 mx-1" />
 
         {/* List and Quote */}
         <button
           type="button"
           onClick={() => formatText('insertUnorderedList')}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="Danh sách"
           disabled={disabled}
         >
@@ -462,7 +487,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={insertQuote}
-          className="p-1.5 text-gray-300 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
           title="Trích dẫn"
           disabled={disabled}
         >
@@ -472,12 +497,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       {/* Mobile Toolbar - Collapsible */}
       {showMobileToolbar && (
-        <div className="md:hidden p-2 bg-gray-800/50 border-b border-gray-600">
+        <div className="md:hidden p-2 bg-white border-b border-gray-200">
           <div className="grid grid-cols-6 gap-2 mb-2">
             <button
               type="button"
               onClick={() => formatText('bold')}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
               title="In đậm"
               disabled={disabled}
             >
@@ -486,7 +511,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <button
               type="button"
               onClick={() => formatText('italic')}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
               title="In nghiêng"
               disabled={disabled}
             >
@@ -495,7 +520,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <button
               type="button"
               onClick={() => formatText('underline')}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
               title="Gạch chân"
               disabled={disabled}
             >
@@ -504,7 +529,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <button
               type="button"
               onClick={() => formatText('insertUnorderedList')}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
               title="Danh sách"
               disabled={disabled}
             >
@@ -513,7 +538,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <button
               type="button"
               onClick={insertQuote}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
               title="Trích dẫn"
               disabled={disabled}
             >
@@ -522,7 +547,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <button
               type="button"
               onClick={() => setShowColorPicker(!showColorPicker)}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
               title="Màu chữ"
               disabled={disabled}
             >
@@ -532,32 +557,38 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
           {/* Mobile Color Picker */}
           {showColorPicker && (
-            <div className="mt-2 p-3 bg-gray-700/50 rounded border border-gray-600">
-              <div className="text-xs text-gray-400 mb-2">Màu chữ</div>
-              <div className="grid grid-cols-8 gap-1 mb-3">
+            <div className="fixed inset-x-4 bottom-20 z-[9999] p-4 bg-white rounded-lg border border-gray-200 shadow-2xl max-h-[60vh] overflow-y-auto">
+              <div className="text-sm font-medium text-gray-800 mb-3 flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Màu chữ
+              </div>
+              <div className="grid grid-cols-6 gap-2 mb-4">
                 {colors.map(color => (
                   <button
                     key={color}
                     type="button"
                     onClick={() => applyColor(color)}
-                    className="w-6 h-6 rounded border border-gray-600"
+                    className="w-full aspect-square rounded-lg border-2 border-gray-600 active:border-blue-400 active:scale-95 transition-all"
                     style={{ backgroundColor: color }}
                     title={color}
                   />
                 ))}
               </div>
-              <div className="text-xs text-gray-400 mb-2">Màu nền</div>
-              <div className="grid grid-cols-8 gap-1">
+              <div className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-gray-300 rounded" />
+                Màu nền
+              </div>
+              <div className="grid grid-cols-6 gap-2">
                 {colors.map(color => (
                   <button
                     key={`bg-${color}`}
                     type="button"
                     onClick={() => applyBackgroundColor(color)}
-                    className="w-6 h-6 rounded border border-gray-600 relative"
+                    className="w-full aspect-square rounded-lg border-2 border-gray-600 active:border-blue-400 active:scale-95 transition-all relative"
                     style={{ backgroundColor: color }}
                     title={`Nền ${color}`}
                   >
-                    <div className="absolute inset-1 border border-gray-300 rounded" />
+                    <div className="absolute inset-2 border-2 border-white/30 rounded" />
                   </button>
                 ))}
               </div>
@@ -577,7 +608,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         }}
         onBlur={() => setIsFocused(false)}
         onKeyDown={handleKeyDown}
-        className={`p-3 sm:p-4 min-h-[120px] sm:min-h-[150px] text-white bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${
+        className={`p-3 sm:p-4 min-h-[120px] sm:min-h-[150px] text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${
           disabled ? 'cursor-not-allowed opacity-50' : 'cursor-text'
         }`}
         style={{
@@ -589,6 +620,72 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         suppressContentEditableWarning={true}
         data-placeholder={placeholder}
       />
+
+      {/* Desktop Color Picker Portal */}
+      {showColorPicker &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="color-picker-portal fixed z-[99999] p-4 bg-gray-800 border border-gray-600 rounded-lg shadow-2xl min-w-[320px] max-h-[450px] overflow-y-auto"
+            style={{
+              top: `${colorPickerPosition.top}px`,
+              left: `${colorPickerPosition.left}px`,
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Chọn màu
+              </div>
+              <button
+                onClick={() => setShowColorPicker(false)}
+                className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <div className="text-xs text-gray-400 mb-2 font-medium">Màu chữ</div>
+                <div className="grid grid-cols-6 gap-2">
+                  {colors.map(color => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => applyColor(color)}
+                      className="w-11 h-11 rounded-lg border-2 border-gray-600 hover:border-blue-400 hover:scale-110 transition-all duration-200 shadow-sm"
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-gray-400 mb-2 font-medium flex items-center gap-2">
+                  <div className="w-3 h-3 border-2 border-gray-400 rounded" />
+                  Màu nền
+                </div>
+                <div className="grid grid-cols-6 gap-2">
+                  {colors.map(color => (
+                    <button
+                      key={`bg-${color}`}
+                      type="button"
+                      onClick={() => applyBackgroundColor(color)}
+                      className="w-11 h-11 rounded-lg border-2 border-gray-600 hover:border-blue-400 hover:scale-110 transition-all duration-200 relative shadow-sm"
+                      style={{ backgroundColor: color }}
+                      title={`Nền ${color}`}
+                    >
+                      <div className="absolute inset-2 border-2 border-white/30 rounded" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* Enhanced Placeholder and Editor styling */}
       <style jsx global>{`

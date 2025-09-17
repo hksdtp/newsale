@@ -1,0 +1,163 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": ["mcp-server-serena"],
+      "env": {
+        "LOG_LEVEL": "info"
+      },
+      "description": "Code manipulation, file operations, project management"
+    },
+    "human-mcp": {
+      "command": "npx",
+      "args": ["@goonnguyen/human-mcp"],
+      "env": {
+        "GOOGLE_GEMINI_API_KEY": "${GOOGLE_GEMINI_API_KEY}",
+        "LOG_LEVEL": "info",
+        "TRANSPORT_TYPE": "stdio"
+      },
+      "description": "Visual analysis, UI debugging, accessibility audit"
+    }
+  },
+  "workflows": {
+    "ui-debug-workflow": {
+      "description": "Complete UI debugging workflow using both MCPs",
+      "steps": [
+        {
+          "tool": "human-mcp.eyes_analyze",
+          "description": "Analyze screenshot for UI issues",
+          "input": {
+            "type": "image",
+            "analysis_type": "ui_debug"
+          }
+        },
+        {
+          "tool": "serena.find_symbol",
+          "description": "Find relevant code components",
+          "input": {
+            "name_path": "component_name"
+          }
+        },
+        {
+          "tool": "serena.replace_symbol_body",
+          "description": "Fix identified issues",
+          "input": {
+            "name_path": "component_name",
+            "body": "fixed_code"
+          }
+        },
+        {
+          "tool": "human-mcp.eyes_compare",
+          "description": "Verify fixes by comparing before/after",
+          "input": {
+            "comparison_type": "structural"
+          }
+        }
+      ]
+    },
+    "accessibility-audit-workflow": {
+      "description": "Complete accessibility audit and fix workflow",
+      "steps": [
+        {
+          "tool": "human-mcp.eyes_analyze",
+          "description": "Perform accessibility audit",
+          "input": {
+            "type": "image",
+            "analysis_type": "accessibility",
+            "check_accessibility": true
+          }
+        },
+        {
+          "tool": "serena.search_for_pattern",
+          "description": "Find accessibility-related code patterns",
+          "input": {
+            "substring_pattern": "aria-|role=|alt=",
+            "restrict_search_to_code_files": true
+          }
+        },
+        {
+          "tool": "serena.replace_regex",
+          "description": "Fix accessibility issues in code",
+          "input": {
+            "allow_multiple_occurrences": true
+          }
+        }
+      ]
+    },
+    "responsive-design-check": {
+      "description": "Check and fix responsive design issues",
+      "steps": [
+        {
+          "tool": "human-mcp.eyes_analyze",
+          "description": "Analyze layout for responsive issues",
+          "input": {
+            "type": "image",
+            "analysis_type": "layout"
+          }
+        },
+        {
+          "tool": "serena.search_for_pattern",
+          "description": "Find CSS/styling files",
+          "input": {
+            "substring_pattern": "@media|breakpoint|responsive",
+            "paths_include_glob": "*.css,*.scss,*.tsx,*.jsx"
+          }
+        },
+        {
+          "tool": "serena.str_replace_editor",
+          "description": "Update responsive styles",
+          "input": {
+            "command": "str_replace"
+          }
+        }
+      ]
+    }
+  },
+  "environment": {
+    "required_vars": [
+      "GOOGLE_GEMINI_API_KEY"
+    ],
+    "optional_vars": [
+      "LOG_LEVEL",
+      "TRANSPORT_TYPE"
+    ]
+  },
+  "integration_examples": {
+    "claude_desktop": {
+      "config_path": "~/Library/Application Support/Claude/claude_desktop_config.json",
+      "config": {
+        "mcpServers": {
+          "serena": {
+            "command": "uvx",
+            "args": ["mcp-server-serena"]
+          },
+          "human-mcp": {
+            "command": "npx",
+            "args": ["@goonnguyen/human-mcp"],
+            "env": {
+              "GOOGLE_GEMINI_API_KEY": "your_api_key_here"
+            }
+          }
+        }
+      }
+    },
+    "cursor": {
+      "config_path": ".cursor/settings.json",
+      "config": {
+        "mcp.servers": {
+          "serena": {
+            "command": "uvx",
+            "args": ["mcp-server-serena"]
+          },
+          "human-mcp": {
+            "command": "npx",
+            "args": ["@goonnguyen/human-mcp"],
+            "env": {
+              "GOOGLE_GEMINI_API_KEY": "your_api_key_here"
+            }
+          }
+        }
+      }
+    }
+  }
+}
