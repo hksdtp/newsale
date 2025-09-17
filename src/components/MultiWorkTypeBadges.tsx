@@ -12,18 +12,18 @@ const MultiWorkTypeBadges: React.FC<MultiWorkTypeBadgesProps> = ({
   workTypes = [],
   onChange,
   className = '',
-  maxDisplay = 3
+  maxDisplay = 3,
 }) => {
   // Ensure we have at least one work type
-  const displayWorkTypes = workTypes.length > 0 ? workTypes : ['other'];
-  
+  const displayWorkTypes = workTypes.length > 0 ? workTypes : ['other' as WorkType];
+
   // Limit the number of displayed badges
   const visibleWorkTypes = displayWorkTypes.slice(0, maxDisplay);
   const remainingCount = displayWorkTypes.length - maxDisplay;
 
   const handleWorkTypeChange = (index: number, newWorkType: WorkType) => {
     if (!onChange) return;
-    
+
     const updatedWorkTypes = [...displayWorkTypes];
     updatedWorkTypes[index] = newWorkType;
     onChange(updatedWorkTypes);
@@ -31,14 +31,14 @@ const MultiWorkTypeBadges: React.FC<MultiWorkTypeBadgesProps> = ({
 
   const handleAddWorkType = () => {
     if (!onChange) return;
-    
+
     const newWorkTypes = [...displayWorkTypes, 'other' as WorkType];
     onChange(newWorkTypes);
   };
 
   const handleRemoveWorkType = (index: number) => {
     if (!onChange || displayWorkTypes.length <= 1) return;
-    
+
     const newWorkTypes = displayWorkTypes.filter((_, i) => i !== index);
     onChange(newWorkTypes);
   };
@@ -49,7 +49,9 @@ const MultiWorkTypeBadges: React.FC<MultiWorkTypeBadgesProps> = ({
         <div key={index} className="relative group">
           <WorkTypeBadge
             value={workType}
-            onChange={onChange ? (newWorkType) => handleWorkTypeChange(index, newWorkType) : undefined}
+            onChange={
+              onChange ? newWorkType => handleWorkTypeChange(index, newWorkType) : undefined
+            }
           />
           {onChange && displayWorkTypes.length > 1 && (
             <button
@@ -62,13 +64,13 @@ const MultiWorkTypeBadges: React.FC<MultiWorkTypeBadgesProps> = ({
           )}
         </div>
       ))}
-      
+
       {remainingCount > 0 && (
         <div className="px-2 py-1 rounded-full text-xs font-medium bg-gray-600/20 text-gray-400 border border-gray-600/30">
           +{remainingCount}
         </div>
       )}
-      
+
       {onChange && displayWorkTypes.length < 5 && (
         <button
           onClick={handleAddWorkType}
