@@ -36,6 +36,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
     value ? createLocalDate(value) : null
   );
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
+  const [dropdownOffset, setDropdownOffset] = useState<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -111,14 +112,36 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
     if (isOpen && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
       const dropdownHeight = 500; // Estimated dropdown height
+      const dropdownWidth = 380; // Max dropdown width
 
-      // Check if dropdown would be clipped at bottom
-      if (rect.bottom + dropdownHeight > viewportHeight) {
+      // Check for modal container constraints
+      const modalContainer = containerRef.current.closest('[class*="max-h-"]');
+      let availableSpace = viewportHeight - rect.bottom - 20; // 20px margin
+
+      if (modalContainer) {
+        const modalRect = modalContainer.getBoundingClientRect();
+        availableSpace = Math.min(availableSpace, modalRect.bottom - rect.bottom - 20);
+      }
+
+      // Check vertical positioning
+      if (availableSpace < dropdownHeight) {
         setDropdownPosition('top');
       } else {
         setDropdownPosition('bottom');
       }
+
+      // Check horizontal positioning to prevent right-side clipping
+      const rightEdge = rect.left + dropdownWidth;
+      let horizontalOffset = 0;
+
+      if (rightEdge > viewportWidth - 16) {
+        // 16px margin
+        horizontalOffset = viewportWidth - rightEdge - 16;
+      }
+
+      setDropdownOffset(horizontalOffset);
     }
   }, [isOpen]);
 
@@ -260,11 +283,17 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className={`absolute left-0 right-0 bg-gray-800/95 backdrop-blur-xl border border-gray-600/50 rounded-2xl shadow-2xl z-[9999] overflow-hidden animate-in duration-300 min-w-[320px] md:min-w-[380px] ${
+          className={`absolute bg-gray-800/95 backdrop-blur-xl border border-gray-600/50 rounded-2xl shadow-2xl z-[9999] overflow-hidden animate-in duration-300 w-[320px] md:w-[380px] ${
             dropdownPosition === 'bottom'
-              ? 'top-full mt-2 slide-in-from-top-2'
-              : 'bottom-full mb-2 slide-in-from-bottom-2'
+              ? 'top-full mt-2 slide-in-from-top-2 left-0'
+              : 'bottom-full mb-2 slide-in-from-bottom-2 left-0'
           }`}
+          style={{
+            // Smart horizontal positioning to prevent clipping
+            left: `${dropdownOffset}px`,
+            right: 'auto',
+            maxWidth: 'calc(100vw - 32px)', // Prevent horizontal overflow
+          }}
         >
           {/* Header - Cải thiện spacing và typography */}
           <div className="flex items-center justify-between p-5 border-b border-gray-700/50 bg-gray-800/80">

@@ -274,9 +274,9 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               </button>
             </div>
           </header>
-          <div className="overflow-y-auto flex-1">
+          <div className="overflow-y-auto flex-1 overflow-x-visible">
             {/* Metadata Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-6 px-8 border-b border-gray-200 overflow-visible">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-6 px-8 border-b border-gray-200 overflow-visible relative">
               {/* Start Date */}
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-gray-500" />
