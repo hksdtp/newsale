@@ -15,6 +15,7 @@ interface IOSDatePickerProps {
   onClose: () => void;
   buttonClassName?: string;
   color?: 'green' | 'red' | 'blue' | 'purple';
+  centerWhenClipped?: boolean; // New prop to enable center positioning when clipped
 }
 
 const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
@@ -30,6 +31,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
   onClose,
   buttonClassName = '',
   color = 'blue',
+  centerWhenClipped = false,
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(
@@ -37,6 +39,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
   );
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
   const [dropdownOffset, setDropdownOffset] = useState<number>(0);
+  const [shouldCenter, setShouldCenter] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -119,37 +122,62 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
       // Check for modal container constraints
       const modalContainer = containerRef.current.closest('[class*="max-h-"]');
       let availableSpace = viewportHeight - rect.bottom - 20; // 20px margin
+      let availableTopSpace = rect.top - 20; // Space above
 
       if (modalContainer) {
         const modalRect = modalContainer.getBoundingClientRect();
         availableSpace = Math.min(availableSpace, modalRect.bottom - rect.bottom - 20);
-      }
-
-      // Check vertical positioning
-      if (availableSpace < dropdownHeight) {
-        setDropdownPosition('top');
-      } else {
-        setDropdownPosition('bottom');
+        availableTopSpace = Math.min(availableTopSpace, rect.top - modalRect.top - 20);
       }
 
       // Check horizontal positioning to prevent right-side clipping
       const rightEdge = rect.left + dropdownWidth;
       let horizontalOffset = 0;
+      let wouldClipHorizontally = false;
 
       if (rightEdge > viewportWidth - 16) {
         // 16px margin
         horizontalOffset = viewportWidth - rightEdge - 16;
+        wouldClipHorizontally = Math.abs(horizontalOffset) > 100; // Significant clipping
       }
 
-      setDropdownOffset(horizontalOffset);
+      // Determine if we should center the dropdown
+      const wouldClipVertically =
+        availableSpace < dropdownHeight && availableTopSpace < dropdownHeight;
+      const shouldUseCenterMode =
+        centerWhenClipped && (wouldClipVertically || wouldClipHorizontally);
+
+      if (shouldUseCenterMode) {
+        setShouldCenter(true);
+      } else {
+        setShouldCenter(false);
+
+        // Standard positioning logic
+        if (availableSpace < dropdownHeight) {
+          setDropdownPosition('top');
+        } else {
+          setDropdownPosition('bottom');
+        }
+
+        setDropdownOffset(horizontalOffset);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, centerWhenClipped]);
 
   // Close on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        onClose();
+      if (shouldCenter) {
+        // For centered dropdown, only close if clicking on backdrop
+        const target = event.target as Element;
+        if (target.classList.contains('fixed') && target.classList.contains('inset-0')) {
+          onClose();
+        }
+      } else {
+        // Standard behavior for positioned dropdown
+        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+          onClose();
+        }
       }
     };
 
@@ -157,7 +185,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, shouldCenter]);
 
   // Close on ESC key
   useEffect(() => {
@@ -279,8 +307,8 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
         </div>
       </button>
 
-      {/* iOS-style Calendar Dropdown - Smart positioning */}
-      {isOpen && (
+      {/* iOS-style Calendar Dropdown - Smart positioning or centered */}
+      {isOpen && !shouldCenter && (
         <div
           ref={dropdownRef}
           className={`absolute bg-gray-800/95 backdrop-blur-xl border border-gray-600/50 rounded-2xl shadow-2xl z-[9999] overflow-hidden animate-in duration-300 w-[320px] md:w-[380px] ${
@@ -379,6 +407,110 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
             >
               <X className="w-5 h-5 text-gray-400 hover:text-white" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Centered Calendar Dropdown with Backdrop */}
+      {isOpen && shouldCenter && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[10000] p-4"
+          onClick={e => {
+            // Close when clicking on backdrop
+            if (e.target === e.currentTarget) {
+              onClose();
+            }
+          }}
+        >
+          <div
+            ref={dropdownRef}
+            className="bg-gray-800/95 backdrop-blur-xl border border-gray-600/50 rounded-2xl shadow-2xl overflow-hidden animate-in duration-300 w-[320px] md:w-[380px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-32px)]"
+          >
+            {/* Header - Cải thiện spacing và typography */}
+            <div className="flex items-center justify-between p-5 border-b border-gray-700/50 bg-gray-800/80">
+              <button
+                onClick={() => navigateMonth('prev')}
+                className="p-3 hover:bg-gray-700/50 rounded-xl transition-all duration-200 hover:scale-105"
+              >
+                <ChevronLeft className="w-5 h-5 text-gray-300" />
+              </button>
+
+              <h3 className="text-white font-semibold text-xl tracking-wide">
+                {currentMonth.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+              </h3>
+
+              <button
+                onClick={() => navigateMonth('next')}
+                className="p-3 hover:bg-gray-700/50 rounded-xl transition-all duration-200 hover:scale-105"
+              >
+                <ChevronRight className="w-5 h-5 text-gray-300" />
+              </button>
+            </div>
+
+            {/* Week Days - Cải thiện spacing */}
+            <div className="grid grid-cols-7 border-b border-gray-700/30 bg-gray-800/60">
+              {weekDays.map(day => (
+                <div key={day} className="p-4 text-center text-gray-400 text-sm font-semibold">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar Grid - Tăng kích thước và spacing */}
+            <div className="grid grid-cols-7 p-4 gap-2">
+              {days.map((date, index) => (
+                <div key={index} className="aspect-square">
+                  {date && (
+                    <button
+                      onClick={() => handleDateSelect(date)}
+                      disabled={isDateDisabled(date)}
+                      className={`
+                        w-full h-full rounded-xl text-base font-semibold transition-all duration-200 transform min-h-[44px]
+                        ${
+                          isSelected(date)
+                            ? `${colors.accent} shadow-lg scale-105 ring-2 ring-white/20`
+                            : isToday(date)
+                              ? `${colors.hover} ${getTodayTextColor(color)} ${getTodayBorderColor(color)} scale-105`
+                              : isDateDisabled(date)
+                                ? 'text-gray-600 cursor-not-allowed'
+                                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white hover:scale-105'
+                        }
+                      `}
+                    >
+                      {date.getDate()}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Actions - Cải thiện spacing và style */}
+            <div className="p-4 border-t border-gray-700/30 flex gap-3 bg-gray-800/60">
+              <button
+                onClick={() => handleDateSelect(new Date())}
+                className="px-5 py-3 text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white rounded-xl transition-all duration-200 hover:scale-105"
+              >
+                Hôm nay
+              </button>
+              <button
+                onClick={() => {
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  handleDateSelect(tomorrow);
+                }}
+                className="px-5 py-3 text-sm font-medium bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white rounded-xl transition-all duration-200 hover:scale-105"
+              >
+                Ngày mai
+              </button>
+              <div className="flex-1"></div>
+              <button
+                onClick={onClose}
+                className="p-3 hover:bg-gray-700/50 rounded-xl transition-all duration-200 hover:scale-105"
+                title="Đóng"
+              >
+                <X className="w-5 h-5 text-gray-400 hover:text-white" />
+              </button>
+            </div>
           </div>
         </div>
       )}

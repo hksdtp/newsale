@@ -425,6 +425,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                       onClose={() => setShowDueDatePicker(false)}
                       color="red"
                       buttonClassName="text-sm font-medium text-red-700"
+                      centerWhenClipped={true}
                     />
                   ) : (
                     <p className="font-medium text-red-700">
