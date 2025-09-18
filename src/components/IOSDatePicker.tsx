@@ -16,6 +16,7 @@ interface IOSDatePickerProps {
   buttonClassName?: string;
   color?: 'green' | 'red' | 'blue' | 'purple';
   centerWhenClipped?: boolean; // New prop to enable center positioning when clipped
+  forceCenter?: boolean; // Force center mode regardless of clipping detection
 }
 
 const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
@@ -32,6 +33,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
   buttonClassName = '',
   color = 'blue',
   centerWhenClipped = false,
+  forceCenter = false,
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(
@@ -138,14 +140,41 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
       if (rightEdge > viewportWidth - 16) {
         // 16px margin
         horizontalOffset = viewportWidth - rightEdge - 16;
-        wouldClipHorizontally = Math.abs(horizontalOffset) > 100; // Significant clipping
+        wouldClipHorizontally = Math.abs(horizontalOffset) > 50; // Lower threshold for better detection
+      }
+
+      // Also check if dropdown would extend beyond left edge when offset applied
+      const leftEdgeAfterOffset = rect.left + horizontalOffset;
+      if (leftEdgeAfterOffset < 16) {
+        wouldClipHorizontally = true;
       }
 
       // Determine if we should center the dropdown
       const wouldClipVertically =
         availableSpace < dropdownHeight && availableTopSpace < dropdownHeight;
+
+      // More aggressive centering for right-side fields
+      const isRightSideField = rect.left > viewportWidth * 0.6; // Right 40% of screen
       const shouldUseCenterMode =
-        centerWhenClipped && (wouldClipVertically || wouldClipHorizontally);
+        forceCenter ||
+        (centerWhenClipped && (wouldClipVertically || wouldClipHorizontally || isRightSideField));
+
+      // Debug logging for development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('IOSDatePicker positioning debug:', {
+          centerWhenClipped,
+          forceCenter,
+          wouldClipVertically,
+          wouldClipHorizontally,
+          isRightSideField,
+          shouldUseCenterMode,
+          rect: { left: rect.left, right: rightEdge },
+          viewport: { width: viewportWidth, height: viewportHeight },
+          horizontalOffset,
+          availableSpace,
+          availableTopSpace,
+        });
+      }
 
       if (shouldUseCenterMode) {
         setShouldCenter(true);
@@ -162,7 +191,7 @@ const IOSDatePicker: React.FC<IOSDatePickerProps> = ({
         setDropdownOffset(horizontalOffset);
       }
     }
-  }, [isOpen, centerWhenClipped]);
+  }, [isOpen, centerWhenClipped, forceCenter]);
 
   // Close on click outside
   useEffect(() => {
