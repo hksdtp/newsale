@@ -25,13 +25,18 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
   const [dragOver, setDragOver] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<TaskAttachment | null>(null);
-  const [isCollapsed, setIsCollapsed] = useState(false); // Start expanded for better UX
+  const [isCollapsed, setIsCollapsed] = useState(true); // Start collapsed when no attachments
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load attachments on mount
   useEffect(() => {
     loadAttachments();
   }, [taskId]);
+
+  // Auto-expand when attachments exist, collapse when empty
+  useEffect(() => {
+    setIsCollapsed(attachments.length === 0);
+  }, [attachments.length]);
 
   // Keyboard support cho preview modal
   useEffect(() => {
@@ -164,14 +169,14 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
 
   if (loading) {
     return (
-      <div className="bg-white/5 rounded-2xl border border-gray-700/30 p-6">
+      <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
-            <Paperclip className="w-4 h-4 text-purple-400" />
+          <div className="w-7 h-7 bg-purple-100 rounded-full flex items-center justify-center">
+            <Paperclip className="w-4 h-4 text-purple-600" />
           </div>
-          <h3 className="text-lg font-semibold text-white">Tệp đính kèm</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Tệp đính kèm</h3>
         </div>
-        <div className="text-center py-8 text-gray-400">Đang tải...</div>
+        <div className="text-center py-8 text-gray-500">Đang tải...</div>
       </div>
     );
   }
@@ -196,6 +201,19 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Upload button when collapsed and no files */}
+              {isCollapsed && attachments.length === 0 && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
+                >
+                  <Upload className="w-3 h-3 inline mr-1" />
+                  Tải lên
+                </button>
+              )}
               {uploading && (
                 <div className="w-3 h-3 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
               )}
