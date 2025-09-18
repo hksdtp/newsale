@@ -460,7 +460,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             <div className="py-6 px-8 border-b border-gray-200">
               {checklistProgress.total > 0 ? (
                 <>
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-6 h-6 bg-green-600 rounded flex items-center justify-center">
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -478,10 +478,6 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         </span>
                       </h2>
                     </div>
-                    <button className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 flex items-center gap-2">
-                      <Plus className="w-4 h-4" />
-                      Thêm mục
-                    </button>
                   </div>
                   <TaskChecklist taskId={task.id} onProgressChange={handleProgressChange} />
                 </>

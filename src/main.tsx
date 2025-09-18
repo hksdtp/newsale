@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './app/App';
+import './constants/language'; // Initialize language constants
 import './services/scheduledTasksJob'; // Initialize background job
 
 const container = document.getElementById('root');
