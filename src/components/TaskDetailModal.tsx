@@ -482,7 +482,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   <TaskChecklist taskId={task.id} onProgressChange={handleProgressChange} />
                 </>
               ) : (
-                <div className="flex justify-between items-center">
+                <div className="mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-green-600 rounded flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -498,17 +498,13 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                       <span className="text-gray-700 font-normal">(0/0)</span>
                     </h2>
                   </div>
-                  <button className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Thêm mục
-                  </button>
                 </div>
               )}
             </div>
 
             {/* Attachments Section */}
             <div className="py-6 px-8">
-              <div className="flex justify-between items-center mb-4">
+              <div className="mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -524,10 +520,6 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     {attachments.length}
                   </span>
                 </div>
-                <button className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 flex items-center gap-2">
-                  <Plus className="w-4 h-4" />
-                  Thêm tệp
-                </button>
               </div>
               <TaskAttachments taskId={task.id} onAttachmentsChange={handleAttachmentsChange} />
             </div>

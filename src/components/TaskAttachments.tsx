@@ -25,7 +25,7 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ taskId, onAttachments
   const [dragOver, setDragOver] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<TaskAttachment | null>(null);
-  const [isCollapsed, setIsCollapsed] = useState(true); // Start collapsed
+  const [isCollapsed, setIsCollapsed] = useState(false); // Start expanded for better UX
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load attachments on mount
