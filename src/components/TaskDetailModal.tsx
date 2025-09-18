@@ -458,48 +458,26 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
             {/* Checklist Section */}
             <div className="py-6 px-8 border-b border-gray-200">
-              {checklistProgress.total > 0 ? (
-                <>
-                  <div className="mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 bg-green-600 rounded flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <h2 className="text-xl font-semibold text-black">
-                        Danh sách công việc con{' '}
-                        <span className="text-gray-700 font-normal">
-                          ({checklistProgress.completed}/{checklistProgress.total})
-                        </span>
-                      </h2>
-                    </div>
+              <div className="mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 bg-green-600 rounded flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </div>
-                  <TaskChecklist taskId={task.id} onProgressChange={handleProgressChange} />
-                </>
-              ) : (
-                <div className="mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-green-600 rounded flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <h2 className="text-xl font-semibold text-black">
-                      Danh sách công việc con{' '}
-                      <span className="text-gray-700 font-normal">(0/0)</span>
-                    </h2>
-                  </div>
+                  <h2 className="text-xl font-semibold text-black">
+                    Danh sách công việc con{' '}
+                    <span className="text-gray-700 font-normal">
+                      ({checklistProgress.completed}/{checklistProgress.total})
+                    </span>
+                  </h2>
                 </div>
-              )}
+              </div>
+              <TaskChecklist taskId={task.id} onProgressChange={handleProgressChange} />
             </div>
 
             {/* Attachments Section */}
