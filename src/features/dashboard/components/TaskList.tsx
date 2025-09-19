@@ -30,6 +30,33 @@ interface TaskListProps {
 }
 
 const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalStateChange }) => {
+  // All hooks must be called before any early returns
+  const [activeTab, setActiveTab] = useState('my-tasks');
+  const [departmentTab, setDepartmentTab] = useState<'hanoi' | 'hcm'>('hanoi');
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TaskWithUsers | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<TaskWithUsers | null>(null);
+  const [tasks, setTasks] = useState<TaskWithUsers[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [filters, setFilters] = useState<FilterState>({
+    searchTerm: '',
+    dateFilter: 'all',
+    workTypeFilter: 'all',
+    priorityFilter: 'all',
+  });
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+
+  // State cho Quick Status Filters
+  const [quickStatusFilter, setQuickStatusFilter] = useState<
+    'all' | 'new-requests' | 'approved' | 'live'
+  >('all');
+
   // Get current user and permissions with error handling
   const user = (() => {
     try {
@@ -62,26 +89,12 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
     }
   })();
 
-  // Early return if user is null (redirecting to login)
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Đang chuyển hướng đến trang đăng nhập...</div>
-      </div>
-    );
-  }
-
-  const permissions = getCurrentUserPermissions();
-
-  const [activeTab, setActiveTab] = useState('my-tasks');
-  const [departmentTab, setDepartmentTab] = useState<'hanoi' | 'hcm'>(
-    getDefaultLocationFilter(user)
-  );
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  // Update departmentTab based on user location after user is available
+  React.useEffect(() => {
+    if (user) {
+      setDepartmentTab(getDefaultLocationFilter(user));
+    }
+  }, [user]);
 
   // Notify parent about modal state changes
   useEffect(() => {
@@ -95,24 +108,29 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
     isDetailModalOpen,
     onModalStateChange,
   ]);
-  const [selectedTask, setSelectedTask] = useState<TaskWithUsers | null>(null);
-  const [taskToDelete, setTaskToDelete] = useState<TaskWithUsers | null>(null);
-  const [tasks, setTasks] = useState<TaskWithUsers[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [teams, setTeams] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
-  const [filters, setFilters] = useState<FilterState>({
-    searchTerm: '',
-    dateFilter: 'all',
-    workTypeFilter: 'all',
-    priorityFilter: 'all',
-  });
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  // State cho Quick Status Filters
-  const [quickStatusFilter, setQuickStatusFilter] = useState<
-    'all' | 'new-requests' | 'approved' | 'live'
-  >('all');
+  // Load tasks and users when user changes
+  useEffect(() => {
+    // Only load tasks if user is properly authenticated
+    if (user && user.id && user.id !== 'unknown') {
+      loadTasks();
+      loadTeamsAndUsers();
+    } else {
+      console.warn('⚠️ TaskList: User not authenticated, skipping task load');
+      setTasks([]);
+    }
+  }, [user]);
+
+  // Early return if user is null (redirecting to login)
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-400">Đang chuyển hướng đến trang đăng nhập...</div>
+      </div>
+    );
+  }
+
+  const permissions = getCurrentUserPermissions();
 
   // Helper function để kiểm tra công việc trong ngày hiện tại
   const isTaskDueToday = (task: TaskWithUsers): boolean => {
@@ -123,18 +141,6 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       taskDueDate.toDateString() === today.toDateString() && task.status !== 'live' // Chỉ highlight công việc chưa hoàn thành
     );
   };
-
-  useEffect(() => {
-    // Only load tasks if user is properly authenticated
-    if (user && user.id && user.id !== 'unknown') {
-      loadTasks();
-      loadTeamsAndUsers();
-    } else {
-      console.warn('⚠️ TaskList: User not authenticated, skipping task load');
-      setTasks([]);
-      setLoading(false);
-    }
-  }, [activeTab, departmentTab, selectedTeamId, user.id]);
 
   const loadTasks = async () => {
     try {

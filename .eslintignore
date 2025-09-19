@@ -103,3 +103,9 @@ scripts/
 *.config.js
 *.config.mjs
 postcss.config.mjs
+
+# Demo and test files
+demo-human-mcp.js
+code-watcher.js
+test-checklist-functionality.js
+test-mcp-integration.js
