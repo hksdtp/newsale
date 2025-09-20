@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-const fn = (name?: string) => (...args: any[]) => console.log(name || 'action', args);
 import CreateTaskModal from './CreateTaskModal';
+const fn =
+  (name?: string) =>
+  (...args: any[]) =>
+    console.log(name || 'action', args);
 
 const meta: Meta<typeof CreateTaskModal> = {
   title: 'Components/CreateTaskModal',
@@ -9,7 +12,8 @@ const meta: Meta<typeof CreateTaskModal> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'A comprehensive modal for creating new tasks with work type selection, date pickers, dropdowns, and form validation.',
+        component:
+          'A comprehensive modal for creating new tasks with work type selection, date pickers, dropdowns, and form validation.',
       },
     },
   },
@@ -30,7 +34,7 @@ const meta: Meta<typeof CreateTaskModal> = {
   },
   args: {
     onClose: fn(),
-    onSubmit: fn(),
+    onSubmit: async () => {}, // 🔧 Fix TypeScript error - return Promise<void>
   },
 };
 
@@ -63,7 +67,8 @@ export const Interactive: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Interactive modal. Try selecting work types, filling the form, and using the date picker and dropdowns.',
+        story:
+          'Interactive modal. Try selecting work types, filling the form, and using the date picker and dropdowns.',
       },
     },
   },
@@ -76,7 +81,8 @@ export const FormValidation: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Try submitting the form without filling required fields to see validation in action.',
+        story:
+          'Try submitting the form without filling required fields to see validation in action.',
       },
     },
   },
@@ -89,7 +95,8 @@ export const WorkTypeSelection: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Focus on work type selection. You can select multiple work types and see the visual feedback.',
+        story:
+          'Focus on work type selection. You can select multiple work types and see the visual feedback.',
       },
     },
   },
@@ -102,7 +109,8 @@ export const DatePickerDemo: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Focus on the date picker functionality. Try the "Hôm nay" and "Ngày mai" quick actions.',
+        story:
+          'Focus on the date picker functionality. Try the "Hôm nay" and "Ngày mai" quick actions.',
       },
     },
   },
@@ -115,7 +123,8 @@ export const DropdownDemo: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Focus on dropdown functionality. Test the status, priority, and share scope dropdowns.',
+        story:
+          'Focus on dropdown functionality. Test the status, priority, and share scope dropdowns.',
       },
     },
   },

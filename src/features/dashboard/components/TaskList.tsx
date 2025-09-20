@@ -42,6 +42,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
   const [taskToDelete, setTaskToDelete] = useState<TaskWithUsers | null>(null);
   const [tasks, setTasks] = useState<TaskWithUsers[]>([]);
   const [loading, setLoading] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false); // 🆕 Separate loading state for creating tasks
   const [teams, setTeams] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [filters, setFilters] = useState<FilterState>({
@@ -218,7 +219,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
 
   const handleCreateTask = async (taskData: any) => {
     try {
-      setLoading(true);
+      setCreateLoading(true); // 🔧 Use separate loading state for creating tasks
 
       // Get current user ID from auth context (more reliable)
       const currentUserId = user?.id;
@@ -297,7 +298,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       console.error('Error creating task:', error);
       alert('Không thể tạo công việc mới. Vui lòng thử lại.');
     } finally {
-      setLoading(false);
+      setCreateLoading(false); // 🔧 Reset create loading state
     }
   };
 
@@ -776,7 +777,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
           }}
           className={`
             premium-create-button
-            ${loading ? 'premium-loading' : ''}
+            ${createLoading ? 'premium-loading' : ''}
             group relative overflow-hidden
             flex items-center justify-center gap-3
             px-6 py-3

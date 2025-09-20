@@ -13,12 +13,13 @@ import WorkTypeDropdown from './WorkTypeDropdown';
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (taskData: any) => void;
+  onSubmit: (taskData: any) => Promise<void>; // 🔧 Make onSubmit async to handle properly
 }
 
 const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [currentUser, setCurrentUser] = React.useState<Employee | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [submitting, setSubmitting] = React.useState(false); // 🆕 Track form submission state
 
   // All hooks must be declared before any conditional returns
   // Helper function để tạo ngày mặc định
@@ -113,7 +114,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!currentUser) {
@@ -121,22 +122,36 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       return;
     }
 
-    // Ensure workType is properly set
-    const workType = formData.workTypes.length > 0 ? formData.workTypes[0] : 'other';
+    if (submitting) {
+      return; // 🔒 Prevent double submission
+    }
 
-    onSubmit({
-      ...formData,
-      workTypes: [workType], // Ensure single work type is used
-      id: `task-${Date.now()}`,
-      createdBy: { id: currentUser.id, name: currentUser.name, email: currentUser.email },
-      assignedTo: formData.taggedUsers.length > 0 ? formData.taggedUsers[0] : null,
-      endDate: formData.dueDate,
-      autoPinToCalendar: formData.autoPinToCalendar, // 🆕 Truyền auto-pin option
-    });
+    try {
+      setSubmitting(true); // 🔄 Set submitting state
 
-    // Reset form after successful submission
-    handleReset();
-    onClose();
+      // Ensure workType is properly set
+      const workType = formData.workTypes.length > 0 ? formData.workTypes[0] : 'other';
+
+      // 🔄 Wait for onSubmit to complete before closing modal
+      await onSubmit({
+        ...formData,
+        workTypes: [workType], // Ensure single work type is used
+        id: `task-${Date.now()}`,
+        createdBy: { id: currentUser.id, name: currentUser.name, email: currentUser.email },
+        assignedTo: formData.taggedUsers.length > 0 ? formData.taggedUsers[0] : null,
+        endDate: formData.dueDate,
+        autoPinToCalendar: formData.autoPinToCalendar, // 🆕 Truyền auto-pin option
+      });
+
+      // ✅ Only reset and close after successful submission
+      handleReset();
+      onClose();
+    } catch (error) {
+      console.error('Error submitting task:', error);
+      // Don't close modal on error, let user try again
+    } finally {
+      setSubmitting(false); // 🔄 Reset submitting state
+    }
   };
 
   const handleReset = () => {
@@ -377,10 +392,24 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
             <button
               type="submit"
               form="create-task-form"
-              className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02] text-sm sm:text-base"
+              disabled={submitting} // 🔒 Disable button while submitting
+              className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg text-sm sm:text-base ${
+                submitting
+                  ? 'bg-gray-600 cursor-not-allowed opacity-75' // 🔄 Loading state styling
+                  : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hover:shadow-xl transform hover:scale-[1.02]'
+              }`}
             >
-              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-              Lưu Công Việc
+              {submitting ? (
+                <>
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Đang xử lý...</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span>Tạo công việc</span>
+                </>
+              )}
             </button>
           </div>
         </div>
