@@ -218,21 +218,27 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
   };
 
   const handleCreateTask = async (taskData: any) => {
+    console.log('🚀 handleCreateTask STARTED');
+    console.log('📊 Initial createLoading state:', createLoading);
+
     try {
+      console.log('🔄 Setting createLoading to TRUE');
       setCreateLoading(true); // 🔧 Use separate loading state for creating tasks
 
       // Get current user ID from auth context (more reliable)
       const currentUserId = user?.id;
       if (!currentUserId) {
+        console.error('❌ No current user ID found');
         throw new Error('Không tìm thấy thông tin đăng nhập');
       }
 
       console.log('🎯 Creating task with data:', taskData);
       console.log('🎯 Current tab:', activeTab);
       console.log('🎯 Current user:', user);
+      console.log('👤 Current user ID:', currentUserId);
 
-      // Database is now working - save directly to Supabase
-      const newTask = await taskService.createTask(
+      // Add timeout to prevent hanging
+      const createTaskPromise = taskService.createTask(
         {
           name: taskData.name,
           description: taskData.description,
@@ -254,7 +260,17 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
         currentUserId
       );
 
+      // Add 30 second timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Task creation timeout after 30 seconds')), 30000);
+      });
+
+      console.log('⏱️ Starting task creation with timeout...');
+      console.log('🔄 About to call Promise.race...');
+      const newTask = await Promise.race([createTaskPromise, timeoutPromise]);
+
       console.log('✅ Task created successfully:', newTask);
+      console.log('🎉 Promise.race completed successfully');
 
       // Determine which tab should show the new task
       let targetTab = activeTab;
@@ -282,7 +298,9 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       }
 
       // Reload tasks to show the new task
+      console.log('🔄 About to reload tasks...');
       await loadTasks();
+      console.log('✅ Tasks reloaded successfully');
 
       // Show success message with tab info
       const tabName =
@@ -294,11 +312,31 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       // Removed alert for creating task successfully
 
       console.log('🔄 Tasks reloaded, should be visible in tab:', targetTab);
+      console.log('🎉 handleCreateTask SUCCESS - about to exit try block');
     } catch (error) {
-      console.error('Error creating task:', error);
-      alert('Không thể tạo công việc mới. Vui lòng thử lại.');
+      console.error('❌ CATCH BLOCK - Error creating task:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Error type:', typeof error);
+
+      // More specific error messages
+      let errorMessage = 'Không thể tạo công việc mới. Vui lòng thử lại.';
+      if (error.message.includes('timeout')) {
+        errorMessage = 'Tạo công việc bị timeout. Vui lòng kiểm tra kết nối và thử lại.';
+      } else if (error.message.includes('authentication')) {
+        errorMessage = 'Lỗi xác thực. Vui lòng đăng nhập lại.';
+      } else if (error.message.includes('network')) {
+        errorMessage = 'Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại.';
+      }
+
+      console.error('❌ About to show alert:', errorMessage);
+      alert(errorMessage);
     } finally {
+      console.log('🔄 FINALLY BLOCK - Resetting createLoading state...');
+      console.log('📊 createLoading before reset:', createLoading);
       setCreateLoading(false); // 🔧 Reset create loading state
+      console.log('✅ FINALLY BLOCK - createLoading set to FALSE');
+      console.log('🏁 handleCreateTask COMPLETED');
     }
   };
 
@@ -756,7 +794,11 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
 
         {/* Enhanced Premium Create Task Button */}
         <button
+          disabled={createLoading} // 🔒 Disable button when creating task
           onClick={() => {
+            // Prevent click if already creating task
+            if (createLoading) return;
+
             // Add haptic feedback for mobile devices
             if ('vibrate' in navigator) {
               navigator.vibrate(50); // Short vibration
@@ -793,14 +835,13 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
             disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
             focus:outline-none focus:ring-4 focus:ring-blue-500/50
           `}
-          disabled={loading}
         >
           {/* Enhanced Background Glow */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 via-purple-400/30 to-cyan-400/30 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
           {/* Icon with premium animation */}
           <div className="relative z-10 flex items-center justify-center w-5 h-5">
-            {loading ? (
+            {createLoading ? (
               <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
                 <circle
                   className="opacity-25"
@@ -831,7 +872,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
 
           {/* Text with premium styling */}
           <span className="premium-text relative z-10">
-            {loading ? 'Đang xử lý...' : 'Tạo công việc'}
+            {createLoading ? 'Đang xử lý...' : 'Tạo công việc'}
           </span>
 
           {/* Floating particles effect */}

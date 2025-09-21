@@ -16,10 +16,10 @@ class AuthContextService {
   async setUserContext(userId: string): Promise<void> {
     try {
       this.currentUserId = userId;
-      
+
       // Set user context in Supabase for RLS policies
       const { error } = await supabase.rpc('set_user_context', {
-        user_uuid: userId
+        user_uuid: userId,
       });
 
       if (error) {
@@ -40,10 +40,10 @@ class AuthContextService {
   async clearUserContext(): Promise<void> {
     try {
       this.currentUserId = null;
-      
+
       // Clear user context in Supabase
       const { error } = await supabase.rpc('set_user_context', {
-        user_uuid: null
+        user_uuid: null,
       });
 
       if (error) {
@@ -83,10 +83,7 @@ class AuthContextService {
   async verifyUserContext(): Promise<boolean> {
     try {
       // Test query to check if RLS is working
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('id')
-        .limit(1);
+      const { data, error } = await supabase.from('tasks').select('id').limit(1);
 
       if (error) {
         console.error('❌ User context verification failed:', error);
@@ -109,7 +106,7 @@ class AuthContextService {
     if (!this.currentUserId) {
       throw new Error('User context not set. Please login first.');
     }
-    
+
     return supabase;
   }
 }
@@ -120,19 +117,34 @@ export const authContextService = new AuthContextService();
 /**
  * Hook to ensure user context is set before making queries
  */
-export const withUserContext = async <T>(
-  operation: () => Promise<T>
-): Promise<T> => {
-  const userId = authContextService.getCurrentUserId();
-  
+export const withUserContext = async <T>(operation: () => Promise<T>): Promise<T> => {
+  let userId = authContextService.getCurrentUserId();
+
   if (!userId) {
     // Try to initialize from storage
     await authContextService.initializeFromStorage();
-    
-    const newUserId = authContextService.getCurrentUserId();
-    if (!newUserId) {
+    userId = authContextService.getCurrentUserId();
+
+    if (!userId) {
       throw new Error('User not authenticated. Please login again.');
     }
+  }
+
+  // Always set user context in Supabase before operation
+  try {
+    const { error } = await supabase.rpc('set_user_context', {
+      user_uuid: userId,
+    });
+
+    if (error) {
+      console.error('❌ Failed to set user context in withUserContext:', error);
+      throw new Error('Failed to set user authentication context');
+    }
+
+    console.log('✅ User context set in withUserContext:', userId);
+  } catch (error) {
+    console.error('❌ Error setting user context in withUserContext:', error);
+    throw error;
   }
 
   return await operation();

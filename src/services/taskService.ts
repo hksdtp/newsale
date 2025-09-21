@@ -165,6 +165,7 @@ class TaskService {
 
     return cleaned;
   }
+
   // Helper method to get user info from Supabase
   private async getUserInfo(userId: string) {
     if (!userId) return null;
@@ -190,78 +191,80 @@ class TaskService {
 
   // Tạo task mới
   async createTask(taskData: CreateTaskData, createdById: string): Promise<TaskWithUsers> {
-    try {
-      // Get current user from Supabase instead of mock data
-      const currentUser = await this.getUserInfo(createdById);
-      if (!currentUser) {
-        throw new Error('Không tìm thấy thông tin người dùng');
-      }
+    return await withUserContext(async () => {
+      try {
+        // Get current user from Supabase instead of mock data
+        const currentUser = await this.getUserInfo(createdById);
+        if (!currentUser) {
+          throw new Error('Không tìm thấy thông tin người dùng');
+        }
 
-      // 🔒 SECURITY: Validate cross-team assignment permissions
-      if (taskData.assignedToId && taskData.assignedToId !== createdById) {
-        const assigneeUser = await this.getUserInfo(taskData.assignedToId);
-        if (assigneeUser) {
-          const canAssign = this.canAssignTaskToUser(currentUser, assigneeUser);
-          if (!canAssign) {
-            throw new Error(
-              `Bạn không có quyền giao việc cho ${assigneeUser.name}. Chỉ có thể giao việc trong cùng team.`
-            );
+        // 🔒 SECURITY: Validate cross-team assignment permissions
+        if (taskData.assignedToId && taskData.assignedToId !== createdById) {
+          const assigneeUser = await this.getUserInfo(taskData.assignedToId);
+          if (assigneeUser) {
+            const canAssign = this.canAssignTaskToUser(currentUser, assigneeUser);
+            if (!canAssign) {
+              throw new Error(
+                `Bạn không có quyền giao việc cho ${assigneeUser.name}. Chỉ có thể giao việc trong cùng team.`
+              );
+            }
           }
         }
-      }
 
-      // Prepare data for database
-      const now = new Date();
-      const createdAtDate = taskData.createdAt ? new Date(taskData.createdAt) : now;
+        // Prepare data for database
+        const now = new Date();
+        const createdAtDate = taskData.createdAt ? new Date(taskData.createdAt) : now;
 
-      const dbTask = {
-        name: taskData.name,
-        description: taskData.description || '',
-        work_type:
-          Array.isArray(taskData.workTypes) && taskData.workTypes.length > 0
-            ? taskData.workTypes // Use full array instead of just first element
-            : taskData.workType
-              ? [taskData.workType] // Convert single workType to array
-              : ['other'], // Default array
-        priority: taskData.priority || 'normal',
-        status: 'new-requests',
-        campaign_type: taskData.campaignType || '',
-        platform: taskData.platform || [],
-        start_date: taskData.startDate || formatLocalDateString(createdAtDate),
-        end_date: taskData.endDate || null,
-        due_date: taskData.dueDate || null,
-        created_by_id: createdById,
-        assigned_to_id: taskData.assignedToId || createdById, // If no assignee, assign to creator
-        team_id: currentUser.team_id || null,
-        department: taskData.department || (currentUser.location === 'Hà Nội' ? 'HN' : 'HCM'),
-        share_scope: taskData.shareScope || 'team', // Add share_scope back
-        // 🆕 AUTO-PIN FEATURE: Tự động ghim task vào lịch theo ngày tạo (nếu được bật)
-        ...(taskData.autoPinToCalendar !== false && {
-          scheduled_date: formatLocalDateString(createdAtDate), // Chỉ lấy phần date (YYYY-MM-DD)
-        }),
-        source: 'manual', // Keep as manual for user-created tasks
-      };
+        const dbTask = {
+          name: taskData.name,
+          description: taskData.description || '',
+          work_type:
+            Array.isArray(taskData.workTypes) && taskData.workTypes.length > 0
+              ? taskData.workTypes[0] // Use first element as string
+              : taskData.workType
+                ? taskData.workType // Use single workType as string
+                : 'other', // Default string
+          priority: taskData.priority || 'normal',
+          status: 'new-requests',
+          campaign_type: taskData.campaignType || '',
+          platform: taskData.platform || [],
+          start_date: taskData.startDate || formatLocalDateString(createdAtDate),
+          end_date: taskData.endDate || null,
+          due_date: taskData.dueDate || null,
+          created_by_id: createdById,
+          assigned_to_id: taskData.assignedToId || createdById, // If no assignee, assign to creator
+          team_id: currentUser.team_id || null,
+          department: taskData.department || (currentUser.location === 'Hà Nội' ? 'HN' : 'HCM'),
+          share_scope: taskData.shareScope || 'team', // Add share_scope back
+          // 🆕 AUTO-PIN FEATURE: Tự động ghim task vào lịch theo ngày tạo (nếu được bật)
+          ...(taskData.autoPinToCalendar !== false && {
+            scheduled_date: formatLocalDateString(createdAtDate), // Chỉ lấy phần date (YYYY-MM-DD)
+          }),
+          source: 'manual', // Keep as manual for user-created tasks
+        };
 
-      // Insert into Supabase
-      const { data, error } = await supabase.from('tasks').insert(dbTask).select().single();
+        // Insert into Supabase (user context already set by withUserContext wrapper)
+        const { data, error } = await supabase.from('tasks').insert(dbTask).select().single();
 
-      if (error) {
-        console.error('Supabase error:', error);
+        if (error) {
+          console.error('❌ Error creating task:', error);
+          throw new Error(`Không thể tạo task: ${error.message}`);
+        }
+
+        // Get user info for created_by and assigned_to
+        const [createdByUser, assignedToUser] = await Promise.all([
+          this.getUserInfo(data.created_by_id),
+          this.getUserInfo(data.assigned_to_id),
+        ]);
+
+        // Return formatted task
+        return this.mapDbTaskToTask(data, createdByUser, assignedToUser);
+      } catch (error) {
+        console.error('Error creating task:', error);
         throw new Error('Không thể tạo công việc mới');
       }
-
-      // Get user info for created_by and assigned_to
-      const [createdByUser, assignedToUser] = await Promise.all([
-        this.getUserInfo(data.created_by_id),
-        this.getUserInfo(data.assigned_to_id),
-      ]);
-
-      // Return formatted task
-      return this.mapDbTaskToTask(data, createdByUser, assignedToUser);
-    } catch (error) {
-      console.error('Error creating task:', error);
-      throw new Error('Không thể tạo công việc mới');
-    }
+    });
   }
 
   // Lấy tất cả tasks

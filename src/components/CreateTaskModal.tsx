@@ -116,26 +116,33 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 CreateTaskModal.handleSubmit STARTED');
+    console.log('📊 Initial submitting state:', submitting);
 
     if (!currentUser) {
-      console.error('No current user found');
+      console.error('❌ No current user found');
       return;
     }
 
     if (submitting) {
+      console.log('⚠️ Already submitting, preventing double submission');
       return; // 🔒 Prevent double submission
     }
 
     try {
+      console.log('🔄 Setting submitting to TRUE');
       setSubmitting(true); // 🔄 Set submitting state
 
       // Ensure workType is properly set
       const workType = formData.workTypes.length > 0 ? formData.workTypes[0] : 'other';
+      console.log('📝 Prepared task data with workType:', workType);
 
       // 🔄 Wait for onSubmit to complete before closing modal
+      console.log('🎯 About to call onSubmit...');
       await onSubmit({
         ...formData,
-        workTypes: [workType], // Ensure single work type is used
+        workTypes: formData.workTypes, // Pass array for compatibility
+        workType: workType, // Pass single work type as string
         id: `task-${Date.now()}`,
         createdBy: { id: currentUser.id, name: currentUser.name, email: currentUser.email },
         assignedTo: formData.taggedUsers.length > 0 ? formData.taggedUsers[0] : null,
@@ -143,14 +150,23 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
         autoPinToCalendar: formData.autoPinToCalendar, // 🆕 Truyền auto-pin option
       });
 
+      console.log('✅ onSubmit completed successfully');
       // ✅ Only reset and close after successful submission
+      console.log('🔄 About to reset and close modal...');
       handleReset();
       onClose();
+      console.log('✅ Modal reset and closed');
     } catch (error) {
-      console.error('Error submitting task:', error);
+      console.error('❌ CATCH BLOCK - Error submitting task:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
       // Don't close modal on error, let user try again
     } finally {
+      console.log('🔄 FINALLY BLOCK - Resetting submitting state...');
+      console.log('📊 submitting before reset:', submitting);
       setSubmitting(false); // 🔄 Reset submitting state
+      console.log('✅ FINALLY BLOCK - submitting set to FALSE');
+      console.log('🏁 CreateTaskModal.handleSubmit COMPLETED');
     }
   };
 

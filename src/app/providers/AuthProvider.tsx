@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useReducer } from 'react';
 import { authService, User } from '../../features/auth/api/authService';
+import { authContextService } from '../../services/authContextService';
 
 // Types - Use the User interface from authService
 type AuthUser = User;
@@ -98,15 +99,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Check for persisted session on mount
   useEffect(() => {
-    const checkPersistedSession = () => {
+    const checkPersistedSession = async () => {
       const savedUser = localStorage.getItem('auth_user');
       if (savedUser) {
         try {
           const user = JSON.parse(savedUser);
+
+          // Set user context in authContextService
+          await authContextService.setUserContext(user.id);
+
           dispatch({ type: 'LOGIN_SUCCESS', payload: user });
           return;
         } catch (error) {
+          console.error('Error restoring user session:', error);
           localStorage.removeItem('auth_user');
+          localStorage.removeItem('currentUserId');
         }
       }
       // Set loading to false if no saved session
@@ -124,15 +131,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Persist user session
       localStorage.setItem('auth_user', JSON.stringify(user));
-      
-      // Also ensure currentUserId is set with the correct ID
       localStorage.setItem('currentUserId', user.id);
+
+      // Set user context in authContextService
+      await authContextService.setUserContext(user.id);
 
       dispatch({ type: 'LOGIN_SUCCESS', payload: user });
     } catch (error) {
       dispatch({
         type: 'LOGIN_ERROR',
-        payload: error instanceof Error ? error.message : 'Đăng nhập thất bại'
+        payload: error instanceof Error ? error.message : 'Đăng nhập thất bại',
       });
       throw error;
     }
@@ -141,6 +149,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async () => {
     try {
       await authService.logout();
+
+      // Clear user context
+      await authContextService.clearUserContext();
+
+      // Clear localStorage
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('currentUserId');
+
       dispatch({ type: 'LOGOUT' });
     } catch (error) {
       console.error('Error during logout:', error);
@@ -175,11 +191,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     changePassword,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // Hook
