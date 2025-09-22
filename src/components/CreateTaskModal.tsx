@@ -158,8 +158,10 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       console.log('✅ Modal reset and closed');
     } catch (error) {
       console.error('❌ CATCH BLOCK - Error submitting task:', error);
-      console.error('❌ Error message:', error.message);
-      console.error('❌ Error stack:', error.stack);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      console.error('❌ Error message:', errorMessage);
+      console.error('❌ Error stack:', errorStack);
       // Don't close modal on error, let user try again
     } finally {
       console.log('🔄 FINALLY BLOCK - Resetting submitting state...');

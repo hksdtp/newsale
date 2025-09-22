@@ -315,17 +315,19 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       console.log('🎉 handleCreateTask SUCCESS - about to exit try block');
     } catch (error) {
       console.error('❌ CATCH BLOCK - Error creating task:', error);
-      console.error('❌ Error message:', error.message);
-      console.error('❌ Error stack:', error.stack);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      console.error('❌ Error message:', errorMsg);
+      console.error('❌ Error stack:', errorStack);
       console.error('❌ Error type:', typeof error);
 
       // More specific error messages
       let errorMessage = 'Không thể tạo công việc mới. Vui lòng thử lại.';
-      if (error.message.includes('timeout')) {
+      if (errorMsg.includes('timeout')) {
         errorMessage = 'Tạo công việc bị timeout. Vui lòng kiểm tra kết nối và thử lại.';
-      } else if (error.message.includes('authentication')) {
+      } else if (errorMsg.includes('authentication')) {
         errorMessage = 'Lỗi xác thực. Vui lòng đăng nhập lại.';
-      } else if (error.message.includes('network')) {
+      } else if (errorMsg.includes('network')) {
         errorMessage = 'Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại.';
       }
 
