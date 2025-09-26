@@ -122,6 +122,13 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
     }
   }, [user]);
 
+  // 🔄 Auto-refresh filtered results when filters change
+  useEffect(() => {
+    console.log('🔍 Filters changed, triggering re-render:', filters);
+    // Force re-render by updating a dummy state if needed
+    // The filtering happens in render, so this ensures UI updates
+  }, [filters, quickStatusFilter]);
+
   // Early return if user is null (redirecting to login)
   if (!user) {
     return (
@@ -418,14 +425,28 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
         return false;
       }
 
-      // Search filter
+      // 🔍 Enhanced Search filter - Tìm kiếm chính xác hơn
       if (filters.searchTerm) {
-        const searchLower = filters.searchTerm.toLowerCase();
-        const matchesSearch =
-          task.name.toLowerCase().includes(searchLower) ||
-          task.description?.toLowerCase().includes(searchLower) ||
-          task.createdBy?.name.toLowerCase().includes(searchLower) ||
-          task.assignedTo?.name.toLowerCase().includes(searchLower);
+        const searchLower = filters.searchTerm.toLowerCase().trim();
+
+        // Tách từ khóa tìm kiếm để tìm kiếm linh hoạt hơn
+        const searchTerms = searchLower.split(/\s+/).filter(term => term.length > 0);
+
+        const searchableText = [
+          task.name?.toLowerCase() || '',
+          task.description?.toLowerCase() || '',
+          task.createdBy?.name?.toLowerCase() || '',
+          task.assignedTo?.name?.toLowerCase() || '',
+          // Thêm các trường khác có thể tìm kiếm
+          task.priority?.toLowerCase() || '',
+          task.status?.toLowerCase() || '',
+          task.workType?.toLowerCase() || '',
+          // Tìm kiếm theo ID task (cho advanced users)
+          task.id?.toString() || '',
+        ].join(' ');
+
+        // Kiểm tra tất cả từ khóa có xuất hiện không
+        const matchesSearch = searchTerms.every(term => searchableText.includes(term));
 
         if (!matchesSearch) return false;
       }

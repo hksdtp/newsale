@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
-import { 
-  Search, 
-  Calendar, 
-  Filter, 
-  X, 
-  ChevronDown, 
-  ChevronUp,
+import {
+  AlertTriangle,
   Building,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Filter,
+  Search,
   Target,
   User,
   Users,
-  Clock,
-  AlertTriangle,
-  CheckCircle
+  X,
 } from 'lucide-react';
-import { WORK_TYPES, WorkType } from '../data/dashboardMockData';
+import React, { useCallback, useEffect, useState } from 'react';
+import { WorkType } from '../data/dashboardMockData';
 import IOSDatePicker from './IOSDatePicker';
 
 interface ModernTaskFiltersProps {
@@ -34,52 +33,56 @@ export interface FilterState {
   };
 }
 
-const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({ 
-  onFilterChange, 
-  quickStatusFilter, 
-  onQuickStatusChange 
+const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({
+  onFilterChange,
+  quickStatusFilter,
+  onQuickStatusChange,
 }) => {
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: '',
     dateFilter: 'all',
     workTypeFilter: 'all',
-    priorityFilter: 'all'
+    priorityFilter: 'all',
   });
 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
+  // 🔍 Debounced search để tối ưu performance
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
   // Quick Status Options với icons và colors
   const quickStatusOptions = [
-    { 
-      value: 'all', 
-      label: 'Tất cả', 
-      icon: Filter, 
+    {
+      value: 'all',
+      label: 'Tất cả',
+      icon: Filter,
       color: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
-      activeColor: 'bg-gray-500/30 text-white border-gray-400'
+      activeColor: 'bg-gray-500/30 text-white border-gray-400',
     },
-    { 
-      value: 'new-requests', 
-      label: 'Chưa tiến hành', 
-      icon: Clock, 
+    {
+      value: 'new-requests',
+      label: 'Chưa tiến hành',
+      icon: Clock,
       color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-      activeColor: 'bg-yellow-500/30 text-yellow-100 border-yellow-400'
+      activeColor: 'bg-yellow-500/30 text-yellow-100 border-yellow-400',
     },
-    { 
-      value: 'approved', 
-      label: 'Đang tiến hành', 
-      icon: AlertTriangle, 
+    {
+      value: 'approved',
+      label: 'Đang tiến hành',
+      icon: AlertTriangle,
       color: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      activeColor: 'bg-blue-500/30 text-blue-100 border-blue-400'
+      activeColor: 'bg-blue-500/30 text-blue-100 border-blue-400',
     },
-    { 
-      value: 'live', 
-      label: 'Đã hoàn thành', 
-      icon: CheckCircle, 
+    {
+      value: 'live',
+      label: 'Đã hoàn thành',
+      icon: CheckCircle,
       color: 'bg-green-500/20 text-green-300 border-green-500/30',
-      activeColor: 'bg-green-500/30 text-green-100 border-green-400'
-    }
+      activeColor: 'bg-green-500/30 text-green-100 border-green-400',
+    },
   ];
 
   // Priority Options với colors
@@ -87,7 +90,7 @@ const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({
     { value: 'all', label: 'Tất cả mức độ', color: 'text-gray-400' },
     { value: 'high', label: 'Ưu tiên cao', color: 'text-red-400' },
     { value: 'normal', label: 'Ưu tiên bình thường', color: 'text-yellow-400' },
-    { value: 'low', label: 'Ưu tiên thấp', color: 'text-green-400' }
+    { value: 'low', label: 'Ưu tiên thấp', color: 'text-green-400' },
   ];
 
   // Work Type Options với icons
@@ -101,30 +104,54 @@ const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({
     { value: 'kts-old', label: 'KTS cũ', icon: Target },
     { value: 'customer-new', label: 'Khách hàng mới', icon: User },
     { value: 'customer-old', label: 'Khách hàng cũ', icon: User },
-    { value: 'other', label: 'Khác', icon: Building }
+    { value: 'other', label: 'Khác', icon: Building },
   ];
 
-  const updateFilters = (newFilters: Partial<FilterState>) => {
-    const updatedFilters = { ...filters, ...newFilters };
-    setFilters(updatedFilters);
-    onFilterChange(updatedFilters);
-  };
+  // 🔍 Debounce search input để tránh gọi API liên tục
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+    }, 300); // Delay 300ms
 
-  const clearFilters = () => {
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // 🔄 Cập nhật filters khi debouncedSearch thay đổi
+  useEffect(() => {
+    if (debouncedSearch !== filters.searchTerm) {
+      const updatedFilters = { ...filters, searchTerm: debouncedSearch };
+      setFilters(updatedFilters);
+      onFilterChange(updatedFilters);
+    }
+  }, [debouncedSearch]);
+
+  const updateFilters = useCallback(
+    (newFilters: Partial<FilterState>) => {
+      const updatedFilters = { ...filters, ...newFilters };
+      setFilters(updatedFilters);
+      onFilterChange(updatedFilters);
+    },
+    [filters, onFilterChange]
+  );
+
+  const clearFilters = useCallback(() => {
     const clearedFilters: FilterState = {
       searchTerm: '',
       dateFilter: 'all',
       workTypeFilter: 'all',
-      priorityFilter: 'all'
+      priorityFilter: 'all',
     };
     setFilters(clearedFilters);
+    setSearchInput(''); // 🔍 Reset search input
+    setDebouncedSearch(''); // 🔍 Reset debounced search
     onFilterChange(clearedFilters);
     onQuickStatusChange('all');
-  };
+  }, [onFilterChange, onQuickStatusChange]);
 
-  const hasActiveFilters = filters.searchTerm || 
-    filters.dateFilter !== 'all' || 
-    filters.workTypeFilter !== 'all' || 
+  const hasActiveFilters =
+    filters.searchTerm ||
+    filters.dateFilter !== 'all' ||
+    filters.workTypeFilter !== 'all' ||
     filters.priorityFilter !== 'all' ||
     quickStatusFilter !== 'all';
 
@@ -133,33 +160,47 @@ const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({
     filters.dateFilter !== 'all' ? filters.dateFilter : null,
     filters.workTypeFilter !== 'all' ? filters.workTypeFilter : null,
     filters.priorityFilter !== 'all' ? filters.priorityFilter : null,
-    quickStatusFilter !== 'all' ? quickStatusFilter : null
+    quickStatusFilter !== 'all' ? quickStatusFilter : null,
   ].filter(Boolean).length;
 
   return (
     <div className="bg-gray-800/30 backdrop-blur-xl rounded-2xl border border-gray-700/30 mb-6 overflow-hidden shadow-2xl">
       {/* Main Filter Bar - iOS Style */}
       <div className="p-4 space-y-4">
-        {/* Search Bar - Prominent */}
+        {/* Search Bar - Prominent với Real-time Search */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
             placeholder="Tìm kiếm công việc, người tạo, người thực hiện..."
-            value={filters.searchTerm}
-            onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-            className="w-full pl-12 pr-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:border-blue-500/50 focus:outline-none focus:bg-gray-700/70 transition-all duration-200"
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            className="w-full pl-12 pr-12 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:border-blue-500/50 focus:outline-none focus:bg-gray-700/70 transition-all duration-200"
           />
+          {/* 🔍 Search loading indicator */}
+          {searchInput !== debouncedSearch && (
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+          {/* 🔍 Search results count */}
+          {debouncedSearch && (
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs text-gray-400">
+              <span className="bg-gray-600/80 px-2 py-1 rounded-full">
+                {debouncedSearch.length > 0 ? '🔍' : ''}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Quick Status Filters - Integrated */}
         <div className="space-y-2">
           <label className="block text-gray-400 text-sm font-medium">Trạng thái</label>
           <div className="flex flex-wrap gap-2">
-            {quickStatusOptions.map((option) => {
+            {quickStatusOptions.map(option => {
               const Icon = option.icon;
               const isActive = quickStatusFilter === option.value;
-              
+
               return (
                 <button
                   key={option.value}
@@ -182,7 +223,7 @@ const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({
             onClick={() => setShowAdvanced(!showAdvanced)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
               showAdvanced || hasActiveFilters
-                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                 : 'bg-gray-700/50 text-gray-300 border border-gray-600/50 hover:bg-gray-700'
             }`}
           >
@@ -219,7 +260,9 @@ const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({
               <label className="block text-gray-400 text-sm font-medium">Loại công việc</label>
               <select
                 value={filters.workTypeFilter}
-                onChange={(e) => updateFilters({ workTypeFilter: e.target.value as WorkType | 'all' })}
+                onChange={e =>
+                  updateFilters({ workTypeFilter: e.target.value as WorkType | 'all' })
+                }
                 className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white text-sm focus:border-blue-500/50 focus:outline-none appearance-none"
               >
                 {workTypeOptions.map(option => (
@@ -235,7 +278,11 @@ const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({
               <label className="block text-gray-400 text-sm font-medium">Mức độ ưu tiên</label>
               <select
                 value={filters.priorityFilter}
-                onChange={(e) => updateFilters({ priorityFilter: e.target.value as 'all' | 'low' | 'normal' | 'high' })}
+                onChange={e =>
+                  updateFilters({
+                    priorityFilter: e.target.value as 'all' | 'low' | 'normal' | 'high',
+                  })
+                }
                 className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white text-sm focus:border-blue-500/50 focus:outline-none appearance-none"
               >
                 {priorityOptions.map(option => (
@@ -252,13 +299,15 @@ const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <IOSDatePicker
                   value={filters.customDateRange?.start || ''}
-                  onChange={(date) => updateFilters({
-                    customDateRange: {
-                      ...filters.customDateRange,
-                      start: date.split('T')[0],
-                      end: filters.customDateRange?.end || ''
-                    }
-                  })}
+                  onChange={date =>
+                    updateFilters({
+                      customDateRange: {
+                        ...filters.customDateRange,
+                        start: date.split('T')[0],
+                        end: filters.customDateRange?.end || '',
+                      },
+                    })
+                  }
                   placeholder="Từ ngày"
                   isOpen={showDatePicker}
                   onToggle={() => {
@@ -269,16 +318,18 @@ const ModernTaskFilters: React.FC<ModernTaskFiltersProps> = ({
                   color="blue"
                   buttonClassName="text-sm py-2"
                 />
-                
+
                 <IOSDatePicker
                   value={filters.customDateRange?.end || ''}
-                  onChange={(date) => updateFilters({
-                    customDateRange: {
-                      ...filters.customDateRange,
-                      start: filters.customDateRange?.start || '',
-                      end: date.split('T')[0]
-                    }
-                  })}
+                  onChange={date =>
+                    updateFilters({
+                      customDateRange: {
+                        ...filters.customDateRange,
+                        start: filters.customDateRange?.start || '',
+                        end: date.split('T')[0],
+                      },
+                    })
+                  }
                   placeholder="Đến ngày"
                   isOpen={showEndDatePicker}
                   onToggle={() => {

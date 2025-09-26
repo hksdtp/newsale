@@ -85,3 +85,30 @@
     "editor.wordWrap": "on"
   }
 }
+{
+    "http.noProxy": [
+        "169.254.169.254",
+        "api.github.com",
+        "telemetry.individual.githubcopilot.com",
+        "api.continue.dev",
+        "westus-0.in.applicationinsights.azure.com",
+        "mobile.events.data.microsoft.com",
+        "copilot-telemetry.githubusercontent.com",
+        "default.exp-tas.com",
+        "main.vscode-cdn.net",
+        "api.segment.io",
+        "github.com",
+        "otel.gitkraken.com",
+        "o4509262619082752.ingest.us.sentry.io",
+        "www.vscode-unpkg.net",
+        "marketplace.visualstudio.com",
+        "cdnjs.cloudflare.com",
+        "raw.githubusercontent.com",
+        "app.posthog.com",
+        "update.code.visualstudio.com",
+        "education.github.com",
+        "configs.gitkraken.dev",
+        "api.docker.com",
+        "img.shields.io"
+    ]
+}
