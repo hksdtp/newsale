@@ -9,7 +9,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChecklistItem, ChecklistProgress, checklistService } from '../services/checklistService';
 import { taskService } from '../services/taskService';
 
@@ -35,6 +35,16 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
   const [scheduleTime, setScheduleTime] = useState('');
   const newItemInputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
+
+  // 🚀 Optimistic UI states
+  const [optimisticItems, setOptimisticItems] = useState<ChecklistItem[]>([]);
+  const [pendingOperations, setPendingOperations] = useState<Set<string>>(new Set());
+  const [isCreating, setIsCreating] = useState(false);
+
+  // 🎯 Computed items list - kết hợp real items và optimistic items
+  const displayItems = useMemo(() => {
+    return [...items, ...optimisticItems].sort((a, b) => a.order_index - b.order_index);
+  }, [items, optimisticItems]);
 
   // Helper function để format ngày tháng theo chuẩn Việt Nam
   const formatVietnameseDateTime = (dateString: string) => {
@@ -88,7 +98,7 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
     }
   };
 
-  const updateProgress = async () => {
+  const updateProgress = useCallback(async () => {
     try {
       const progressData = await checklistService.getChecklistProgress(taskId);
       setProgress(progressData);
@@ -96,68 +106,194 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
     } catch (error) {
       console.error('Error updating progress:', error);
     }
-  };
+  }, [taskId, onProgressChange]);
 
-  const handleAddItem = async () => {
+  const handleAddItem = useCallback(async () => {
     if (!newItemTitle.trim()) return;
 
-    try {
-      const newItem = await checklistService.createChecklistItem({
-        taskId,
-        title: newItemTitle.trim(),
-      });
+    const trimmedTitle = newItemTitle.trim();
+    const optimisticId = `optimistic-${Date.now()}`;
 
-      setItems(prev => [...prev, newItem]);
+    // 🚀 Optimistic UI: Tạo item tạm thời ngay lập tức
+    const optimisticItem: ChecklistItem = {
+      id: optimisticId,
+      task_id: taskId,
+      title: trimmedTitle,
+      is_completed: false,
+      order_index: items.length + optimisticItems.length,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    try {
+      // 🎯 Hiển thị ngay lập tức (Optimistic UI)
+      setOptimisticItems(prev => [...prev, optimisticItem]);
+      setPendingOperations(prev => new Set([...prev, optimisticId]));
+      setIsCreating(true);
       setNewItemTitle('');
       setAddingNew(false);
+
+      // 🔄 Gọi API thực tế
+      const newItem = await checklistService.createChecklistItem({
+        taskId,
+        title: trimmedTitle,
+      });
+
+      // ✅ Thành công: Thay thế optimistic item bằng real item
+      setOptimisticItems(prev => prev.filter(item => item.id !== optimisticId));
+      setItems(prev => [...prev, newItem]);
+      setPendingOperations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(optimisticId);
+        return newSet;
+      });
+
       updateProgress();
     } catch (error) {
       console.error('Error adding item:', error);
-      alert('Không thể thêm mục mới');
-    }
-  };
 
-  const handleToggleItem = async (itemId: string) => {
-    try {
-      const updatedItem = await checklistService.toggleChecklistItem(itemId);
-      setItems(prev => prev.map(item => (item.id === itemId ? updatedItem : item)));
-      updateProgress();
-    } catch (error) {
-      console.error('Error toggling item:', error);
-      alert('Không thể cập nhật trạng thái');
-    }
-  };
-
-  const handleEditItem = async (itemId: string) => {
-    if (!editingTitle.trim()) return;
-
-    try {
-      const updatedItem = await checklistService.updateChecklistItem({
-        id: itemId,
-        title: editingTitle.trim(),
+      // ❌ Thất bại: Rollback optimistic UI
+      setOptimisticItems(prev => prev.filter(item => item.id !== optimisticId));
+      setPendingOperations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(optimisticId);
+        return newSet;
       });
 
-      setItems(prev => prev.map(item => (item.id === itemId ? updatedItem : item)));
-      setEditingId(null);
-      setEditingTitle('');
-    } catch (error) {
-      console.error('Error editing item:', error);
-      alert('Không thể cập nhật mục');
-    }
-  };
+      // Khôi phục form state để user có thể thử lại
+      setNewItemTitle(trimmedTitle);
+      setAddingNew(true);
 
-  const handleDeleteItem = async (itemId: string) => {
-    if (!confirm('Bạn có chắc muốn xóa mục này?')) return;
-
-    try {
-      await checklistService.deleteChecklistItem(itemId);
-      setItems(prev => prev.filter(item => item.id !== itemId));
-      updateProgress();
-    } catch (error) {
-      console.error('Error deleting item:', error);
-      alert('Không thể xóa mục');
+      alert('Không thể thêm mục mới. Vui lòng thử lại.');
+    } finally {
+      setIsCreating(false);
     }
-  };
+  }, [newItemTitle, taskId, items.length, optimisticItems.length, updateProgress]);
+
+  const handleToggleItem = useCallback(
+    async (itemId: string) => {
+      // Skip nếu đang pending
+      if (pendingOperations.has(itemId)) return;
+
+      try {
+        // 🚀 Optimistic UI: Cập nhật trạng thái ngay lập tức
+        const currentItem = displayItems.find(item => item.id === itemId);
+        if (!currentItem) return;
+
+        const optimisticUpdate = { ...currentItem, is_completed: !currentItem.is_completed };
+
+        // Cập nhật optimistic state
+        setPendingOperations(prev => new Set([...prev, itemId]));
+        setItems(prev => prev.map(item => (item.id === itemId ? optimisticUpdate : item)));
+
+        // 🔄 Gọi API thực tế
+        const updatedItem = await checklistService.toggleChecklistItem(itemId);
+
+        // ✅ Thành công: Cập nhật với dữ liệu thực từ server
+        setItems(prev => prev.map(item => (item.id === itemId ? updatedItem : item)));
+        updateProgress();
+      } catch (error) {
+        console.error('Error toggling item:', error);
+
+        // ❌ Thất bại: Rollback optimistic update
+        const originalItem = items.find(item => item.id === itemId);
+        if (originalItem) {
+          setItems(prev => prev.map(item => (item.id === itemId ? originalItem : item)));
+        }
+
+        alert('Không thể cập nhật trạng thái');
+      } finally {
+        setPendingOperations(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+      }
+    },
+    [displayItems, items, pendingOperations, updateProgress]
+  );
+
+  const handleEditItem = useCallback(
+    async (itemId: string) => {
+      if (!editingTitle.trim()) return;
+
+      const trimmedTitle = editingTitle.trim();
+      const originalItem = items.find(item => item.id === itemId);
+      if (!originalItem) return;
+
+      try {
+        // 🚀 Optimistic UI: Cập nhật title ngay lập tức
+        const optimisticUpdate = { ...originalItem, title: trimmedTitle };
+
+        setPendingOperations(prev => new Set([...prev, itemId]));
+        setItems(prev => prev.map(item => (item.id === itemId ? optimisticUpdate : item)));
+        setEditingId(null);
+        setEditingTitle('');
+
+        // 🔄 Gọi API thực tế
+        const updatedItem = await checklistService.updateChecklistItem({
+          id: itemId,
+          title: trimmedTitle,
+        });
+
+        // ✅ Thành công: Cập nhật với dữ liệu thực từ server
+        setItems(prev => prev.map(item => (item.id === itemId ? updatedItem : item)));
+      } catch (error) {
+        console.error('Error editing item:', error);
+
+        // ❌ Thất bại: Rollback optimistic update
+        setItems(prev => prev.map(item => (item.id === itemId ? originalItem : item)));
+
+        // Khôi phục editing state để user có thể thử lại
+        setEditingId(itemId);
+        setEditingTitle(trimmedTitle);
+
+        alert('Không thể cập nhật mục');
+      } finally {
+        setPendingOperations(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+      }
+    },
+    [editingTitle, items]
+  );
+
+  const handleDeleteItem = useCallback(
+    async (itemId: string) => {
+      if (!confirm('Bạn có chắc muốn xóa mục này?')) return;
+
+      const itemToDelete = items.find(item => item.id === itemId);
+      if (!itemToDelete) return;
+
+      try {
+        // 🚀 Optimistic UI: Xóa item ngay lập tức
+        setPendingOperations(prev => new Set([...prev, itemId]));
+        setItems(prev => prev.filter(item => item.id !== itemId));
+
+        // 🔄 Gọi API thực tế
+        await checklistService.deleteChecklistItem(itemId);
+
+        // ✅ Thành công: Cập nhật progress
+        updateProgress();
+      } catch (error) {
+        console.error('Error deleting item:', error);
+
+        // ❌ Thất bại: Rollback - khôi phục item đã xóa
+        setItems(prev => [...prev, itemToDelete].sort((a, b) => a.order_index - b.order_index));
+
+        alert('Không thể xóa mục');
+      } finally {
+        setPendingOperations(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+      }
+    },
+    [items, updateProgress]
+  );
 
   const startEditing = (item: ChecklistItem) => {
     setEditingId(item.id);
@@ -263,10 +399,22 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
 
           <button
             onClick={() => setAddingNew(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+            disabled={isCreating}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors shadow-sm ${
+              isCreating ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+            } text-white`}
           >
-            <Plus className="w-4 h-4" />
-            <span className="text-sm font-medium">Thêm mục</span>
+            {isCreating ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm font-medium">Đang tạo...</span>
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                <span className="text-sm font-medium">Thêm mục</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -326,124 +474,131 @@ const TaskChecklist: React.FC<TaskChecklistProps> = ({ taskId, onProgressChange 
           </div>
         )}
 
-        {/* Checklist Items */}
-        {items.length > 0 && (
+        {/* Checklist Items với Optimistic UI */}
+        {displayItems.length > 0 && (
           <div className="space-y-2">
-            {items.map(item => (
-              <div
-                key={item.id}
-                className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                  item.is_completed
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-white border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                {/* Drag Handle */}
-                <GripVertical className="w-4 h-4 text-gray-400 cursor-grab hover:text-gray-600" />
+            {displayItems.map(item => {
+              const isPending = pendingOperations.has(item.id);
+              const isOptimistic = item.id.startsWith('optimistic-');
 
-                {/* Checkbox */}
-                <button
-                  onClick={() => handleToggleItem(item.id)}
-                  className={`flex-shrink-0 transition-colors ${
-                    item.is_completed
-                      ? 'text-green-600 hover:text-green-700'
-                      : 'text-gray-400 hover:text-gray-600'
-                  }`}
+              return (
+                <div
+                  key={item.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 ${
+                    isOptimistic
+                      ? 'animate-in slide-in-from-top-2 fade-in-0 bg-blue-50 border-blue-200 opacity-80'
+                      : item.is_completed
+                        ? 'bg-green-50 border-green-200'
+                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                  } ${isPending ? 'opacity-60 pointer-events-none' : ''}`}
                 >
-                  {item.is_completed ? (
-                    <CheckSquare className="w-5 h-5" />
-                  ) : (
-                    <Square className="w-5 h-5" />
-                  )}
-                </button>
+                  {/* Drag Handle */}
+                  <GripVertical className="w-4 h-4 text-gray-400 cursor-grab hover:text-gray-600" />
 
-                {/* Content với ngày tháng */}
-                <div className="flex-1 min-w-0">
-                  {editingId === item.id ? (
-                    <input
-                      ref={editInputRef}
-                      type="text"
-                      value={editingTitle}
-                      onChange={e => setEditingTitle(e.target.value)}
-                      className="w-full bg-transparent text-gray-900 border-none outline-none"
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') handleEditItem(item.id);
-                        if (e.key === 'Escape') cancelEditing();
-                      }}
-                    />
-                  ) : (
-                    <div>
-                      <span
-                        className={`block font-medium ${
-                          item.is_completed ? 'text-gray-500 line-through' : 'text-gray-900'
-                        }`}
-                      >
-                        {item.title}
-                      </span>
-                      {/* Hiển thị ngày tháng theo chuẩn Việt Nam */}
-                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <span className="text-gray-400">📅</span>
-                          Tạo: {formatVietnameseDateTime(item.created_at)}
+                  {/* Checkbox */}
+                  <button
+                    onClick={() => handleToggleItem(item.id)}
+                    className={`flex-shrink-0 transition-colors ${
+                      item.is_completed
+                        ? 'text-green-600 hover:text-green-700'
+                        : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                  >
+                    {item.is_completed ? (
+                      <CheckSquare className="w-5 h-5" />
+                    ) : (
+                      <Square className="w-5 h-5" />
+                    )}
+                  </button>
+
+                  {/* Content với ngày tháng */}
+                  <div className="flex-1 min-w-0">
+                    {editingId === item.id ? (
+                      <input
+                        ref={editInputRef}
+                        type="text"
+                        value={editingTitle}
+                        onChange={e => setEditingTitle(e.target.value)}
+                        className="w-full bg-transparent text-gray-900 border-none outline-none"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleEditItem(item.id);
+                          if (e.key === 'Escape') cancelEditing();
+                        }}
+                      />
+                    ) : (
+                      <div>
+                        <span
+                          className={`block font-medium ${
+                            item.is_completed ? 'text-gray-500 line-through' : 'text-gray-900'
+                          }`}
+                        >
+                          {item.title}
                         </span>
-                        {item.is_completed && (
-                          <span className="text-green-600 flex items-center gap-1">
-                            <span>✅</span>
-                            Hoàn thành: {formatVietnameseDateTime(item.updated_at)}
+                        {/* Hiển thị ngày tháng theo chuẩn Việt Nam */}
+                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <span className="text-gray-400">📅</span>
+                            Tạo: {formatVietnameseDateTime(item.created_at)}
                           </span>
-                        )}
+                          {item.is_completed && (
+                            <span className="text-green-600 flex items-center gap-1">
+                              <span>✅</span>
+                              Hoàn thành: {formatVietnameseDateTime(item.updated_at)}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-1">
-                  {editingId === item.id ? (
-                    <>
-                      <button
-                        onClick={() => handleEditItem(item.id)}
-                        className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
-                        title="Lưu"
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={cancelEditing}
-                        className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                        title="Hủy"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => startScheduling(item)}
-                        className="p-1.5 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors"
-                        title="Lên lịch"
-                      >
-                        <Calendar className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => startEditing(item)}
-                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="Sửa"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                        title="Xóa"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
+                  {/* Actions */}
+                  <div className="flex items-center gap-1">
+                    {editingId === item.id ? (
+                      <>
+                        <button
+                          onClick={() => handleEditItem(item.id)}
+                          className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
+                          title="Lưu"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={cancelEditing}
+                          className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                          title="Hủy"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => startScheduling(item)}
+                          className="p-1.5 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors"
+                          title="Lên lịch"
+                        >
+                          <Calendar className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => startEditing(item)}
+                          className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="Sửa"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteItem(item.id)}
+                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="Xóa"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
