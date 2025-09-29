@@ -1,6 +1,6 @@
 import { Task, WorkType } from '../data/dashboardMockData';
 import { getCurrentUser, getUserById, isDirector } from '../data/usersMockData';
-import { supabase } from '../shared/api/supabase';
+import { supabase, withConnectionRetry } from '../shared/api/supabase';
 import { createLocalDate, formatLocalDateString } from '../utils/dateUtils';
 import { getCurrentUserPermissions } from '../utils/roleBasedPermissions';
 import { withUserContext } from './authContextService';
@@ -244,22 +244,50 @@ class TaskService {
           source: 'manual', // Keep as manual for user-created tasks
         };
 
-        // Insert into Supabase (user context already set by withUserContext wrapper)
-        const { data, error } = await supabase.from('tasks').insert(dbTask).select().single();
+        // 🚀 Insert into Supabase with connection retry
+        const { data, error } = await withConnectionRetry(async () => {
+          return await supabase.from('tasks').insert(dbTask).select().single();
+        });
 
         if (error) {
           console.error('❌ Error creating task:', error);
           throw new Error(`Không thể tạo task: ${error.message}`);
         }
 
-        // Get user info for created_by and assigned_to
-        const [createdByUser, assignedToUser] = await Promise.all([
-          this.getUserInfo(data.created_by_id),
-          this.getUserInfo(data.assigned_to_id),
-        ]);
+        // 🚀 Optimized: Get user info with timeout and caching
+        const getUserWithTimeout = async (userId: string, timeoutMs = 5000) => {
+          const userPromise = this.getUserInfo(userId);
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error(`User info timeout for ${userId}`)), timeoutMs);
+          });
+          return Promise.race([userPromise, timeoutPromise]);
+        };
 
-        // Return formatted task
-        return this.mapDbTaskToTask(data, createdByUser, assignedToUser);
+        try {
+          // Parallel user info fetch with timeout
+          const [createdByUser, assignedToUser] = await Promise.all([
+            getUserWithTimeout(data.created_by_id),
+            data.assigned_to_id !== data.created_by_id
+              ? getUserWithTimeout(data.assigned_to_id)
+              : Promise.resolve(null), // Skip if same user
+          ]);
+
+          // Use createdByUser for assignedToUser if they're the same
+          const finalAssignedToUser =
+            data.assigned_to_id === data.created_by_id ? createdByUser : assignedToUser;
+
+          // Return formatted task
+          return this.mapDbTaskToTask(data, createdByUser, finalAssignedToUser);
+        } catch (userError) {
+          console.warn('⚠️ User info fetch failed, using minimal data:', userError);
+
+          // Fallback: Return task with minimal user info
+          return this.mapDbTaskToTask(
+            data,
+            { id: data.created_by_id, name: 'Unknown User', email: '', role: 'member' },
+            { id: data.assigned_to_id, name: 'Unknown User', email: '', role: 'member' }
+          );
+        }
       } catch (error) {
         console.error('Error creating task:', error);
         throw new Error('Không thể tạo công việc mới');

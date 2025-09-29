@@ -14,6 +14,7 @@ import TaskDetailModal from '../../../components/TaskDetailModal';
 import { getCurrentUser } from '../../../data/usersMockData';
 import { TaskWithUsers, taskService } from '../../../services/taskService';
 import { supabase } from '../../../shared/api/supabase';
+import { preflightCheck } from '../../../utils/connectionTest';
 import { formatVietnameseDate, parseDate } from '../../../utils/dateUtils';
 import {
   getCurrentUserPermissions,
@@ -267,14 +268,56 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
         currentUserId
       );
 
-      // Add 30 second timeout
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Task creation timeout after 30 seconds')), 30000);
-      });
+      // 🔄 Retry mechanism với timeout tăng dần
+      const createTaskWithRetry = async (retries = 3): Promise<any> => {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          try {
+            console.log(`⏱️ Task creation attempt ${attempt}/${retries}...`);
 
-      console.log('⏱️ Starting task creation with timeout...');
-      console.log('🔄 About to call Promise.race...');
-      const newTask = await Promise.race([createTaskPromise, timeoutPromise]);
+            // Timeout tăng dần: 15s, 30s, 60s
+            const timeoutDuration = attempt * 15000;
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(
+                () =>
+                  reject(
+                    new Error(
+                      `Task creation timeout after ${timeoutDuration / 1000} seconds (attempt ${attempt})`
+                    )
+                  ),
+                timeoutDuration
+              );
+            });
+
+            const result = await Promise.race([createTaskPromise, timeoutPromise]);
+            console.log(`✅ Task created successfully on attempt ${attempt}`);
+            return result;
+          } catch (error) {
+            console.error(`❌ Attempt ${attempt} failed:`, error);
+
+            if (attempt === retries) {
+              throw error; // Throw on final attempt
+            }
+
+            // Wait before retry (exponential backoff)
+            const waitTime = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+            console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          }
+        }
+      };
+
+      // 🛫 Preflight check trước khi tạo task
+      console.log('🛫 Running preflight check...');
+      const isConnectionHealthy = await preflightCheck();
+
+      if (!isConnectionHealthy) {
+        throw new Error(
+          'Connection check failed. Please check your internet connection and try again.'
+        );
+      }
+
+      console.log('🔄 Starting task creation with retry mechanism...');
+      const newTask = await createTaskWithRetry();
 
       console.log('✅ Task created successfully:', newTask);
       console.log('🎉 Promise.race completed successfully');
@@ -419,7 +462,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
 
   // Filter tasks based on current filters và quick status filter
   const filterTasks = (tasks: TaskWithUsers[], filters: FilterState): TaskWithUsers[] => {
-    let filteredTasks = tasks.filter(task => {
+    const filteredTasks = tasks.filter(task => {
       // Quick Status Filter - ưu tiên cao nhất
       if (quickStatusFilter !== 'all' && task.status !== quickStatusFilter) {
         return false;
