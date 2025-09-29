@@ -1,0 +1,305 @@
+{
+  "timestamp": "2025-09-29T08:47:16.547Z",
+  "summary": {
+    "totalPages": 3,
+    "totalAccessibilityIssues": 25,
+    "averageLoadTime": 446,
+    "pagesWithReact": 0,
+    "overallStatus": "NEEDS_ATTENTION"
+  },
+  "pageReports": [
+    {
+      "pageName": "Region Selection",
+      "url": "http://localhost:3002/auth/region-selection",
+      "timestamp": "2025-09-29T08:46:35.261Z",
+      "accessibility": [
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        }
+      ],
+      "performance": {
+        "loadTime": 446,
+        "domReady": 440,
+        "memory": {
+          "used": 21,
+          "total": 25,
+          "limit": 4096
+        },
+        "url": "http://localhost:3002/auth/region-selection",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+        "timestamp": "2025-09-29T08:46:35.256Z"
+      },
+      "react": {
+        "hasReactDevTools": {
+          "renderers": {},
+          "supportsFiber": true
+        },
+        "componentCount": 0
+      },
+      "taskService": {
+        "hasTaskService": false,
+        "hasSupabase": false,
+        "hasDebugResults": false
+      }
+    },
+    {
+      "pageName": "Password Page",
+      "url": "http://localhost:3002/auth/team-selection?location=H%C3%A0%20N%E1%BB%99i",
+      "timestamp": "2025-09-29T08:46:37.385Z",
+      "accessibility": [
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".inline-flex"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        }
+      ],
+      "performance": {
+        "loadTime": 446,
+        "domReady": 440,
+        "memory": {
+          "used": 23,
+          "total": 27,
+          "limit": 4096
+        },
+        "url": "http://localhost:3002/auth/team-selection?location=H%C3%A0%20N%E1%BB%99i",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+        "timestamp": "2025-09-29T08:46:37.381Z"
+      },
+      "react": {
+        "hasReactDevTools": {
+          "renderers": {},
+          "supportsFiber": true
+        },
+        "componentCount": 0
+      },
+      "taskService": {
+        "hasTaskService": false,
+        "hasSupabase": false,
+        "hasDebugResults": false
+      }
+    },
+    {
+      "pageName": "Main Dashboard",
+      "url": "http://localhost:3002/dashboard/home",
+      "timestamp": "2025-09-29T08:46:46.546Z",
+      "accessibility": [
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".hidden"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".lg:hidden"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".w-full"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".w-full"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".w-full"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".w-full"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".flex"
+        },
+        {
+          "element": "BUTTON[button]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".inline-flex"
+        },
+        {
+          "element": "BUTTON[button]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".inline-flex"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".group"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".group"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        }
+      ],
+      "performance": {
+        "loadTime": 446,
+        "domReady": 440,
+        "memory": {
+          "used": 24,
+          "total": 33,
+          "limit": 4096
+        },
+        "url": "http://localhost:3002/dashboard/home",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+        "timestamp": "2025-09-29T08:46:46.541Z"
+      },
+      "react": {
+        "hasReactDevTools": {
+          "renderers": {},
+          "supportsFiber": true
+        },
+        "componentCount": 0
+      },
+      "taskService": {
+        "hasTaskService": false,
+        "hasSupabase": false,
+        "hasDebugResults": false
+      }
+    }
+  ]
+}

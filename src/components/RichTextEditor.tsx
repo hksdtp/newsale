@@ -599,8 +599,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       {/* Editor */}
       <div
+        id="rich-text-editor"
         ref={editorRef}
         contentEditable={!disabled}
+        role="textbox"
+        aria-multiline="true"
+        aria-label={placeholder}
+        aria-describedby="rich-text-help"
         onInput={handleInput}
         onFocus={() => {
           setIsFocused(true);
@@ -620,6 +625,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         suppressContentEditableWarning={true}
         data-placeholder={placeholder}
       />
+      <div id="rich-text-help" className="sr-only">
+        Trình soạn thảo văn bản với định dạng. Sử dụng thanh công cụ để định dạng text.
+      </div>
 
       {/* Desktop Color Picker Portal */}
       {showColorPicker &&

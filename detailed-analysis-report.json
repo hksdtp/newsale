@@ -1,0 +1,502 @@
+{
+  "timestamp": "2025-09-29T08:48:26.909Z",
+  "executiveSummary": {
+    "overallHealth": "CRITICAL",
+    "criticalIssues": 25,
+    "performanceStatus": "EXCELLENT",
+    "pagesAudited": 3,
+    "mainConcerns": [
+      "Accessibility compliance issues across all pages",
+      "Missing form element identifiers and labels",
+      "React components not loading properly",
+      "TaskService not available on frontend"
+    ]
+  },
+  "accessibilityAnalysis": {
+    "totalIssues": 25,
+    "issuesByType": {
+      "Missing id/name": 25,
+      "Missing aria-label": 25
+    },
+    "mostCommonIssues": [
+      [
+        "Missing id/name",
+        25
+      ],
+      [
+        "Missing aria-label",
+        25
+      ]
+    ],
+    "affectedPages": 3,
+    "severity": "HIGH",
+    "wcagCompliance": "NON_COMPLIANT",
+    "detailedIssues": [
+      {
+        "page": "Region Selection",
+        "url": "http://localhost:3002/auth/region-selection",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Region Selection",
+        "url": "http://localhost:3002/auth/region-selection",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Region Selection",
+        "url": "http://localhost:3002/auth/region-selection",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Password Page",
+        "url": "http://localhost:3002/auth/team-selection?location=H%C3%A0%20N%E1%BB%99i",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".inline-flex"
+      },
+      {
+        "page": "Password Page",
+        "url": "http://localhost:3002/auth/team-selection?location=H%C3%A0%20N%E1%BB%99i",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Password Page",
+        "url": "http://localhost:3002/auth/team-selection?location=H%C3%A0%20N%E1%BB%99i",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Password Page",
+        "url": "http://localhost:3002/auth/team-selection?location=H%C3%A0%20N%E1%BB%99i",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Password Page",
+        "url": "http://localhost:3002/auth/team-selection?location=H%C3%A0%20N%E1%BB%99i",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Password Page",
+        "url": "http://localhost:3002/auth/team-selection?location=H%C3%A0%20N%E1%BB%99i",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".hidden"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".lg:hidden"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".w-full"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".w-full"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".w-full"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".w-full"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".flex"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[button]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".inline-flex"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[button]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".inline-flex"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".group"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".group"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "page": "Main Dashboard",
+        "url": "http://localhost:3002/dashboard/home",
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      }
+    ]
+  },
+  "performanceAnalysis": {
+    "averageLoadTime": 446,
+    "slowestPage": {
+      "pageName": "Region Selection",
+      "url": "http://localhost:3002/auth/region-selection",
+      "timestamp": "2025-09-29T08:46:35.261Z",
+      "accessibility": [
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        }
+      ],
+      "performance": {
+        "loadTime": 446,
+        "domReady": 440,
+        "memory": {
+          "used": 21,
+          "total": 25,
+          "limit": 4096
+        },
+        "url": "http://localhost:3002/auth/region-selection",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+        "timestamp": "2025-09-29T08:46:35.256Z"
+      },
+      "react": {
+        "hasReactDevTools": {
+          "renderers": {},
+          "supportsFiber": true
+        },
+        "componentCount": 0
+      },
+      "taskService": {
+        "hasTaskService": false,
+        "hasSupabase": false,
+        "hasDebugResults": false
+      }
+    },
+    "fastestPage": {
+      "pageName": "Region Selection",
+      "url": "http://localhost:3002/auth/region-selection",
+      "timestamp": "2025-09-29T08:46:35.261Z",
+      "accessibility": [
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        },
+        {
+          "element": "BUTTON[submit]",
+          "problems": [
+            "Missing id/name",
+            "Missing aria-label"
+          ],
+          "selector": ".\n"
+        }
+      ],
+      "performance": {
+        "loadTime": 446,
+        "domReady": 440,
+        "memory": {
+          "used": 21,
+          "total": 25,
+          "limit": 4096
+        },
+        "url": "http://localhost:3002/auth/region-selection",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+        "timestamp": "2025-09-29T08:46:35.256Z"
+      },
+      "react": {
+        "hasReactDevTools": {
+          "renderers": {},
+          "supportsFiber": true
+        },
+        "componentCount": 0
+      },
+      "taskService": {
+        "hasTaskService": false,
+        "hasSupabase": false,
+        "hasDebugResults": false
+      }
+    },
+    "averageMemoryUsage": 23,
+    "performanceGrade": "A",
+    "coreWebVitals": {
+      "lcp": "GOOD",
+      "fid": "UNKNOWN",
+      "cls": "UNKNOWN"
+    }
+  },
+  "technicalAnalysis": {
+    "reactLoadingIssues": {
+      "affectedPages": 3,
+      "severity": "HIGH",
+      "description": "React components not loading on frontend pages"
+    },
+    "taskServiceIssues": {
+      "affectedPages": 3,
+      "severity": "HIGH",
+      "description": "TaskService not available in browser window"
+    },
+    "supabaseConnection": {
+      "status": "NOT_AVAILABLE",
+      "description": "Supabase client not found in browser context"
+    }
+  },
+  "prioritizedRecommendations": [
+    {
+      "priority": "HIGH",
+      "category": "Accessibility",
+      "title": "Fix Form Element Accessibility",
+      "description": "Add id, name, and aria-label attributes to all form elements",
+      "impact": "WCAG 2.1 compliance, screen reader support",
+      "effort": "MEDIUM",
+      "timeline": "1-2 days"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Accessibility",
+      "title": "Implement Proper Button Labels",
+      "description": "Add descriptive aria-labels to all buttons",
+      "impact": "Improved accessibility for visually impaired users",
+      "effort": "LOW",
+      "timeline": "1 day"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Technical",
+      "title": "Fix React Component Loading",
+      "description": "Ensure React components load properly on all pages",
+      "impact": "Better debugging and development experience",
+      "effort": "MEDIUM",
+      "timeline": "2-3 days"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Technical",
+      "title": "Expose TaskService to Browser",
+      "description": "Make TaskService available in window object for debugging",
+      "impact": "Better debugging capabilities",
+      "effort": "LOW",
+      "timeline": "0.5 days"
+    },
+    {
+      "priority": "LOW",
+      "category": "Performance",
+      "title": "Optimize Load Times",
+      "description": "Current performance is acceptable but can be improved",
+      "impact": "Better user experience",
+      "effort": "HIGH",
+      "timeline": "1 week"
+    }
+  ],
+  "implementationPlan": {
+    "phase1": {
+      "title": "Critical Accessibility Fixes",
+      "duration": "2-3 days",
+      "tasks": [
+        "Add id attributes to all form elements",
+        "Add name attributes to all input fields",
+        "Add aria-label attributes to all buttons",
+        "Test with screen reader"
+      ]
+    },
+    "phase2": {
+      "title": "Technical Infrastructure",
+      "duration": "3-4 days",
+      "tasks": [
+        "Fix React component loading issues",
+        "Expose TaskService for debugging",
+        "Add Supabase client to window object",
+        "Implement proper error boundaries"
+      ]
+    },
+    "phase3": {
+      "title": "Performance Optimization",
+      "duration": "1 week",
+      "tasks": [
+        "Analyze bundle size",
+        "Implement code splitting",
+        "Optimize images and assets",
+        "Add performance monitoring"
+      ]
+    }
+  }
+}

@@ -121,7 +121,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       console.warn('⚠️ TaskList: User not authenticated, skipping task load');
       setTasks([]);
     }
-  }, [user]);
+  }, [user?.id]); // 🚀 PERFORMANCE FIX: Only depend on user.id to prevent infinite re-renders
 
   // 🔄 Auto-refresh filtered results when filters change
   useEffect(() => {

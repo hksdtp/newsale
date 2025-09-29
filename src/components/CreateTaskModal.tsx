@@ -238,17 +238,23 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
             />
 
             <div>
-              <label className="block text-white font-medium mb-2">
+              <label htmlFor="task-name-input" className="block text-white font-medium mb-2">
                 Tiêu đề công việc <span className="text-red-400">*</span>
               </label>
               <input
+                id="task-name-input"
+                name="taskName"
                 type="text"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Nhập tiêu đề công việc..."
                 className="w-full p-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
                 required
+                aria-describedby="task-name-help"
               />
+              <div id="task-name-help" className="sr-only">
+                Nhập tên công việc cần thực hiện
+              </div>
             </div>
 
             <div>
@@ -378,20 +384,29 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
                     </p>
                   </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label
+                  htmlFor="auto-pin-checkbox"
+                  className="relative inline-flex items-center cursor-pointer"
+                >
                   <input
+                    id="auto-pin-checkbox"
+                    name="autoPinToCalendar"
                     type="checkbox"
                     checked={formData.autoPinToCalendar}
                     onChange={e =>
                       setFormData({ ...formData, autoPinToCalendar: e.target.checked })
                     }
                     className="sr-only peer"
+                    aria-describedby="auto-pin-help"
                   />
                   <div className="w-12 h-7 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-blue-500 shadow-lg"></div>
                   <span className="ml-3 text-sm text-gray-300 font-medium">
                     {formData.autoPinToCalendar ? 'BẬT' : 'TẮT'}
                   </span>
                 </label>
+                <div id="auto-pin-help" className="sr-only">
+                  Tự động ghim công việc vào lịch khi tạo
+                </div>
               </div>
             </div>
           </form>

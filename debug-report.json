@@ -1,0 +1,158 @@
+{
+  "timestamp": "2025-09-29T08:45:35.923Z",
+  "url": "http://localhost:3002/auth/region-selection",
+  "title": "Phòng Kinh Doanh",
+  "debugResults": null,
+  "accessibilityDetails": [
+    {
+      "element": "BUTTON[submit]",
+      "problems": [
+        "Missing id/name",
+        "Missing aria-label"
+      ],
+      "selector": ".\n"
+    },
+    {
+      "element": "BUTTON[submit]",
+      "problems": [
+        "Missing id/name",
+        "Missing aria-label"
+      ],
+      "selector": ".\n"
+    },
+    {
+      "element": "BUTTON[submit]",
+      "problems": [
+        "Missing id/name",
+        "Missing aria-label"
+      ],
+      "selector": ".\n"
+    }
+  ],
+  "performanceDetails": {
+    "loadTime": 345,
+    "domReady": 336,
+    "memory": {
+      "used": 21,
+      "total": 26,
+      "limit": 4096
+    },
+    "url": "http://localhost:3002/auth/region-selection",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+    "timestamp": "2025-09-29T08:45:35.918Z"
+  },
+  "reactStatus": {
+    "hasReactDevTools": {
+      "renderers": {},
+      "supportsFiber": true
+    },
+    "componentCount": 0
+  },
+  "taskServiceStatus": {
+    "hasTaskService": false,
+    "hasSupabase": false,
+    "hasDebugResults": false
+  },
+  "consoleMessages": [
+    {
+      "type": "log",
+      "text": "📊 Complete Debug Results: {timestamp: 2025-09-29T08:45:32.908Z, url: http://localhost:3002/auth/region-selection, accessibility: Array(3), performance: Object, react: Object}",
+      "timestamp": "2025-09-29T08:45:32.912Z"
+    },
+    {
+      "type": "log",
+      "text": "✅ Debug analysis complete! Results stored in localStorage.",
+      "timestamp": "2025-09-29T08:45:32.913Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Monitoring console and network for 30 seconds...",
+      "timestamp": "2025-09-29T08:45:32.913Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Running Accessibility Check...",
+      "timestamp": "2025-09-29T08:45:35.917Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Accessibility Issues Found: 3",
+      "timestamp": "2025-09-29T08:45:35.917Z"
+    },
+    {
+      "type": "log",
+      "text": "1. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T08:45:35.917Z"
+    },
+    {
+      "type": "log",
+      "text": "2. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T08:45:35.917Z"
+    },
+    {
+      "type": "log",
+      "text": "3. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T08:45:35.917Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Running Performance Check...",
+      "timestamp": "2025-09-29T08:45:35.919Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Performance Data:",
+      "timestamp": "2025-09-29T08:45:35.919Z"
+    },
+    {
+      "type": "log",
+      "text": "   Load Time: 345ms ✅ OK",
+      "timestamp": "2025-09-29T08:45:35.919Z"
+    },
+    {
+      "type": "log",
+      "text": "   DOM Ready: 336ms ✅ OK",
+      "timestamp": "2025-09-29T08:45:35.919Z"
+    },
+    {
+      "type": "log",
+      "text": "   Memory Used: 21MB / 26MB ✅ OK",
+      "timestamp": "2025-09-29T08:45:35.919Z"
+    },
+    {
+      "type": "log",
+      "text": "⚛️ Checking for React Errors...",
+      "timestamp": "2025-09-29T08:45:35.921Z"
+    },
+    {
+      "type": "log",
+      "text": "React DevTools: ✅ Available",
+      "timestamp": "2025-09-29T08:45:35.921Z"
+    },
+    {
+      "type": "log",
+      "text": "React: ❌ Not found",
+      "timestamp": "2025-09-29T08:45:35.921Z"
+    },
+    {
+      "type": "log",
+      "text": "React Components: 0 elements found",
+      "timestamp": "2025-09-29T08:45:35.921Z"
+    },
+    {
+      "type": "log",
+      "text": "📋 Debugging TaskService...",
+      "timestamp": "2025-09-29T08:45:35.923Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ TaskService not found in window",
+      "timestamp": "2025-09-29T08:45:35.923Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ Supabase client not found",
+      "timestamp": "2025-09-29T08:45:35.923Z"
+    }
+  ]
+}

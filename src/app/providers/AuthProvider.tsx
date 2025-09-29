@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useReducer } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useMemo, useReducer } from 'react';
 import { authService, User } from '../../features/auth/api/authService';
 import { authContextService } from '../../services/authContextService';
 
@@ -181,15 +181,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await authService.changePassword({ email, currentPassword, newPassword });
   };
 
-  const value: AuthContextType = {
-    ...state,
-    login,
-    logout,
-    clearError,
-    getUsers,
-    needsPasswordChange,
-    changePassword,
-  };
+  // 🚀 PERFORMANCE FIX: Memoize context value to prevent unnecessary re-renders
+  const value: AuthContextType = useMemo(
+    () => ({
+      ...state,
+      login,
+      logout,
+      clearError,
+      getUsers,
+      needsPasswordChange,
+      changePassword,
+    }),
+    [state, login, logout, clearError, getUsers, needsPasswordChange, changePassword]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

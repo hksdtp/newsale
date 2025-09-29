@@ -160,10 +160,12 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
 
             {/* Task Name */}
             <div>
-              <label className="block text-white font-medium mb-2">
+              <label htmlFor="edit-task-name" className="block text-white font-medium mb-2">
                 Tên công việc <span className="text-red-400">*</span>
               </label>
               <input
+                id="edit-task-name"
+                name="taskName"
                 type="text"
                 value={formData.name}
                 onChange={e => handleInputChange('name', e.target.value)}
@@ -175,7 +177,11 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
                 }`}
                 placeholder="Nhập tên công việc..."
                 required
+                aria-describedby="edit-task-name-help"
               />
+              <div id="edit-task-name-help" className="sr-only">
+                Chỉnh sửa tên công việc
+              </div>
             </div>
 
             {/* Description */}
@@ -192,8 +198,12 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
 
             {/* Priority */}
             <div>
-              <label className="block text-white font-medium mb-2">Mức độ ưu tiên</label>
+              <label htmlFor="edit-priority-select" className="block text-white font-medium mb-2">
+                Mức độ ưu tiên
+              </label>
               <select
+                id="edit-priority-select"
+                name="priority"
                 value={formData.priority}
                 onChange={e => handleInputChange('priority', e.target.value)}
                 disabled={!canEdit}
@@ -202,18 +212,26 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
                     ? 'bg-gray-800/50 border-gray-600 focus:border-blue-500'
                     : 'bg-gray-700/30 border-gray-700 cursor-not-allowed opacity-60'
                 }`}
+                aria-describedby="edit-priority-help"
               >
                 <option value="low">Thấp</option>
                 <option value="normal">Bình thường</option>
                 <option value="high">Cao</option>
               </select>
+              <div id="edit-priority-help" className="sr-only">
+                Chọn mức độ ưu tiên cho công việc
+              </div>
             </div>
 
             {/* Status & Due Date */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-white font-medium mb-2">Trạng thái</label>
+                <label htmlFor="edit-status-select" className="block text-white font-medium mb-2">
+                  Trạng thái
+                </label>
                 <select
+                  id="edit-status-select"
+                  name="status"
                   value={formData.status}
                   onChange={e => handleInputChange('status', e.target.value)}
                   disabled={!canEdit}
@@ -222,6 +240,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
                       ? 'bg-gray-800/50 border-gray-600 focus:border-blue-500'
                       : 'bg-gray-700/30 border-gray-700 cursor-not-allowed opacity-60'
                   }`}
+                  aria-describedby="edit-status-help"
                 >
                   {statusOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -229,6 +248,9 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ isOpen, onClose, onSubmit
                     </option>
                   ))}
                 </select>
+                <div id="edit-status-help" className="sr-only">
+                  Chọn trạng thái hiện tại của công việc
+                </div>
               </div>
 
               <div>

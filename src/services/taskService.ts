@@ -834,10 +834,43 @@ class TaskService {
   // Get tasks for "Của tôi" tab
   async getMyTasks(userId?: string): Promise<TaskWithUsers[]> {
     try {
-      const currentUser = userId ? await this.getUserInfo(userId) : getCurrentUser();
+      console.log('🔍 getMyTasks - Starting with userId:', userId);
+
+      let currentUser;
+      try {
+        currentUser = userId ? await this.getUserInfo(userId) : getCurrentUser();
+      } catch (userError) {
+        console.error('❌ Error getting user in getMyTasks:', userError);
+
+        // Try fallback: get user from localStorage directly
+        const fallbackUserId = localStorage.getItem('currentUserId');
+        const fallbackUserName = localStorage.getItem('currentUserName');
+        const fallbackUserEmail = localStorage.getItem('currentUserEmail');
+
+        if (fallbackUserId && fallbackUserName && fallbackUserEmail) {
+          console.log('🔍 getMyTasks - using fallback user data');
+          currentUser = {
+            id: fallbackUserId,
+            name: fallbackUserName,
+            email: fallbackUserEmail,
+            team_id: 'director-team',
+            location: 'Hà Nội',
+            role: 'employee',
+          };
+        } else {
+          throw new Error('User not found and no fallback data available');
+        }
+      }
+
       if (!currentUser) {
         throw new Error('User not found');
       }
+
+      console.log('✅ getMyTasks - User found:', {
+        id: currentUser.id,
+        name: currentUser.name,
+        email: currentUser.email,
+      });
 
       // Get all tasks first
       const allTasks = await this.getTasks();

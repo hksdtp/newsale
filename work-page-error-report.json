@@ -1,0 +1,6 @@
+{
+  "timestamp": "2025-09-29T08:58:49.485Z",
+  "error": "page.evaluate: SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Tạo\"), button:has-text(\"Create\"), button[aria-label*=\"tạo\"], .create-button' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:20:36)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+  "stack": "page.evaluate: SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Tạo\"), button:has-text(\"Create\"), button[aria-label*=\"tạo\"], .create-button' is not a valid selector.\n    at eval (eval at evaluate (:291:30), <anonymous>:20:36)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at debugWorkPageManual (/Users/ninh/Webapp/newsale/debug-work-manual.js:138:37)",
+  "debugSuccess": false
+}

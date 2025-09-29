@@ -93,8 +93,19 @@ export const getCurrentUser = (): MockUser => {
   try {
     // Get user from localStorage (set by AuthProvider when logging in)
     const savedUser = localStorage.getItem('auth_user');
+    console.log('🔍 getCurrentUser - checking localStorage:', {
+      hasAuthUser: !!savedUser,
+      authUserLength: savedUser?.length || 0,
+    });
+
     if (savedUser) {
       const authUser = JSON.parse(savedUser);
+      console.log('🔍 getCurrentUser - parsed user:', {
+        id: authUser.id,
+        name: authUser.name,
+        email: authUser.email,
+        hasTeam: !!authUser.team,
+      });
 
       // Validate that we have required fields
       if (!authUser.id || !authUser.name || !authUser.email) {
@@ -126,10 +137,46 @@ export const getCurrentUser = (): MockUser => {
       console.log('✅ getCurrentUser success:', user.name);
       return user;
     }
+
+    // Try fallback methods
+    console.log('🔍 getCurrentUser - trying fallback methods...');
+
+    // Check currentUserId in localStorage
+    const currentUserId = localStorage.getItem('currentUserId');
+    const currentUserEmail = localStorage.getItem('currentUserEmail');
+    const currentUserName = localStorage.getItem('currentUserName');
+
+    if (currentUserId && currentUserEmail && currentUserName) {
+      console.log('🔍 getCurrentUser - found fallback data:', {
+        id: currentUserId,
+        email: currentUserEmail,
+        name: currentUserName,
+      });
+
+      // Create user from fallback data
+      const fallbackUser: MockUser = {
+        id: currentUserId,
+        name: currentUserName,
+        email: currentUserEmail,
+        team_id: 'director-team',
+        location: 'Hà Nội', // Default to Hà Nội
+        role: 'employee',
+        team: {
+          id: 'director-team',
+          name: 'Ban Giám Đốc',
+          location: 'HN',
+        },
+      };
+
+      console.log('✅ getCurrentUser fallback success:', fallbackUser.name);
+      return fallbackUser;
+    }
   } catch (error) {
     console.error('❌ Error in getCurrentUser:', error);
   }
 
   // No logged in user - this should not happen in a protected route
+  console.error('❌ No authenticated user found in localStorage');
+  console.error('❌ Available localStorage keys:', Object.keys(localStorage));
   throw new Error('No authenticated user found');
 };

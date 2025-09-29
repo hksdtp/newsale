@@ -1,0 +1,683 @@
+{
+  "pageContent": {
+    "title": "Phòng Kinh Doanh",
+    "url": "http://localhost:3002/auth/user-selection?location=H%C3%A0%20N%E1%BB%99i&teamId=b082cb9a-e620-478b-b9f0-d170175cbfef",
+    "bodyText": "\n    Quay lạiTrịnh Thị BốnHà Nội • Chọn tài khoản của bạnTrịnh Thị Bốnbon.trinh@company.comTrưởng nhóm\n    \n  \n\n",
+    "hasReactRoot": false,
+    "elementCount": 34
+  },
+  "isLoading": false,
+  "errorMessages": [],
+  "userButtonsCount": 0,
+  "allButtons": [
+    {
+      "text": "Quay lại",
+      "className": "inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors duration-200",
+      "disabled": false
+    },
+    {
+      "text": "Trịnh Thị Bốnbon.trinh@company.comTrưởng nhóm",
+      "className": "\n                    w-full p-4 text-left bg-white border border-gray-200 rounded-lg\n                    hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 ease-in-out\n                    transform hover:scale-[1.02] active:scale-[0.98]\n                    \n                    \n                  ",
+      "disabled": false
+    }
+  ],
+  "localStorageData": {
+    "auth_user": null,
+    "currentUserId": null,
+    "allKeys": []
+  },
+  "manualApiTest": {
+    "success": false,
+    "error": "authService not available"
+  },
+  "consoleMessages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "timestamp": "2025-09-29T09:18:02.176Z"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "timestamp": "2025-09-29T09:18:02.189Z"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "timestamp": "2025-09-29T09:18:02.272Z"
+    },
+    {
+      "type": "warning",
+      "text": "Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.",
+      "timestamp": "2025-09-29T09:18:02.288Z"
+    },
+    {
+      "type": "log",
+      "text": "Starting scheduled tasks background job...",
+      "timestamp": "2025-09-29T09:18:02.291Z"
+    },
+    {
+      "type": "log",
+      "text": "Running daily scheduled tasks check...",
+      "timestamp": "2025-09-29T09:18:02.291Z"
+    },
+    {
+      "type": "log",
+      "text": "⚠️  Scheduled tasks feature temporarily disabled - database migration pending",
+      "timestamp": "2025-09-29T09:18:02.292Z"
+    },
+    {
+      "type": "log",
+      "text": "Scheduled tasks job started. Checking every 60 seconds.",
+      "timestamp": "2025-09-29T09:18:02.292Z"
+    },
+    {
+      "type": "log",
+      "text": "\n🧪 Timeout Test Helpers loaded!\nRun these in browser console:\n- testTimeoutFixes.logResults()\n- testTimeoutFixes.testConnection()  \n- testTimeoutFixes.simulateSlow(3000)\n",
+      "timestamp": "2025-09-29T09:18:02.292Z"
+    },
+    {
+      "type": "log",
+      "text": "🔐 Supabase auth state change: INITIAL_SESSION no user",
+      "timestamp": "2025-09-29T09:18:02.464Z"
+    }
+  ],
+  "networkRequests": [
+    {
+      "url": "http://localhost:3002/auth/user-selection?location=H%C3%A0%20N%E1%BB%99i&teamId=b082cb9a-e620-478b-b9f0-d170175cbfef",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.095Z"
+    },
+    {
+      "url": "http://localhost:3002/@vite/client",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.112Z"
+    },
+    {
+      "url": "http://localhost:3002/src/main.tsx?t=1759137323176",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.112Z"
+    },
+    {
+      "url": "http://localhost:3002/@react-refresh",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.113Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.133Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/react.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.133Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/react-dom_client.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.133Z"
+    },
+    {
+      "url": "http://localhost:3002/src/app/App.tsx?t=1759137323176",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.133Z"
+    },
+    {
+      "url": "http://localhost:3002/src/constants/language.ts",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.133Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/scheduledTasksJob.ts",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.133Z"
+    },
+    {
+      "url": "http://localhost:3002/src/utils/timeoutTestHelper.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.133Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/vite/dist/client/env.mjs",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.133Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/chunk-H5FQS3OF.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.174Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/chunk-V4OQ3NZ2.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.174Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/react-router-dom.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.175Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/@tanstack_react-query.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.175Z"
+    },
+    {
+      "url": "http://localhost:3002/src/app/providers/AuthProvider.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.175Z"
+    },
+    {
+      "url": "http://localhost:3002/src/app/providers/ThemeProvider.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.175Z"
+    },
+    {
+      "url": "http://localhost:3002/src/app/middleware/ErrorBoundary.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.175Z"
+    },
+    {
+      "url": "http://localhost:3002/src/app/router/Router.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.175Z"
+    },
+    {
+      "url": "http://localhost:3002/src/styles/globals.css?t=1759137323176",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.175Z"
+    },
+    {
+      "url": "http://localhost:3002/src/shared/utils/testConnection.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.175Z"
+    },
+    {
+      "url": "http://localhost:3002/src/utils/connectionTest.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.175Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/chunk-Y5BGZF4O.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.177Z"
+    },
+    {
+      "url": "http://localhost:3002/src/app/router/guards/AuthGuard.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.182Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/PasswordPage/index.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.182Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/UserSelectionPage/index.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.183Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/RegionSelectionPage/index.ts",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.183Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/DirectorLoginPage/index.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.183Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/TeamSelectionPage/index.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.183Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/ChangePasswordPage/index.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.183Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/index.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.183Z"
+    },
+    {
+      "url": "http://localhost:3002/src/pages/TestDropdown.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.183Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TaskActionsDemo.tsx?t=1759137220056",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.183Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/chunk-VTIQK5XW.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.185Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/api/authService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.185Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/authContextService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.185Z"
+    },
+    {
+      "url": "http://localhost:3002/src/shared/api/supabase.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.185Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/UserSelectionPage/UserSelectionPage.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.189Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/RegionSelectionPage/RegionSelectionPage.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.189Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/DirectorLoginPage/DirectorLoginPage.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.190Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/TeamSelectionPage/TeamSelectionPage.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.190Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/ChangePasswordPage/ChangePasswordPage.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.190Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/components/pages/PasswordPage/PasswordPage.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.191Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/Dashboard.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.191Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/StripeSetup.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.191Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/SettingsTab.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.191Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/SettingsCard.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.191Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/YouTubeSidebar.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.191Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/PlanningTab.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.191Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/WorkTypeDropdown.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.193Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/WorkTypeDropdownDemo.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.193Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TaskActions.tsx?t=1759137220056",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.193Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/@supabase_supabase-js.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.194Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/auth/hooks/useAuth.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.195Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/HRManagement.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.196Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/lucide-react.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.197Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/UserAvatarFixed.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.197Z"
+    },
+    {
+      "url": "http://localhost:3002/src/data/usersMockData.ts?t=1759137220056",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.197Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/DashboardStatsCards.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.203Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/DashboardTabs.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.203Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/LocationTabs.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.203Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TeamMembersStats.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.203Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TeamSelector.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.203Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TimeFilterDropdown.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.203Z"
+    },
+    {
+      "url": "http://localhost:3002/src/data/dashboardMockData.ts",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.203Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/autoMoveService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.203Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/dashboardStatsService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.204Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/planning/components/PlanningTab.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.204Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/MobileDock.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.204Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/dashboard/components/TaskList.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.204Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TaskDetailModal.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.209Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/schedulingService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.209Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/taskService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.209Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/teamsService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.209Z"
+    },
+    {
+      "url": "http://localhost:3002/src/utils/taskPermissions.ts?t=1759137220056",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.210Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/DatabaseSetupGuide.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.212Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/EmployeeManagement.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.212Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/chunk-5H4R2CZR.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.215Z"
+    },
+    {
+      "url": "http://localhost:3002/node_modules/.vite/deps/react-dom.js?v=d5553881",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.215Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/ChangeAvatarModal.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.215Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/ChangeEmailModalNew.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.215Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/ChangePasswordModalNew.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.215Z"
+    },
+    {
+      "url": "http://localhost:3002/src/constants/locationIcons.ts",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.215Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/ProfileModal.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.216Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/CreateTaskModal.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.224Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/DeleteConfirmModal.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.224Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/EditTaskModal.tsx?t=1759137220056",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/ModernTaskFilters.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/MultiWorkTypeBadges.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/PriorityBadge.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/ShareScopeBadge.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/StatusBadge.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TaskBadgeGrid.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/utils/dateUtils.ts",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/utils/roleBasedPermissions.ts?t=1759137220056",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/PlanDetailModal.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/features/planning/components/WeeklyScheduleManager.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.225Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/employeeService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.228Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/IOSDatePicker.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.228Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/RichTextDisplay.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.228Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/RichTextEditor.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.228Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/StatusPriorityEditor.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.228Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TaskAttachments.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.228Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TaskChecklist.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.228Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/avatarService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.228Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/DatePicker.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.230Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/Dropdown.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.230Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/ShareScopeSelector.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.230Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/TagUserInput.tsx?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.230Z"
+    },
+    {
+      "url": "http://localhost:3002/src/components/WorkTypeBadge.tsx",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.232Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/attachmentService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.242Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/checklistService.ts?t=1759137257205",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.246Z"
+    },
+    {
+      "url": "http://localhost:3002/src/services/storageService.ts",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.252Z"
+    },
+    {
+      "url": "http://localhost:3002/vite.svg",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.461Z"
+    },
+    {
+      "url": "https://fnakxavwxubnbucfoujd.supabase.co/rest/v1/users?select=*&team_id=eq.b082cb9a-e620-478b-b9f0-d170175cbfef&location=eq.H%C3%A0+N%E1%BB%99i&order=name.asc",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.464Z"
+    },
+    {
+      "url": "https://fnakxavwxubnbucfoujd.supabase.co/rest/v1/users?select=*&team_id=eq.b082cb9a-e620-478b-b9f0-d170175cbfef&location=eq.H%C3%A0+N%E1%BB%99i&order=name.asc",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.465Z"
+    },
+    {
+      "url": "https://fnakxavwxubnbucfoujd.supabase.co/rest/v1/teams?select=id%2Cname&id=eq.b082cb9a-e620-478b-b9f0-d170175cbfef",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:02.997Z"
+    },
+    {
+      "url": "https://fnakxavwxubnbucfoujd.supabase.co/rest/v1/teams?select=id%2Cname&id=eq.b082cb9a-e620-478b-b9f0-d170175cbfef",
+      "method": "GET",
+      "timestamp": "2025-09-29T09:18:03.118Z"
+    }
+  ],
+  "timestamp": "2025-09-29T09:18:17.486Z"
+}

@@ -1,0 +1,426 @@
+{
+  "pageInfo": {
+    "url": "http://localhost:3002/auth/region-selection",
+    "title": "Phòng Kinh Doanh",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+    "timestamp": "2025-09-29T09:02:48.929Z",
+    "elementCounts": {
+      "total": 45,
+      "buttons": 3,
+      "inputs": 0,
+      "forms": 0,
+      "links": 0,
+      "divs": 14
+    }
+  },
+  "workPageElements": {
+    "taskCards": 0,
+    "filterButtons": 3,
+    "createTaskButton": 3,
+    "searchInput": 0,
+    "tabs": 0,
+    "allButtons": [
+      {
+        "text": "Trưởng PhòngKhổng Đức Mạnh",
+        "id": "",
+        "className": "\n                  w-full p-6 text-left bg-white border border-gray-200 rounded-lg\n                  interactive-scale interactive-lift\n                  hover:border-blue-300 hover:bg-blue-50\n                  transition-all-smooth focus-ring\n                  animate-slide-up\n                  shadow-sm\n                  \n                  \n                "
+      },
+      {
+        "text": "Hà NộiKhu vực miền Bắc",
+        "id": "",
+        "className": "\n                  w-full p-6 text-left bg-white border border-gray-200 rounded-lg\n                  interactive-scale interactive-lift\n                  hover:border-blue-300 hover:bg-blue-50\n                  transition-all-smooth focus-ring\n                  animate-slide-up\n                  shadow-sm\n                  \n                  \n                "
+      },
+      {
+        "text": "Hồ Chí MinhKhu vực miền Nam",
+        "id": "",
+        "className": "\n                  w-full p-6 text-left bg-white border border-gray-200 rounded-lg\n                  interactive-scale interactive-lift\n                  hover:border-blue-300 hover:bg-blue-50\n                  transition-all-smooth focus-ring\n                  animate-slide-up\n                  shadow-sm\n                  \n                  \n                "
+      }
+    ]
+  },
+  "accessibility": [
+    {
+      "element": "BUTTON[submit]",
+      "problems": [
+        "Missing id/name",
+        "Missing aria-label"
+      ],
+      "selector": ".\n"
+    },
+    {
+      "element": "BUTTON[submit]",
+      "problems": [
+        "Missing id/name",
+        "Missing aria-label"
+      ],
+      "selector": ".\n"
+    },
+    {
+      "element": "BUTTON[submit]",
+      "problems": [
+        "Missing id/name",
+        "Missing aria-label"
+      ],
+      "selector": ".\n"
+    }
+  ],
+  "performance": {
+    "loadTime": 220,
+    "domReady": 215,
+    "memory": {
+      "used": 29,
+      "total": 34,
+      "limit": 4096
+    },
+    "url": "http://localhost:3002/auth/region-selection",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+    "timestamp": "2025-09-29T09:02:48.923Z"
+  },
+  "taskService": {
+    "hasTaskService": false,
+    "hasSupabase": false,
+    "hasDebugResults": false
+  },
+  "consoleMessages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "timestamp": "2025-09-29T09:02:33.532Z"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "timestamp": "2025-09-29T09:02:33.579Z"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "timestamp": "2025-09-29T09:02:33.923Z"
+    },
+    {
+      "type": "warning",
+      "text": "Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.",
+      "timestamp": "2025-09-29T09:02:33.934Z"
+    },
+    {
+      "type": "log",
+      "text": "Starting scheduled tasks background job...",
+      "timestamp": "2025-09-29T09:02:33.938Z"
+    },
+    {
+      "type": "log",
+      "text": "Running daily scheduled tasks check...",
+      "timestamp": "2025-09-29T09:02:33.938Z"
+    },
+    {
+      "type": "log",
+      "text": "⚠️  Scheduled tasks feature temporarily disabled - database migration pending",
+      "timestamp": "2025-09-29T09:02:33.938Z"
+    },
+    {
+      "type": "log",
+      "text": "Scheduled tasks job started. Checking every 60 seconds.",
+      "timestamp": "2025-09-29T09:02:33.938Z"
+    },
+    {
+      "type": "log",
+      "text": "\n🧪 Timeout Test Helpers loaded!\nRun these in browser console:\n- testTimeoutFixes.logResults()\n- testTimeoutFixes.testConnection()  \n- testTimeoutFixes.simulateSlow(3000)\n",
+      "timestamp": "2025-09-29T09:02:33.938Z"
+    },
+    {
+      "type": "log",
+      "text": "Scheduled tasks background job stopped",
+      "timestamp": "2025-09-29T09:02:39.803Z"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "timestamp": "2025-09-29T09:02:39.840Z"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "timestamp": "2025-09-29T09:02:39.859Z"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "timestamp": "2025-09-29T09:02:40.005Z"
+    },
+    {
+      "type": "warning",
+      "text": "Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.",
+      "timestamp": "2025-09-29T09:02:40.014Z"
+    },
+    {
+      "type": "log",
+      "text": "Starting scheduled tasks background job...",
+      "timestamp": "2025-09-29T09:02:40.016Z"
+    },
+    {
+      "type": "log",
+      "text": "Running daily scheduled tasks check...",
+      "timestamp": "2025-09-29T09:02:40.016Z"
+    },
+    {
+      "type": "log",
+      "text": "⚠️  Scheduled tasks feature temporarily disabled - database migration pending",
+      "timestamp": "2025-09-29T09:02:40.016Z"
+    },
+    {
+      "type": "log",
+      "text": "Scheduled tasks job started. Checking every 60 seconds.",
+      "timestamp": "2025-09-29T09:02:40.016Z"
+    },
+    {
+      "type": "log",
+      "text": "\n🧪 Timeout Test Helpers loaded!\nRun these in browser console:\n- testTimeoutFixes.logResults()\n- testTimeoutFixes.testConnection()  \n- testTimeoutFixes.simulateSlow(3000)\n",
+      "timestamp": "2025-09-29T09:02:40.016Z"
+    },
+    {
+      "type": "log",
+      "text": "🚀 Manual Debug Console Started",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "✅ Manual Debug Console Ready!",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "📋 Available commands:",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   debugConsole.checkAccessibility()",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   debugConsole.checkPerformance()",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   debugConsole.startConsoleMonitor()",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   debugConsole.startNetworkMonitor()",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   debugConsole.checkReactErrors()",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   debugConsole.debugTaskService()",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   debugConsole.runCompleteDebug()",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "🚀 Quick start: debugConsole.runCompleteDebug()",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "🚀 Running Complete Debug Analysis...",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "=====================================",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Running Accessibility Check...",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Accessibility Issues Found: 3",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "1. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "2. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "3. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Running Performance Check...",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Performance Data:",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   Load Time: 220ms ✅ OK",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   DOM Ready: 215ms ✅ OK",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "   Memory Used: 29MB / 34MB ✅ OK",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "⚛️ Checking for React Errors...",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "React DevTools: ✅ Available",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "React: ❌ Not found",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "React Components: 0 elements found",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "📋 Debugging TaskService...",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ TaskService not found in window",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ Supabase client not found",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "📊 Starting Console Monitor for 30 seconds...",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "🌐 Starting Network Monitor for 30 seconds...",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "📊 Complete Debug Results: {timestamp: 2025-09-29T09:02:48.908Z, url: http://localhost:3002/auth/region-selection, accessibility: Array(3), performance: Object, react: Object}",
+      "timestamp": "2025-09-29T09:02:48.914Z"
+    },
+    {
+      "type": "log",
+      "text": "✅ Debug analysis complete! Results stored in localStorage.",
+      "timestamp": "2025-09-29T09:02:48.915Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Monitoring console and network for 30 seconds...",
+      "timestamp": "2025-09-29T09:02:48.915Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Running Accessibility Check...",
+      "timestamp": "2025-09-29T09:02:48.922Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Accessibility Issues Found: 3",
+      "timestamp": "2025-09-29T09:02:48.922Z"
+    },
+    {
+      "type": "log",
+      "text": "1. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:02:48.922Z"
+    },
+    {
+      "type": "log",
+      "text": "2. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:02:48.922Z"
+    },
+    {
+      "type": "log",
+      "text": "3. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:02:48.922Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Running Performance Check...",
+      "timestamp": "2025-09-29T09:02:48.925Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Performance Data:",
+      "timestamp": "2025-09-29T09:02:48.925Z"
+    },
+    {
+      "type": "log",
+      "text": "   Load Time: 220ms ✅ OK",
+      "timestamp": "2025-09-29T09:02:48.925Z"
+    },
+    {
+      "type": "log",
+      "text": "   DOM Ready: 215ms ✅ OK",
+      "timestamp": "2025-09-29T09:02:48.925Z"
+    },
+    {
+      "type": "log",
+      "text": "   Memory Used: 29MB / 34MB ✅ OK",
+      "timestamp": "2025-09-29T09:02:48.925Z"
+    },
+    {
+      "type": "log",
+      "text": "📋 Debugging TaskService...",
+      "timestamp": "2025-09-29T09:02:48.927Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ TaskService not found in window",
+      "timestamp": "2025-09-29T09:02:48.927Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ Supabase client not found",
+      "timestamp": "2025-09-29T09:02:48.927Z"
+    }
+  ],
+  "timestamp": "2025-09-29T09:02:49.032Z"
+}

@@ -1,0 +1,341 @@
+{
+  "authFlow": {
+    "completed": false,
+    "finalUrl": "http://localhost:3002/auth/region-selection",
+    "steps": [
+      "region-selection",
+      "team-selection",
+      "user-selection",
+      "password",
+      "dashboard/work"
+    ]
+  },
+  "workPageAnalysis": {
+    "url": "http://localhost:3002/auth/region-selection",
+    "title": "Phòng Kinh Doanh",
+    "isWorkPage": false,
+    "elements": {
+      "total": 45,
+      "buttons": 3,
+      "inputs": 0,
+      "taskElements": 0,
+      "tabElements": 0
+    },
+    "buttonTexts": [
+      "Trưởng PhòngKhổng Đức Mạnh",
+      "Hà NộiKhu vực miền Bắc",
+      "Hồ Chí MinhKhu vực miền Nam"
+    ],
+    "hasTaskService": false,
+    "hasSupabase": false,
+    "reactComponents": 0
+  },
+  "debugResults": {
+    "timestamp": "2025-09-29T09:15:23.044Z",
+    "url": "http://localhost:3002/auth/region-selection",
+    "accessibility": [
+      {
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      },
+      {
+        "element": "BUTTON[submit]",
+        "problems": [
+          "Missing id/name",
+          "Missing aria-label"
+        ],
+        "selector": ".\n"
+      }
+    ],
+    "performance": {
+      "loadTime": 157,
+      "domReady": 151,
+      "memory": {
+        "used": 28,
+        "total": 33,
+        "limit": 4096
+      },
+      "url": "http://localhost:3002/auth/region-selection",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "timestamp": "2025-09-29T09:15:23.044Z"
+    },
+    "react": {
+      "hasReactDevTools": {
+        "renderers": {},
+        "supportsFiber": true
+      },
+      "componentCount": 0
+    },
+    "taskService": {
+      "hasTaskService": false,
+      "hasSupabase": false,
+      "hasDebugResults": false
+    }
+  },
+  "errors": [],
+  "consoleMessages": [
+    {
+      "type": "log",
+      "text": "",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "🚀 Quick start: debugConsole.runCompleteDebug()",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "🚀 Running Complete Debug Analysis...",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "=====================================",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Running Accessibility Check...",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Accessibility Issues Found: 3",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "1. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "2. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "3. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Running Performance Check...",
+      "timestamp": "2025-09-29T09:15:23.041Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Performance Data:",
+      "timestamp": "2025-09-29T09:15:23.042Z"
+    },
+    {
+      "type": "log",
+      "text": "   Load Time: 157ms ✅ OK",
+      "timestamp": "2025-09-29T09:15:23.042Z"
+    },
+    {
+      "type": "log",
+      "text": "   DOM Ready: 151ms ✅ OK",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "   Memory Used: 28MB / 33MB ✅ OK",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "⚛️ Checking for React Errors...",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "React DevTools: ✅ Available",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "React: ❌ Not found",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "React Components: 0 elements found",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "📋 Debugging TaskService...",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ TaskService not found in window",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ Supabase client not found",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "📊 Starting Console Monitor for 30 seconds...",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "🌐 Starting Network Monitor for 30 seconds...",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "📊 Complete Debug Results: {timestamp: 2025-09-29T09:15:23.038Z, url: http://localhost:3002/auth/region-selection, accessibility: Array(3), performance: Object, react: Object}",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "✅ Debug analysis complete! Results stored in localStorage.",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Monitoring console and network for 30 seconds...",
+      "timestamp": "2025-09-29T09:15:23.043Z"
+    },
+    {
+      "type": "log",
+      "text": "🚀 Running Complete Debug Analysis...",
+      "timestamp": "2025-09-29T09:15:23.044Z"
+    },
+    {
+      "type": "log",
+      "text": "=====================================",
+      "timestamp": "2025-09-29T09:15:23.045Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Running Accessibility Check...",
+      "timestamp": "2025-09-29T09:15:23.045Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Accessibility Issues Found: 3",
+      "timestamp": "2025-09-29T09:15:23.045Z"
+    },
+    {
+      "type": "log",
+      "text": "1. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:15:23.045Z"
+    },
+    {
+      "type": "log",
+      "text": "2. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:15:23.045Z"
+    },
+    {
+      "type": "log",
+      "text": "3. BUTTON[submit] (.\n): [Missing id/name, Missing aria-label]",
+      "timestamp": "2025-09-29T09:15:23.045Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Running Performance Check...",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "⚡ Performance Data:",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "   Load Time: 157ms ✅ OK",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "   DOM Ready: 151ms ✅ OK",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "   Memory Used: 28MB / 33MB ✅ OK",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "⚛️ Checking for React Errors...",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "React DevTools: ✅ Available",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "React: ❌ Not found",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "React Components: 0 elements found",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "📋 Debugging TaskService...",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ TaskService not found in window",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "❌ Supabase client not found",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "📊 Starting Console Monitor for 30 seconds...",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "🌐 Starting Network Monitor for 30 seconds...",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "📊 Complete Debug Results: {timestamp: 2025-09-29T09:15:23.044Z, url: http://localhost:3002/auth/region-selection, accessibility: Array(3), performance: Object, react: Object}",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "✅ Debug analysis complete! Results stored in localStorage.",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    },
+    {
+      "type": "log",
+      "text": "🔍 Monitoring console and network for 30 seconds...",
+      "timestamp": "2025-09-29T09:15:23.046Z"
+    }
+  ],
+  "timestamp": "2025-09-29T09:15:23.138Z"
+}

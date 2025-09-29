@@ -1,0 +1,18 @@
+[
+  {
+    "title": "Fix Form Element Accessibility",
+    "description": "Add id, name, and aria-label attributes to all form elements",
+    "assignee": "Frontend Developer",
+    "dueDate": "2025-09-30",
+    "priority": "HIGH",
+    "category": "Accessibility"
+  },
+  {
+    "title": "Implement Proper Button Labels",
+    "description": "Add descriptive aria-labels to all buttons",
+    "assignee": "Frontend Developer",
+    "dueDate": "2025-09-30",
+    "priority": "HIGH",
+    "category": "Accessibility"
+  }
+]

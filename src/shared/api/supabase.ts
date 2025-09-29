@@ -14,8 +14,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
+    persistSession: false, // Disable session persistence to avoid multiple instances
+    detectSessionInUrl: false, // Disable URL session detection
   },
   // 🚀 Performance optimizations
   db: {
@@ -32,6 +32,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       eventsPerSecond: 10,
     },
   },
+});
+
+// 🔧 Add connection error handling
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('🔐 Supabase auth state change:', event, session?.user?.email || 'no user');
 });
 
 // 🔍 Connection health check utility

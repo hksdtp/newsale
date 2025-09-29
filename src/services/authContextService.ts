@@ -8,6 +8,7 @@ import { supabase } from '../shared/api/supabase';
 
 class AuthContextService {
   private currentUserId: string | null = null;
+  public lastSetUserId: string | null = null; // 🚀 Cache for preventing redundant API calls
 
   /**
    * Set user context for the current session
@@ -130,21 +131,30 @@ export const withUserContext = async <T>(operation: () => Promise<T>): Promise<T
     }
   }
 
-  // Always set user context in Supabase before operation
-  try {
-    const { error } = await supabase.rpc('set_user_context', {
-      user_uuid: userId,
-    });
+  // 🚀 PERFORMANCE FIX: Only set user context if not already set
+  const currentContextUserId = authContextService.getCurrentUserId();
+  const lastSetUserId = authContextService.lastSetUserId;
 
-    if (error) {
-      console.error('❌ Failed to set user context in withUserContext:', error);
-      throw new Error('Failed to set user authentication context');
+  if (currentContextUserId !== lastSetUserId) {
+    try {
+      const { error } = await supabase.rpc('set_user_context', {
+        user_uuid: userId,
+      });
+
+      if (error) {
+        console.error('❌ Failed to set user context in withUserContext:', error);
+        throw new Error('Failed to set user authentication context');
+      }
+
+      // Cache the last set user ID to prevent redundant calls
+      authContextService.lastSetUserId = userId;
+      console.log('✅ User context set in withUserContext:', userId);
+    } catch (error) {
+      console.error('❌ Error setting user context in withUserContext:', error);
+      throw error;
     }
-
-    console.log('✅ User context set in withUserContext:', userId);
-  } catch (error) {
-    console.error('❌ Error setting user context in withUserContext:', error);
-    throw error;
+  } else {
+    console.log('🔄 User context already set, skipping:', userId);
   }
 
   return await operation();
