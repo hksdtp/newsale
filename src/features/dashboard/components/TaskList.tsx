@@ -1,5 +1,5 @@
 import { Building, Target, User, Users } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import CreateTaskModal from '../../../components/CreateTaskModal';
 import DeleteConfirmModal from '../../../components/DeleteConfirmModal';
 import EditTaskModal from '../../../components/EditTaskModal';
@@ -44,6 +44,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
   const [tasks, setTasks] = useState<TaskWithUsers[]>([]);
   const [loading, setLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false); // 🆕 Separate loading state for creating tasks
+  const [locationSwitching, setLocationSwitching] = useState(false); // 🚀 Loading state for location switch
   const [teams, setTeams] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [filters, setFilters] = useState<FilterState>({
@@ -58,6 +59,17 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
   const [quickStatusFilter, setQuickStatusFilter] = useState<
     'all' | 'new-requests' | 'approved' | 'live'
   >('all');
+
+  // 🔧 FIX: Ref to prevent race conditions when loading tasks
+  const loadingRef = useRef(false);
+
+  // 🔧 FIX: Ref to track if departmentTab has been initialized
+  const departmentTabInitialized = useRef(false);
+
+  // 🚀 PERFORMANCE: Cache all tasks to avoid reloading from DB
+  const allTasksCache = useRef<TaskWithUsers[]>([]);
+  const allTasksCacheTime = useRef<number>(0);
+  const CACHE_DURATION = 30000; // 30 seconds cache
 
   // Get current user and permissions with error handling
   const user = (() => {
@@ -91,10 +103,13 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
     }
   })();
 
-  // Update departmentTab based on user location after user is available
+  // Update departmentTab based on user location after user is available (only once)
   React.useEffect(() => {
-    if (user) {
+    // 🔧 FIX: Only set departmentTab once on initial load, don't reset when user changes
+    if (user && !departmentTabInitialized.current) {
       setDepartmentTab(getDefaultLocationFilter(user));
+      departmentTabInitialized.current = true;
+      console.log('🏢 Initial departmentTab set to:', getDefaultLocationFilter(user));
     }
   }, [user]);
 
@@ -111,17 +126,94 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
     onModalStateChange,
   ]);
 
-  // Load tasks and users when user changes
+  // Load tasks and users when user changes OR when activeTab changes
   useEffect(() => {
+    console.log('🔄 useEffect triggered - activeTab:', activeTab, 'user:', user?.name);
+
     // Only load tasks if user is properly authenticated
     if (user && user.id && user.id !== 'unknown') {
-      loadTasks();
+      // 🔧 FIX: Call loadTasks with current activeTab to avoid stale closure
+      const loadTasksForCurrentTab = async () => {
+        // Prevent race conditions - skip if already loading
+        if (loadingRef.current) {
+          console.log('⏭️  Skipping loadTasks - already loading');
+          return;
+        }
+
+        try {
+          loadingRef.current = true;
+          setLoading(true);
+
+          console.log('🔄 Loading tasks for tab:', activeTab);
+          console.log('🔄 Current user:', user?.name, user?.id);
+          console.log('🔄 Department tab:', departmentTab);
+          console.log('🔄 Selected team ID:', selectedTeamId);
+
+          let tasksFromDb: TaskWithUsers[] = [];
+
+          // Load tasks based on active tab and role-based permissions
+          switch (activeTab) {
+            case 'my-tasks':
+              console.log('📋 Loading my tasks for user ID:', user?.id);
+              if (!user?.id) {
+                console.error('❌ No user ID found');
+                tasksFromDb = [];
+              } else {
+                tasksFromDb = await taskService.getMyTasks(user.id);
+              }
+              console.log('📋 My tasks loaded:', tasksFromDb.length, 'tasks');
+              break;
+
+            case 'team-tasks':
+              const location = departmentTab === 'hanoi' ? 'HN' : 'HCM';
+              console.log('👥 Loading team tasks for location:', location, 'team:', selectedTeamId);
+
+              // 🔧 FIX: Director không cần chọn team, tự động thấy TẤT CẢ tasks
+              if (user?.role === 'retail_director') {
+                console.log('👑 Director mode: Loading ALL tasks (no team filter)');
+                tasksFromDb = await taskService.getTeamTasks(undefined, location);
+              } else {
+                // Regular users: cần chọn team
+                tasksFromDb = await taskService.getTeamTasks(selectedTeamId || undefined, location);
+              }
+
+              console.log('👥 Team tasks loaded:', tasksFromDb.length, 'tasks');
+              break;
+
+            case 'department-tasks':
+              const deptLocation = departmentTab === 'hanoi' ? 'HN' : 'HCM';
+              console.log('🏢 Loading department tasks for location:', deptLocation);
+              tasksFromDb = await taskService.getDepartmentTasks(deptLocation);
+              console.log('🏢 Department tasks loaded:', tasksFromDb.length, 'tasks');
+              break;
+
+            default:
+              console.log('📋 Loading all tasks');
+              tasksFromDb = await taskService.getTasks();
+              console.log('📋 All tasks loaded:', tasksFromDb.length, 'tasks');
+          }
+
+          console.log('🔄 Setting tasks state with:', tasksFromDb.length, 'tasks');
+          console.log('🔍 Task IDs:', tasksFromDb.map(t => t.id).slice(0, 5));
+          setTasks(tasksFromDb);
+          console.log('✅ Tasks state updated successfully');
+        } catch (error) {
+          console.error('❌ Error loading tasks:', error);
+          console.error('❌ Error details:', error);
+          setTasks([]);
+        } finally {
+          setLoading(false);
+          loadingRef.current = false;
+        }
+      };
+
+      loadTasksForCurrentTab();
       loadTeamsAndUsers();
     } else {
       console.warn('⚠️ TaskList: User not authenticated, skipping task load');
       setTasks([]);
     }
-  }, [user?.id]); // 🚀 PERFORMANCE FIX: Only depend on user.id to prevent infinite re-renders
+  }, [user?.id, activeTab, departmentTab, selectedTeamId]); // 🔧 FIX: Added all dependencies
 
   // 🔄 Auto-refresh filtered results when filters change
   useEffect(() => {
@@ -152,7 +244,14 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
   };
 
   const loadTasks = async () => {
+    // 🔧 FIX: Prevent race conditions - skip if already loading
+    if (loadingRef.current) {
+      console.log('⏭️  Skipping loadTasks - already loading');
+      return;
+    }
+
     try {
+      loadingRef.current = true;
       setLoading(true);
 
       console.log('🔄 Loading tasks for tab:', activeTab);
@@ -178,7 +277,16 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
         case 'team-tasks':
           const location = departmentTab === 'hanoi' ? 'HN' : 'HCM';
           console.log('👥 Loading team tasks for location:', location, 'team:', selectedTeamId);
-          tasksFromDb = await taskService.getTeamTasks(selectedTeamId || undefined, location);
+
+          // 🔧 FIX: Director không cần chọn team, tự động thấy TẤT CẢ tasks
+          if (user?.role === 'retail_director') {
+            console.log('👑 Director mode: Loading ALL tasks (no team filter)');
+            tasksFromDb = await taskService.getTeamTasks(undefined, location);
+          } else {
+            // Regular users: cần chọn team
+            tasksFromDb = await taskService.getTeamTasks(selectedTeamId || undefined, location);
+          }
+
           console.log('👥 Team tasks loaded:', tasksFromDb.length, 'tasks');
           break;
 
@@ -205,6 +313,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
       setTasks([]);
     } finally {
       setLoading(false);
+      loadingRef.current = false; // 🔧 FIX: Reset loading flag
     }
   };
 
@@ -604,11 +713,33 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
     return tasks;
   };
 
-  const filteredTasks = filterTasks(getFilteredTasks(), filters);
-  const taskGroups = createTaskGroups(filteredTasks);
+  // 🚀 PERFORMANCE: Memoize filtered tasks to avoid recalculation
+  const filteredTasks = useMemo(() => {
+    return filterTasks(getFilteredTasks(), filters);
+  }, [tasks, filters, quickStatusFilter]);
 
-  // Organize tasks by teams for team-tasks tab
-  const organizeTasksByTeams = () => {
+  // 🚀 PERFORMANCE: Memoize task groups
+  const taskGroups = useMemo(() => {
+    return createTaskGroups(filteredTasks);
+  }, [filteredTasks]);
+
+  // 🔍 DEBUG: Log filtered tasks for Director
+  React.useEffect(() => {
+    if (user?.role === 'retail_director' && activeTab === 'team-tasks') {
+      console.log('🔍 Director filteredTasks debug:', {
+        tasksLength: tasks.length,
+        filteredTasksLength: filteredTasks.length,
+        selectedTeamId: selectedTeamId,
+        departmentTab: departmentTab,
+        filters: filters,
+        quickStatusFilter: quickStatusFilter,
+      });
+    }
+  }, [tasks, filteredTasks, selectedTeamId, departmentTab, activeTab, user?.role]);
+
+  // 🚀 PERFORMANCE: Memoize team groups to avoid recalculation
+  const teamGroups = useMemo(() => {
+    // Organize tasks by teams for team-tasks tab
     if (activeTab !== 'team-tasks') return [];
 
     // Get all teams for the selected location (show ALL teams, even without tasks)
@@ -728,9 +859,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
         totalTasks: teamTasks.length,
       };
     }); // Remove filter - show ALL teams even if they have 0 tasks
-  };
-
-  const teamGroups = organizeTasksByTeams();
+  }, [activeTab, teams, users, departmentTab, filteredTasks, selectedMemberId, user]);
 
   const workTypeOptions = [
     { value: 'other', label: 'Công việc khác', icon: Building, color: 'bg-gray-500' },
@@ -967,8 +1096,23 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
 
   // Handle department tab change and reset member selection
   const handleDepartmentTabChange = (dept: 'hanoi' | 'hcm') => {
+    console.log('🏢 handleDepartmentTabChange called with:', dept);
+    console.log('🏢 Current departmentTab:', departmentTab);
+
+    // 🚀 PERFORMANCE: Set loading state immediately for better UX
+    setLocationSwitching(true);
+
+    // Update state
     setDepartmentTab(dept);
     setSelectedMemberId(null); // Reset member selection when changing department
+    setSelectedTeamId(null); // Reset team selection when changing location
+
+    console.log('🏢 departmentTab will be set to:', dept);
+
+    // Clear loading state after a short delay (will be cleared by useEffect anyway)
+    setTimeout(() => {
+      setLocationSwitching(false);
+    }, 500);
   };
 
   // Render department tabs when needed (only for directors)
@@ -1022,7 +1166,7 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
   return (
     <div className="relative mobile-scroll-container mobile-safe-container">
       {/* Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 opacity-50" />
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 opacity-50 pointer-events-none" />
 
       <div className="relative space-y-4 md:space-y-6 mobile-text-optimize">
         {/* Header with Tabs - Mobile Optimized */}
@@ -1066,13 +1210,126 @@ const TaskList: React.FC<TaskListProps> = ({ userRole, currentUser, onModalState
 
         {/* Task Groups - Mobile Optimized */}
         <div className="space-y-3 md:space-y-4">
-          {activeTab === 'team-tasks' ? (
+          {/* 🚀 Loading indicator when switching location */}
+          {locationSwitching ? (
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="text-gray-400">Đang tải công việc...</div>
+              </div>
+            </div>
+          ) : activeTab === 'team-tasks' ? (
             // Render by teams
             teamGroups.length === 0 ? (
               <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
                 <div className="text-gray-400">
                   Không có nhóm nào tại {departmentTab === 'hanoi' ? 'Hà Nội' : 'Hồ Chí Minh'}
                 </div>
+              </div>
+            ) : user.role === 'retail_director' && !selectedTeamId ? (
+              // 🔧 FIX: Director không chọn team = hiển thị TẤT CẢ tasks (không group theo team)
+              <div className="mobile-task-list">
+                {filteredTasks.length === 0 ? (
+                  <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
+                    <div className="text-gray-400">Không có công việc nào</div>
+                  </div>
+                ) : (
+                  <div>
+                    {filteredTasks.map(task => {
+                      const isDueToday = isTaskDueToday(task);
+                      return (
+                        <div
+                          key={task.id}
+                          data-testid="task-item"
+                          className={`mobile-task-item mobile-touch-feedback mobile-optimized group hover:bg-gray-700/30 transition-all duration-200 cursor-pointer relative ${
+                            isDueToday
+                              ? 'border-l-4 border-red-500 bg-red-500/5 hover:bg-red-500/10'
+                              : ''
+                          }`}
+                          onClick={() => handleTaskClick(task)}
+                        >
+                          {isDueToday && (
+                            <div className="absolute top-2 right-2 flex items-center gap-1">
+                              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                              <span className="text-xs text-red-400 font-medium">Hôm nay</span>
+                            </div>
+                          )}
+
+                          <div className="hidden md:block w-full mb-3">
+                            <TaskBadgeGrid
+                              task={task}
+                              onUpdateTask={handleUpdateTask}
+                              compact={false}
+                              maxWorkTypes={2}
+                            />
+                          </div>
+
+                          <div className="md:hidden w-full mb-3">
+                            <TaskBadgeGrid
+                              task={task}
+                              onUpdateTask={handleUpdateTask}
+                              compact={true}
+                              maxWorkTypes={1}
+                            />
+                          </div>
+
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base font-medium text-white mb-2 line-clamp-2">
+                                {task.name}
+                              </h3>
+                              {task.description && (
+                                <p className="text-sm text-gray-400 line-clamp-2 mb-3">
+                                  {task.description}
+                                </p>
+                              )}
+                              <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400">
+                                {task.assignedTo && (
+                                  <div className="flex items-center gap-1.5">
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                      />
+                                    </svg>
+                                    <span>{task.assignedTo.name}</span>
+                                  </div>
+                                )}
+                                {task.dueDate && (
+                                  <div className="flex items-center gap-1.5">
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                      />
+                                    </svg>
+                                    <span>
+                                      {new Date(task.dueDate).toLocaleDateString('vi-VN')}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ) : selectedTeamId || !shouldShowTeamSelectorButtons(user.role) ? (
               // Show selected team OR user's own team if they can't select teams

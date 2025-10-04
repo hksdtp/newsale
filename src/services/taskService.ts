@@ -5,6 +5,37 @@ import { createLocalDate, formatLocalDateString } from '../utils/dateUtils';
 import { getCurrentUserPermissions } from '../utils/roleBasedPermissions';
 import { withUserContext } from './authContextService';
 
+// 🚀 PERFORMANCE: Cache for users data to avoid repeated DB queries
+let usersCache: any[] | null = null;
+let usersCacheTime: number = 0;
+const USERS_CACHE_DURATION = 30000; // 30 seconds
+
+// Helper function to get users with caching
+async function getCachedUsers(): Promise<any[]> {
+  const now = Date.now();
+
+  // Return cached data if still valid
+  if (usersCache && now - usersCacheTime < USERS_CACHE_DURATION) {
+    console.log('🚀 Using cached users data');
+    return usersCache;
+  }
+
+  // Fetch fresh data
+  console.log('🔄 Fetching fresh users data');
+  const { data, error } = await supabase.from('users').select('*');
+
+  if (error) {
+    console.error('Error fetching users:', error);
+    return usersCache || []; // Return old cache if available
+  }
+
+  // Update cache
+  usersCache = data || [];
+  usersCacheTime = now;
+
+  return usersCache;
+}
+
 export interface CreateTaskData {
   name: string;
   description?: string;
@@ -908,14 +939,48 @@ class TaskService {
       const allTasks = await this.getTasks();
 
       // Filter by shareScope using filterTasksByScope
-      const filteredTasks = this.filterTasksByScope(allTasks, currentUser.id, 'team-tasks');
+      let filteredTasks = this.filterTasksByScope(allTasks, currentUser.id, 'team-tasks');
 
       console.log('📅 ShareScope filtering in getTeamTasks:', {
         totalTasks: allTasks.length,
         filteredTasks: filteredTasks.length,
         userId: currentUser.id,
         scope: 'team-tasks',
+        location: location,
       });
+
+      // 🔧 FIX: Filter by location if provided
+      if (location) {
+        // 🚀 PERFORMANCE: Get users from cache instead of DB
+        const usersData = await getCachedUsers();
+
+        if (!usersData || usersData.length === 0) {
+          console.error('No users data available for location filter');
+          return filteredTasks; // Return unfiltered if error
+        }
+
+        filteredTasks = filteredTasks.filter(task => {
+          // Check if task's assigned user or created user is in the specified location
+          const assignedUser = usersData?.find((u: any) => u.name === task.assignedTo?.name);
+          const createdUser = usersData?.find((u: any) => u.name === task.createdBy?.name);
+
+          const assignedUserLocation = assignedUser?.location === 'Hà Nội' ? 'HN' : 'HCM';
+          const createdUserLocation = createdUser?.location === 'Hà Nội' ? 'HN' : 'HCM';
+
+          // Task belongs to location if either assigned or created user is in that location
+          const belongsToLocation =
+            assignedUserLocation === location || createdUserLocation === location;
+
+          return belongsToLocation;
+        });
+
+        console.log('📍 Location filtering in getTeamTasks:', {
+          location: location,
+          beforeLocationFilter: this.filterTasksByScope(allTasks, currentUser.id, 'team-tasks')
+            .length,
+          afterLocationFilter: filteredTasks.length,
+        });
+      }
 
       return filteredTasks;
     } catch (error) {
